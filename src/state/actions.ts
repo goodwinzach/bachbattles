@@ -32,6 +32,7 @@ import {
   toast,
   writePatch,
   type Combatant,
+  type MapNote,
   type SaveData,
 } from './store';
 
@@ -775,3 +776,60 @@ export function rollInitiativeFor(pcId: string) {
 }
 
 export const dataSnapshot = () => getData();
+
+// ─── story flow map: positions and notes ──────────────────────────────────
+
+const GRID = 8;
+const snap = (v: number) => Math.round(v / GRID) * GRID;
+
+/** Put a scene somewhere else on the story flow map (in the current layout). */
+export function moveScene(sceneId: string, layout: 'h' | 'v', x: number, y: number) {
+  const title = ent<Scene>('scene', sceneId)?.title ?? 'a scene';
+  mutate(`Moved ${title} on the map`, (d) => {
+    const mapPos = { ...d.game.mapPos, [layout]: { ...d.game.mapPos[layout], [sceneId]: { x: snap(x), y: snap(y) } } };
+    d.game = { ...d.game, mapPos };
+  }, { toast: true });
+}
+
+/** Put every scene back where the story places it (in one layout). */
+export function resetMapLayout(layout: 'h' | 'v') {
+  mutate('Map layout reset', (d) => {
+    d.game = { ...d.game, mapPos: { ...d.game.mapPos, [layout]: {} } };
+  }, { toast: true });
+}
+
+let noteSeq = 0;
+export function addMapNote(scene: string, dx: number, dy: number, color: MapNote['color'] = 'yellow'): string {
+  const id = `n${Date.now().toString(36)}${(noteSeq++).toString(36)}`;
+  const title = ent<Scene>('scene', scene)?.title ?? 'the map';
+  mutate(`Note added by ${title}`, (d) => {
+    d.game = { ...d.game, mapNotes: [...d.game.mapNotes, { id, text: '', color, scene, dx: snap(dx), dy: snap(dy) }] };
+  });
+  return id;
+}
+
+export function updateMapNote(id: string, fields: Partial<Omit<MapNote, 'id'>>, label = 'Map note changed') {
+  const f = { ...fields };
+  if (f.dx != null) f.dx = snap(f.dx);
+  if (f.dy != null) f.dy = snap(f.dy);
+  mutate(label, (d) => {
+    d.game = { ...d.game, mapNotes: d.game.mapNotes.map((n) => (n.id === id ? { ...n, ...f } : n)) };
+  }, { coalesce: `note:${id}:${Object.keys(f).join(',')}` });
+}
+
+export function deleteMapNote(id: string) {
+  mutate('Map note deleted', (d) => {
+    d.game = { ...d.game, mapNotes: d.game.mapNotes.filter((n) => n.id !== id) };
+  }, { toast: true });
+}
+
+// ─── spotlight ────────────────────────────────────────────────────────────
+
+/** Mark that a player just had a moment in the spotlight. */
+export function giveSpotlight(pcId: string) {
+  const name = ent<PC>('pc', pcId)?.name ?? 'Someone';
+  mutate(`${name} had the spotlight`, (d) => {
+    d.game = { ...d.game, spotlight: { ...d.game.spotlight, [pcId]: Date.now() } };
+  }, { coalesce: `spot:${pcId}` });
+}
+

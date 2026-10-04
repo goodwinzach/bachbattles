@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import type { NPC, PC, Scene } from '../data/types';
+import type { Clue, Item, NPC, PC, Scene } from '../data/types';
 import { setCatVariant, setRoute, startCombat } from '../state/actions';
-import { pcStatusInfo, sceneFoes } from '../state/derive';
+import { pcStatusInfo, sceneFoes, sceneInPlay, strip } from '../state/derive';
 import { applyTheme, exportText, getSyncState, parseImport, saveFile } from '../state/persist';
 import { all, closeModal, ent, game, getUi, latestUndoId, replaceData, resetAll, setUi, toast, undo, undoInfo, type ModalSpec } from '../state/store';
 import { Icon } from './icons';
 import { Face } from './profile';
 import { Switch, cx } from './kit';
+import { Rich } from './rich';
 
 function Dialog({ title, children, onClose, wide, tone }: { title: string; children: preact.ComponentChildren; onClose: () => void; wide?: boolean; tone?: 'gold' }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -427,6 +428,106 @@ function RevealModal({ m }: { m: Extract<ModalSpec, { kind: 'reveal' }> }) {
   );
 }
 
+/** "Previously on…": what has happened so far, to read or paraphrase after a break. */
+function RecapModal() {
+  const g = game();
+  const done = all<Scene>('scene').filter((s) => sceneInPlay(s) && s.status === 'done');
+  const cur = ent<Scene>('scene', g.scene);
+  const clues = all<Clue>('clue').filter((c) => c.revealed);
+  const pcs = all<PC>('pc');
+  const down = pcs.filter((p) => p.status !== 'alive');
+  const beaten = all<NPC>('npc').filter((n) => n.status === 'defeated' || n.status === 'dead' || n.status === 'fled' || n.status === 'captured' || n.status === 'stone');
+  const ring = ent<Item>('item', 'wedding-ring');
+  const bagels = ent<Item>('item', 'bagels');
+  const statusWord = (p: PC) => pcStatusInfo(p.status).label.toLowerCase();
+  const lines = [
+    'Previously on One Ring to Rule Flynn…',
+    ...done.map((s) => `${s.title}: ${strip(s.logline)}`),
+    ...(clues.length ? ['', 'What they know:', ...clues.map((c) => `- ${c.name}: ${strip(c.text)}`)] : []),
+    ...(down.length ? ['', ...down.map((p) => `${p.name} is ${statusWord(p)}.`)] : []),
+    ...(cur ? ['', `Where we left off: ${cur.title}. ${strip(cur.logline)}`] : []),
+  ];
+  const copy = () => {
+    const t = lines.join('\n');
+    (navigator.clipboard?.writeText(t) ?? Promise.reject())
+      .then(() => toast('Recap copied', { tone: 'good' }))
+      .catch(() => toast('Copying is blocked here. Select the text instead.', { tone: 'bad' }));
+  };
+  return (
+    <Dialog title="Previously on…" onClose={closeModal} wide>
+      <div class="recap">
+        <p class="muted">For after a break: read it, or tell it in your own words. It is built from the scenes you marked done.</p>
+        {done.length === 0 ? (
+          <p>Nothing has happened yet. As you finish scenes on the Run screen, they show up here.</p>
+        ) : (
+          <ol class="recap__scenes">
+            {done.map((s) => (
+              <li key={s.id}>
+                <span class="recap__slate num">{s.slate}</span>
+                <div>
+                  <strong>{s.title}.</strong> <Rich text={s.logline} />
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+        {clues.length > 0 && (
+          <section>
+            <div class="recap__h">
+              <Icon name="lightbulb" size={14} /> What they know
+            </div>
+            <ul class="rlist">
+              {clues.map((c) => (
+                <li key={c.id}>
+                  <strong>{c.name}:</strong> <Rich text={c.text} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <section>
+          <div class="recap__h">
+            <Icon name="users" size={14} /> The party
+          </div>
+          <div class="recap__party">
+            {pcs.map((p) => (
+              <span key={p.id} class={cx('recap__pc', p.status !== 'alive' && 'is-down')}>
+                <Face type="pc" id={p.id} size={28} />
+                <span>
+                  <strong>{p.name}</strong> <span class="muted">{p.status === 'alive' ? `${p.hp}/${p.hpMax} HP` : statusWord(p)}</span>
+                </span>
+              </span>
+            ))}
+          </div>
+          <ul class="rlist recap__facts">
+            {ring && <li>The ring: {ring.state === 'held' || ring.state === 'equipped' ? 'back with Flynn' : 'still missing'}.</li>}
+            {bagels && (bagels.qty ?? 0) > 0 && (bagels.state === 'held' || bagels.state === 'equipped') && <li>Bagels left: {bagels.qty}.</li>}
+            {beaten.length > 0 && <li>Behind them: {beaten.map((n) => n.name).join(', ')}.</li>}
+          </ul>
+        </section>
+        {cur && (
+          <section>
+            <div class="recap__h">
+              <Icon name="clapperboard" size={14} /> Where we left off
+            </div>
+            <p>
+              <strong>{cur.title}.</strong> <Rich text={cur.logline} />
+            </p>
+          </section>
+        )}
+        <div class="row">
+          <button type="button" class="btn btn--sm" onClick={copy}>
+            <Icon name="copy" /> Copy as text
+          </button>
+          <button type="button" class="btn btn--sm btn--primary" onClick={closeModal} data-autofocus>
+            Back to the game
+          </button>
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+
 export function ModalHost() {
   const m = getUi().modal;
   if (!m) return null;
@@ -447,5 +548,7 @@ export function ModalHost() {
       return <EncounterModal m={m} />;
     case 'reveal':
       return <RevealModal m={m} />;
+    case 'recap':
+      return <RecapModal />;
   }
 }

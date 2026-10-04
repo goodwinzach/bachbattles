@@ -18,7 +18,7 @@ import {
   setRoute,
 } from '../state/actions';
 import { dialogueOf, isUnmasked, KIND_LABEL, nameOf, sceneFoes, sceneMust, shielded } from '../state/derive';
-import { all, ent, game, getUi, openDrawer, openModal } from '../state/store';
+import { all, ent, game, getUi, openDrawer, openModal, setUi } from '../state/store';
 import { SIN_ROOMS } from '../data/scenes';
 import { NpcStatusControl } from './controls';
 import { DmNote, ItemRow, Secret } from './detail';
@@ -536,6 +536,7 @@ export function SceneBody({ scene, prefix, compact }: { scene: Scene; prefix: st
   const id = (k: string) => `${prefix}:${scene.id}:${k}`;
   const foes = sceneFoes(scene);
   const talkers = talkersOf(scene);
+  const mapNotes = game().mapNotes.filter((n) => n.scene === scene.id && n.text.trim());
   const stats = scene.rolls?.map((r) => r.stat).filter((s): s is Stat => s !== 'any');
   return (
     <div class="scenebody">
@@ -569,6 +570,20 @@ export function SceneBody({ scene, prefix, compact }: { scene: Scene; prefix: st
                 </div>
               ))}
             </dl>
+          </Expander>
+        ) : null}
+        {mapNotes.length ? (
+          <Expander id={id('mapnotes')} title="Your map notes" icon="sticky-note" count={mapNotes.length} defaultOpen>
+            <div class="mapnotes">
+              {mapNotes.map((n) => (
+                <div key={n.id} class={cx('mapnotes__note', `mapnotes__note--${n.color}`)}>
+                  <Rich text={n.text} />
+                </div>
+              ))}
+              <button type="button" class="btn btn--xs btn--ghost mapnotes__edit" onClick={() => setUi({ view: 'map', mapMode: 'flow' })}>
+                <Icon name="workflow" /> Edit on the story map
+              </button>
+            </div>
           </Expander>
         ) : null}
         {scene.cast?.length ? (

@@ -98,6 +98,72 @@ try {
     await page.click('.mapctl button[title="Close every open node"]');
     await page.waitForTimeout(200);
     check(roots === 2 && (await page.$$('.xroot, .xnode')).length === 0, 'several scenes can be open at once; one button closes them all', `open=${roots}`);
+
+    // scenes can be dragged somewhere else; the spot is saved, undoable and resettable
+    await page.click('.mapctl button[title="Fit everything"]');
+    await page.waitForTimeout(200);
+    const gd = page.locator('.fnode:has-text("The Green Dragon")').first();
+    const at = async () => gd.evaluate((el) => `${el.style.left},${el.style.top}`);
+    const start = await at();
+    const b = await gd.boundingBox();
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(b.x + b.width / 2 + 10, b.y + b.height / 2 + 40, { steps: 6 });
+    await page.mouse.move(b.x + b.width / 2 + 20, b.y + b.height / 2 + 80, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(250);
+    const moved = await at();
+    check(moved !== start && !(await page.$('.xroot')), 'dragging a scene moves it (and does not open it)', `${start} -> ${moved}`);
+    await page.keyboard.press('Control+z');
+    await page.waitForTimeout(200);
+    check((await at()) === start, 'undo puts the scene back', await at());
+    await page.keyboard.press('Control+Shift+z');
+    await page.waitForTimeout(200);
+    await page.click('.mapctl button[aria-label="Put every scene back in place"]');
+    await page.waitForTimeout(200);
+    check((await at()) === start, '"Put every scene back in place" resets the layout', await at());
+
+    // double-click empty space for a note: it attaches to the nearest scene
+    const vp = await page.locator('.mapvp').boundingBox();
+    await page.mouse.dblclick(vp.x + vp.width * 0.45, vp.y + vp.height * 0.18);
+    await page.waitForSelector('.mnote textarea');
+    await page.keyboard.type('Something to remember.');
+    await page.mouse.click(vp.x + 20, vp.y + 20);
+    await page.waitForTimeout(250);
+    const attach = await page.evaluate(() => {
+      const n = document.querySelector('.mnote').getBoundingClientRect();
+      const px = n.left + n.width / 2;
+      const py = n.top + 16;
+      let best = '';
+      let bestD = Infinity;
+      for (const el of document.querySelectorAll('.fnode')) {
+        const r = el.getBoundingClientRect();
+        const dx = Math.max(r.left - px, 0, px - r.right);
+        const dy = Math.max(r.top - py, 0, py - r.bottom);
+        if (dx * dx + dy * dy < bestD) {
+          bestD = dx * dx + dy * dy;
+          best = el.querySelector('.fnode__title')?.textContent ?? '';
+        }
+      }
+      return { label: document.querySelector('.mnote__scene')?.textContent, nearest: best };
+    });
+    check(!!attach.label && attach.label.includes(attach.nearest), 'a double-click adds a note attached to the nearest scene', JSON.stringify(attach));
+    await page.click('.mnote__del');
+    await page.waitForTimeout(200);
+    check(!(await page.$('.mnote')), 'notes can be deleted');
+    // a note from a scene's card belongs to that scene and shows with it on the Run screen
+    await page.locator('.fnode:has-text("The Green Dragon")').first().dispatchEvent('click');
+    await page.waitForSelector('.xroot');
+    await page.click('.xroot button:has-text("Note")');
+    await page.waitForSelector('.mnote textarea');
+    await page.keyboard.type('Ask who broke the floor before Michael does.');
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(250);
+    await page.evaluate(() => (location.hash = 'run'));
+    await page.click('.strip__s >> nth=2');
+    await page.waitForTimeout(250);
+    const runNotes = await page.$$eval('.mapnotes__note', (els) => els.map((e) => e.textContent));
+    check(runNotes.some((t) => /broke the floor/.test(t ?? '')), 'the note shows with its scene on the Run screen', runNotes.join(' / '));
     check(errors.length === 0, 'no console errors on the story flow', errors.join(' | '));
 
     await page.evaluate(() => (location.hash = 'slides'));
@@ -437,6 +503,19 @@ try {
     await page.click('.codex__tabs button:has-text("Abilities")');
     const hidden = await page.$$eval('.abil--secret', (els) => els.length);
     check(hidden > 0, 'the shield hides secret abilities', `hidden=${hidden}`);
+
+    // table aids: who has waited longest for the spotlight, and a recap after a break
+    await page.evaluate(() => (location.hash = 'run'));
+    await page.waitForSelector('.spot__pc');
+    await page.click('.spot__pc >> nth=0');
+    await page.waitForTimeout(150);
+    const hint = await page.textContent('.spot__hint');
+    check(/waited longest/.test(hint ?? '') && !/^Flynn/.test(hint ?? ''), 'the spotlight panel points at whoever has waited longest', hint);
+    await page.click('.sessionpanel button:has-text("Recap")');
+    await page.waitForSelector('.recap');
+    const recap = await page.$$eval('.recap__scenes li', (els) => els.length);
+    check(recap >= 1, 'the recap lists what has happened so far', `scenes=${recap}`);
+    await page.keyboard.press('Escape');
 
     // a character's drawer lists their connections and can jump to them on the web
     await page.evaluate(() => (location.hash = 'codex'));

@@ -9,6 +9,7 @@ import {
   combatStep,
   completeAndNext,
   endCombat,
+  giveSpotlight,
   goScene,
   removeCombatant,
   resetTimer,
@@ -37,7 +38,7 @@ import {
   totalSpent,
 } from '../../state/derive';
 import { signed } from '../../state/dice';
-import { all, ent, game, getUi, openDrawer, setGame } from '../../state/store';
+import { all, ent, game, getUi, openDrawer, openModal, setGame } from '../../state/store';
 import { NpcStatusControl, PcStatusControl } from '../controls';
 import { DicePanel } from '../dice';
 import { ItemRow, MaskPicker, StatGrid } from '../detail';
@@ -494,6 +495,46 @@ function ConditionToggle({ cond }: { cond: Condition }) {
 
 // ─── side panels ──────────────────────────────────────────────────────────
 
+/** Who has not had a moment in a while. Tap a player whenever they get the spotlight. */
+function Spotlight() {
+  const g = game();
+  useTick(30000);
+  const pcs = all<PC>('pc');
+  const now = Date.now();
+  const since = (id: string) => (g.spotlight[id] ? now - g.spotlight[id] : Infinity);
+  const marked = Object.keys(g.spotlight).length > 0;
+  const waiting = [...pcs].sort((a, b) => since(b.id) - since(a.id))[0];
+  const ago = (ms: number) => (!isFinite(ms) ? 'not yet' : ms < 60000 ? 'just now' : `${Math.floor(ms / 60000)} min`);
+  return (
+    <section class="panel spot" aria-label="Spotlight">
+      <div class="panel__head">
+        <span class="panel__title">
+          <Icon name="sparkle" size={15} /> Spotlight
+        </span>
+        <span class="spot__hint muted">{marked && waiting ? `${waiting.player} has waited longest` : 'Tap a player when they get a moment'}</span>
+      </div>
+      <div class="spot__row">
+        {pcs.map((p) => {
+          const ms = since(p.id);
+          return (
+            <button
+              key={p.id}
+              type="button"
+              class={cx('spot__pc', marked && waiting?.id === p.id && 'is-next')}
+              onClick={() => giveSpotlight(p.id)}
+              title={`${p.name} (${p.player}): ${isFinite(ms) ? `last spotlight ${ago(ms)} ago` : 'no spotlight yet'}. Click when they get one.`}
+            >
+              <Face type="pc" id={p.id} size={34} />
+              <span class="spot__name">{p.player}</span>
+              <span class="spot__t num">{ago(ms)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function SessionPanel() {
   const g = game();
   useTick(1000, g.timer.running);
@@ -510,6 +551,9 @@ function SessionPanel() {
       </button>
       <button type="button" class="btn btn--sm btn--ghost btn--icon" onClick={resetTimer} title="Reset the session timer" aria-label="Reset the session timer">
         <Icon name="timer-reset" />
+      </button>
+      <button type="button" class="btn btn--sm" onClick={() => openModal({ kind: 'recap' })} title="Previously on… a recap to read after a break">
+        <Icon name="rewind" /> Recap
       </button>
     </section>
   );
@@ -659,6 +703,7 @@ export function RunView() {
       </div>
       <aside class="run__side">
         <SessionPanel />
+        <Spotlight />
         <Party />
         {wide && (
           <section class="panel" aria-label="Dice">

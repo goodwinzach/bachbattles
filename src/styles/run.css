@@ -1517,3 +1517,64 @@
   border-style: dashed;
   opacity: 0.5;
 }
+
+/* ─── spotlight ─────────────────────────────────────────── */
+
+.spot__hint {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.spot__row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.spot__pc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 7px 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  color: var(--fg);
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.spot__pc:hover {
+  border-color: var(--line-2);
+  transform: translateY(-1px);
+}
+
+.spot__pc.is-next {
+  border-color: var(--gold);
+  background: var(--gold-wash);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--gold) 18%, transparent);
+}
+
+.spot__name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.spot__t {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.spot__pc.is-next .spot__t {
+  color: var(--gold);
+  font-weight: 700;
+}

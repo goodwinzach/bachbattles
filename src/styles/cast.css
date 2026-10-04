@@ -1334,3 +1334,41 @@
   aspect-ratio: 892 / 462;
   border-radius: var(--r-sm);
 }
+
+/* the DM's story-map notes, shown with their scene */
+.mapnotes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mapnotes__note {
+  --nc: #e9c46a;
+  flex: 1 1 220px;
+  max-width: 360px;
+  padding: 9px 12px;
+  border-radius: var(--r);
+  border: 1px solid color-mix(in oklab, var(--nc) 60%, var(--line));
+  border-left-width: 4px;
+  background: color-mix(in oklab, var(--nc) 14%, var(--surface));
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.mapnotes__note--pink {
+  --nc: #e58fb4;
+}
+
+.mapnotes__note--blue {
+  --nc: #7fb0e6;
+}
+
+.mapnotes__note--green {
+  --nc: #86c27e;
+}
+
+.mapnotes__edit {
+  align-self: center;
+}

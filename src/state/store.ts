@@ -33,6 +33,19 @@ export interface Combat {
   list: Combatant[];
 }
 
+export type MapNoteColor = 'yellow' | 'pink' | 'blue' | 'green';
+
+/** A sticky note the DM put on the story flow map. It belongs to a scene and sits relative to it. */
+export interface MapNote {
+  id: string;
+  text: string;
+  color: MapNoteColor;
+  scene: string;
+  /** offset from the scene node's top left corner */
+  dx: number;
+  dy: number;
+}
+
 export interface Game {
   scene: string;
   route: 'plane' | 'boat' | null;
@@ -43,6 +56,11 @@ export interface Game {
   notes: string;
   applied: Record<string, boolean>;
   sinOrder: string[];
+  /** story flow map: where the DM dragged scenes, per layout (h: left to right, v: top to bottom) */
+  mapPos: { h: Record<string, { x: number; y: number }>; v: Record<string, { x: number; y: number }> };
+  mapNotes: MapNote[];
+  /** when each player last had the spotlight (ms since epoch) */
+  spotlight: Record<string, number>;
 }
 
 export interface LogEntry {
@@ -79,7 +97,8 @@ export type ModalSpec =
   | { kind: 'history' }
   | { kind: 'shortcuts' }
   | { kind: 'encounter'; scene: string; index: number }
-  | { kind: 'reveal'; title: string; body: string };
+  | { kind: 'reveal'; title: string; body: string }
+  | { kind: 'recap' };
 
 export interface DrawerSpec {
   type: EntityType;
@@ -130,6 +149,9 @@ export const defaultGame = (): Game => ({
   notes: '',
   applied: {},
   sinOrder: [],
+  mapPos: { h: {}, v: {} },
+  mapNotes: [],
+  spotlight: {},
 });
 
 export const defaultData = (): SaveData => ({ v: 1, patches: {}, created: {}, game: defaultGame(), log: [], savedAt: 0 });
@@ -392,7 +414,13 @@ export function normalize(raw: Partial<SaveData>): SaveData {
     v: 1,
     patches: input.patches && typeof input.patches === 'object' ? input.patches : d.patches,
     created: input.created && typeof input.created === 'object' ? input.created : d.created,
-    game: { ...d.game, ...(input.game ?? {}), timer: { ...d.game.timer, ...(input.game?.timer ?? {}) } },
+    game: {
+      ...d.game,
+      ...(input.game ?? {}),
+      timer: { ...d.game.timer, ...(input.game?.timer ?? {}) },
+      mapPos: { h: { ...(input.game?.mapPos?.h ?? {}) }, v: { ...(input.game?.mapPos?.v ?? {}) } },
+      mapNotes: Array.isArray(input.game?.mapNotes) ? input.game!.mapNotes : [],
+    },
     log: Array.isArray(input.log) ? input.log.slice(-300) : [],
     savedAt: typeof input.savedAt === 'number' ? input.savedAt : 0,
   };

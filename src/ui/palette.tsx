@@ -51,6 +51,8 @@ function actions(): Hit[] {
     { key: 'act:settings', icon: 'settings', title: 'Settings & campaign options', sub: 'Studio gauntlet version, route, theme', kind: 'Action', run: () => openModal({ kind: 'settings' }) },
     { key: 'act:export', icon: 'file-down', title: 'Export save', sub: 'Download or copy everything you changed', kind: 'Action', run: () => openModal({ kind: 'export' }) },
     { key: 'act:history', icon: 'list-restart', title: 'History', sub: 'Every change this session', kind: 'Action', run: () => openModal({ kind: 'history' }) },
+    { key: 'act:recap', icon: 'rewind', title: 'Previously on… (recap)', sub: 'What has happened so far, for after a break', kind: 'Action', run: () => openModal({ kind: 'recap' }) },
+    { key: 'act:note', icon: 'sticky-note', title: 'Add a note to the story map', sub: 'Double-click empty space on the story flow', kind: 'Action', run: () => setUi({ view: 'map', mapMode: 'flow' }) },
   ];
   return list.map((h) => ({ ...h, score: 0 }));
 }

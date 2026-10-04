@@ -5,14 +5,15 @@ import { Fragment, type JSX } from 'preact';
 import { RELATIONS } from '../../data/campaign';
 import { PACING } from '../../data/scenes';
 import type { Act, EntityType, Film, Item, NPC, PC, Scene } from '../../data/types';
-import { goScene } from '../../state/actions';
+import { addMapNote, goScene, moveScene, resetMapLayout, updateMapNote } from '../../state/actions';
 import { fmtDuration, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneStatus, shielded, strip, timeSpent, totalSpent } from '../../state/derive';
-import { all, ent, game, getDataVersion, getUi, openDrawer, setUi } from '../../state/store';
-import { useMedia, useTick } from '../hooks';
+import { all, ent, game, getDataVersion, getUi, openDrawer, setUi, type MapNote } from '../../state/store';
+import { isTyping, useMedia, useTick } from '../hooks';
 import { Icon } from '../icons';
 import { cx, hueVar } from '../kit';
 import { Ref, iconOf } from '../rich';
-import { connector, isRootKey, layoutScene, NodeView, rootKey, SceneCard, type Placed } from './flowtree';
+import { MapNoteView, nearestScene, NOTE_W } from './flownotes';
+import { connector, isRootKey, layoutScene, NodeView, ROOT_W, rootKey, SceneCard, type Placed } from './flowtree';
 
 // ─── pan & zoom ───────────────────────────────────────────────────────────
 
@@ -146,22 +147,25 @@ function ZoomControls({ zoomBy, onFit, extra }: { zoomBy: (f: number) => void; o
 const NODE_W = 178;
 const NODE_H = 78;
 
-function flowGeometry(vertical: boolean) {
+type Pt = { x: number; y: number };
+
+/** Where every scene sits: the story's own layout, unless the DM dragged it somewhere else. */
+function flowGeometry(vertical: boolean, moved: Record<string, Pt>) {
   const scenes = all<Scene>('scene');
   const COL = vertical ? 118 : 212;
   const LANE = vertical ? 204 : 98;
-  const pos = new Map<string, { x: number; y: number }>();
+  const pos = new Map<string, Pt>();
   for (const s of scenes) {
     const { col, lane } = s.layout;
     const x = vertical ? (lane + 2.5) * LANE - NODE_W / 2 + 30 : col * COL + 40;
     const y = vertical ? col * COL + 90 : (lane + 2.5) * LANE + 70 - NODE_H / 2;
-    pos.set(s.id, { x, y });
+    pos.set(s.id, moved[s.id] ?? { x, y });
   }
   const xs = [...pos.values()].map((p) => p.x);
   const ys = [...pos.values()].map((p) => p.y);
   const width = Math.max(...xs) + NODE_W + 60;
   const height = Math.max(...ys) + NODE_H + 60;
-  return { scenes, pos, width, height };
+  return { scenes, pos, width, height, minX: Math.min(...xs), minY: Math.min(...ys) };
 }
 
 function edgePath(a: { x: number; y: number }, b: { x: number; y: number }, vertical: boolean) {
@@ -184,13 +188,21 @@ function edgePath(a: { x: number; y: number }, b: { x: number; y: number }, vert
 /** Which flow nodes are open, oldest first. Kept while the page is open, so leaving the map and coming back keeps them. */
 let flowOpen: string[] = [];
 
+type Drag = { kind: 'scene' | 'note'; id: string; x: number; y: number };
+
 function FlowMap() {
   const ui = getUi();
   const narrow = useMedia('(max-width: 760px)');
   const vertical = ui.mapVertical ?? narrow;
+  const layout: 'h' | 'v' = vertical ? 'v' : 'h';
   const g = game();
-  const geo = useMemo(() => flowGeometry(vertical), [vertical, getDataVersion()]);
+  const geo = useMemo(() => flowGeometry(vertical, g.mapPos[layout]), [vertical, getDataVersion()]);
   const acts = all<Act>('act');
+
+  // ── dragging scenes and notes ──
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const [focusNote, setFocusNote] = useState<string | null>(null);
+  const posOf = (id: string): Pt | undefined => (drag?.kind === 'scene' && drag.id === id ? drag : geo.pos.get(id));
 
   // ── open nodes ──
   const [open, setOpenState] = useState<string[]>(flowOpen);
@@ -216,7 +228,7 @@ function FlowMap() {
     .filter(isRootKey)
     .map((rk) => {
       const scene = ent<Scene>('scene', rk.slice(2));
-      const at = scene && geo.pos.get(scene.id);
+      const at = scene && posOf(scene.id);
       return scene && at ? { scene, placed: layoutScene(scene, at, openSet, heights) } : null;
     })
     .filter((t): t is { scene: Scene; placed: Placed[] } => !!t);
@@ -229,26 +241,100 @@ function FlowMap() {
     let x = vw / 2 - (p.x + NODE_W / 2) * k;
     let y = vh / 2 - (p.y + NODE_H / 2) * k;
     // never leave a wide empty margin before the first scene or after the last
-    x = Math.min(24, Math.max(vw - geo.width * k - 24, x));
+    x = Math.min(24 - geo.minX * k + 40 * k, Math.max(vw - geo.width * k - 24, x));
     y = geo.height * k < vh ? (vh - geo.height * k) / 2 : Math.min(24, Math.max(vh - geo.height * k - 24, y));
     return { k, x, y };
   };
   const vpRef = useRef<HTMLDivElement | null>(null);
   const pz = usePanZoom(() => centerOn(g.scene));
+  /** Fit every scene and note on screen. */
   const fit = () => {
     const vw = pz.ref.current?.clientWidth ?? 1000;
     const vh = pz.ref.current?.clientHeight ?? 600;
-    const k = clamp(Math.min(vw / geo.width, vh / geo.height) * 0.96, 0.15, 1.2);
-    pz.setView({ k, x: (vw - geo.width * k) / 2, y: (vh - geo.height * k) / 2 });
+    const pts = [...geo.pos.values()];
+    for (const n of g.mapNotes) {
+      const sp = geo.pos.get(n.scene);
+      if (sp) pts.push({ x: sp.x + n.dx, y: sp.y + n.dy }, { x: sp.x + n.dx + NOTE_W - NODE_W, y: sp.y + n.dy + 120 - NODE_H });
+    }
+    const minX = Math.min(...pts.map((p) => p.x)) - 30;
+    const minY = Math.min(...pts.map((p) => p.y)) - 40;
+    const w = Math.max(...pts.map((p) => p.x)) + NODE_W + 30 - minX;
+    const h = Math.max(...pts.map((p) => p.y)) + NODE_H + 30 - minY;
+    const k = clamp(Math.min(vw / w, vh / h) * 0.96, 0.15, 1.2);
+    pz.setView({ k, x: (vw - w * k) / 2 - minX * k, y: (vh - h * k) / 2 - minY * k });
   };
   useLayoutEffect(() => {
     vpRef.current = pz.ref.current;
     pz.setView(centerOn(g.scene));
   }, [vertical]);
 
+  /** Viewport point → stage point. */
+  const toStage = (clientX: number, clientY: number): Pt => {
+    const r = pz.ref.current!.getBoundingClientRect();
+    const v = pz.view;
+    return { x: (clientX - r.left - v.x) / v.k, y: (clientY - r.top - v.y) / v.k };
+  };
+
+  /**
+   * Drag a scene (by its node or its open card) or a note (by its bar). Moves under 5 px count as a
+   * click; a real drag saves the new spot as one undoable step and swallows the click that ends it.
+   */
+  const grab = (e: PointerEvent, kind: Drag['kind'], id: string, origin: Pt) => {
+    if (e.button !== 0) return;
+    const sx = e.clientX;
+    const sy = e.clientY;
+    const k = pz.view.k;
+    let moved = false;
+    let last: Drag = { kind, id, ...origin };
+    const move = (ev: PointerEvent) => {
+      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 5) return;
+      moved = true;
+      last = { kind, id, x: origin.x + (ev.clientX - sx) / k, y: origin.y + (ev.clientY - sy) / k };
+      setDrag(last);
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      if (!moved) return;
+      const stop = (ev: Event) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+      };
+      window.addEventListener('click', stop, { capture: true, once: true });
+      setTimeout(() => window.removeEventListener('click', stop, { capture: true } as never), 0);
+      if (kind === 'scene') moveScene(id, layout, last.x, last.y);
+      else {
+        const to = nearestScene(last.x + NOTE_W / 2, last.y + 16, geo.pos, NODE_W, NODE_H) ?? g.mapNotes.find((n) => n.id === id)?.scene;
+        const sp = to ? geo.pos.get(to) : undefined;
+        if (to && sp) updateMapNote(id, { scene: to, dx: last.x - sp.x, dy: last.y - sp.y }, 'Map note moved');
+      }
+      setDrag(null);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  };
+
+  /** A new note at a stage point, attached to the closest scene, ready to type in. */
+  const newNote = (at: Pt, scene?: string) => {
+    const to = scene ?? nearestScene(at.x, at.y, geo.pos, NODE_W, NODE_H);
+    const sp = to ? geo.pos.get(to) : undefined;
+    if (!to || !sp) return;
+    const id = addMapNote(to, at.x - sp.x, at.y - sp.y);
+    setFocusNote(id);
+  };
+  const noteAtCenter = () => {
+    const vp = pz.ref.current;
+    if (!vp) return;
+    const r = vp.getBoundingClientRect();
+    const c = toStage(r.left + r.width / 2, r.top + r.height / 2);
+    newNote({ x: c.x - NOTE_W / 2, y: c.y - 50 });
+  };
+
   // act bands
   const bands = acts.map((a) => {
-    const ids = geo.scenes.filter((s) => s.act === a.id).map((s) => geo.pos.get(s.id)!);
+    const ids = geo.scenes.filter((s) => s.act === a.id).map((s) => posOf(s.id)!);
     const minX = Math.min(...ids.map((p) => p.x)) - 14;
     const maxX = Math.max(...ids.map((p) => p.x)) + NODE_W + 14;
     const minY = Math.min(...ids.map((p) => p.y)) - 14;
@@ -264,9 +350,22 @@ function FlowMap() {
       // toothless → fourth-mask only when the Cat is out of the run; toothless → cat only when in
       const out = !sceneInPlay(s) || !sceneInPlay(t) || (s.id === 'toothless' && t.id === 'fourth-mask' && g.catVariant);
       const done = sceneStatus(s) === 'done' && (sceneStatus(t) === 'done' || sceneStatus(t) === 'active');
-      edges.push({ from: s, to: t, d: edgePath(geo.pos.get(s.id)!, geo.pos.get(t.id)!, vertical), state: out ? 'out' : done ? 'done' : 'live' });
+      edges.push({ from: s, to: t, d: edgePath(posOf(s.id)!, posOf(t.id)!, vertical), state: out ? 'out' : done ? 'done' : 'live' });
     }
   }
+
+  // notes: where each one is drawn, and the scene it hangs off (live while dragging)
+  const notes = g.mapNotes
+    .map((n) => {
+      const live = drag?.kind === 'note' && drag.id === n.id ? drag : null;
+      const sp = posOf(n.scene);
+      if (!sp) return null;
+      const x = live ? live.x : sp.x + n.dx;
+      const y = live ? live.y : sp.y + n.dy;
+      const scene = live ? nearestScene(x + NOTE_W / 2, y + 16, geo.pos, NODE_W, NODE_H) ?? n.scene : n.scene;
+      return { n, x, y, scene, live: !!live };
+    })
+    .filter((v): v is { n: MapNote; x: number; y: number; scene: string; live: boolean } => !!v);
 
   /** Pan just enough to show a node that was opened and its new children, keeping their top left corner in view. */
   const revealNode = (key: string) => {
@@ -315,10 +414,15 @@ function FlowMap() {
     }
   });
 
-  // Esc closes whatever was opened last
+  // a new note gets the cursor once; forget it so later renders do not steal focus
+  useEffect(() => {
+    if (focusNote) setFocusNote(null);
+  }, [focusNote]);
+
+  // Esc closes whatever was opened last (not while typing in a note)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || !flowOpen.length) return;
+      if (e.key !== 'Escape' || !flowOpen.length || isTyping(e)) return;
       const u = getUi();
       if (u.drawer || u.modal || u.palette) return;
       const last = flowOpen[flowOpen.length - 1];
@@ -329,10 +433,19 @@ function FlowMap() {
   }, []);
 
   const byKey = new Map(trees.flatMap((t) => t.placed).map((p) => [p.key, p]));
+  const movedCount = Object.keys(g.mapPos[layout]).length;
 
   return (
-    <div class={cx('flow', trees.length > 0 && 'flow--open')}>
-      <div class="mapvp" ref={pz.ref}>
+    <div class={cx('flow', trees.length > 0 && 'flow--open', drag && 'flow--dragging')}>
+      <div
+        class="mapvp"
+        ref={pz.ref}
+        onDblClick={(e) => {
+          const t = e.target as HTMLElement;
+          if (t.closest('.fnode, .xroot, .xnode, .mnote, .mapctl, .maplegend')) return;
+          newNote(toStage(e.clientX, e.clientY));
+        }}
+      >
         <div
           ref={stageRef}
           class={cx('flow__stage', glide && 'flow__stage--glide')}
@@ -373,21 +486,39 @@ function FlowMap() {
                 marker-end={e.state === 'done' ? 'url(#arrow-done)' : 'url(#arrow)'}
               />
             ))}
+            {notes.map(({ n, x, y, scene, live }) => {
+              const sp = posOf(scene);
+              return sp ? (
+                <line
+                  key={n.id}
+                  x1={x + NOTE_W / 2}
+                  y1={y + 16}
+                  x2={sp.x + NODE_W / 2}
+                  y2={sp.y + NODE_H / 2}
+                  class={cx('flow__notelink', `flow__notelink--${n.color}`, live && 'is-live')}
+                />
+              ) : null;
+            })}
           </svg>
           {geo.scenes.map((s) => {
-            const p = geo.pos.get(s.id)!;
+            const p = posOf(s.id)!;
             const st = sceneStatus(s);
             const act = ent<Act>('act', s.act);
             const out = !sceneInPlay(s);
+            const isOpen = openSet.has(rootKey(s.id));
             return (
               <button
                 key={s.id}
                 type="button"
-                class={cx('fnode hue', `fnode--${st}`, out && 'is-out', s.optional && 'is-opt', openSet.has(rootKey(s.id)) && 'is-open')}
+                class={cx('fnode hue', `fnode--${st}`, out && 'is-out', s.optional && 'is-opt', isOpen && 'is-open', drag?.kind === 'scene' && drag.id === s.id && 'is-dragging')}
                 style={{ left: `${p.x}px`, top: `${p.y}px`, width: `${NODE_W}px`, height: `${NODE_H}px`, '--c': hueVar(act?.hue) } as never}
+                onPointerDown={(e) => grab(e, 'scene', s.id, geo.pos.get(s.id)!)}
                 onClick={() => toggle(rootKey(s.id))}
-                onDblClick={() => goScene(s.id)}
-                aria-expanded={openSet.has(rootKey(s.id))}
+                onDblClick={(e) => {
+                  e.stopPropagation();
+                  goScene(s.id);
+                }}
+                aria-expanded={isOpen}
                 title={`${s.slate} ${s.title}: ${strip(s.logline)}`}
               >
                 <span class="fnode__top">
@@ -403,6 +534,9 @@ function FlowMap() {
               </button>
             );
           })}
+          {notes.map(({ n, x, y, scene, live }) => (
+            <MapNoteView key={n.id} note={n} x={x} y={y} dragging={live} attachedTo={scene} focus={focusNote === n.id} onGrab={(e) => grab(e, 'note', n.id, { x, y })} />
+          ))}
           {trees.length > 0 && (
             <svg class="xedges" width="1" height="1" aria-hidden="true">
               {[...byKey.values()]
@@ -416,7 +550,18 @@ function FlowMap() {
             <Fragment key={t.scene.id}>
               {t.placed.map((p) =>
                 p.depth === 0 ? (
-                  <SceneCard key={p.key} scene={t.scene} p={p} onClose={() => toggle(p.key)} />
+                  <SceneCard
+                    key={p.key}
+                    scene={t.scene}
+                    p={p}
+                    onClose={() => toggle(p.key)}
+                    onGrab={(e) => grab(e, 'scene', t.scene.id, geo.pos.get(t.scene.id)!)}
+                    onNote={() => {
+                      const others = g.mapNotes.filter((n) => n.scene === t.scene.id).length;
+                      const sp = geo.pos.get(t.scene.id)!;
+                      newNote({ x: sp.x + ROOT_W + 28, y: sp.y + others * 24 }, t.scene.id);
+                    }}
+                  />
                 ) : (
                   <NodeView key={p.key} p={p} open={openSet.has(p.key)} onToggle={toggle} />
                 ),
@@ -429,6 +574,9 @@ function FlowMap() {
           onFit={fit}
           extra={
             <>
+              <button type="button" class="btn btn--icon btn--sm" onClick={noteAtCenter} aria-label="Add a note" title="Add a note (or double-click empty space)">
+                <Icon name="sticky-note" />
+              </button>
               {open.length > 0 && (
                 <button type="button" class="btn btn--icon btn--sm" onClick={() => setOpen([])} aria-label="Close every open node" title="Close every open node">
                   <Icon name="chevrons-down-up" />
@@ -446,6 +594,17 @@ function FlowMap() {
               >
                 <Icon name={vertical ? 'columns-3' : 'rows-3'} />
               </button>
+              {movedCount > 0 && (
+                <button
+                  type="button"
+                  class="btn btn--icon btn--sm"
+                  onClick={() => resetMapLayout(layout)}
+                  aria-label="Put every scene back in place"
+                  title={`Put every scene back in place (${movedCount} moved)`}
+                >
+                  <Icon name="rotate-ccw" />
+                </button>
+              )}
             </>
           }
         />
@@ -454,7 +613,9 @@ function FlowMap() {
           <span><i class="lg lg--active" /> now playing</span>
           <span><i class="lg lg--up" /> upcoming</span>
           <span><i class="lg lg--out" /> optional or skipped</span>
-          <span class="muted">Click a scene to open it, then its branches · drag to pan · scroll to zoom · double-click to play</span>
+          <span class="muted">
+            Click a scene to open it · drag scenes and notes to move them · double-click empty space for a note · double-click a scene to play
+          </span>
         </div>
       </div>
     </div>

@@ -2050,3 +2050,69 @@ code {
   text-transform: uppercase;
   color: var(--gold);
 }
+
+/* ─── recap ─────────────────────────────────────────────── */
+
+.recap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recap__scenes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recap__scenes li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.recap__slate {
+  flex: none;
+  min-width: 2.2em;
+  font-family: var(--f-display);
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.recap__h {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.recap__party {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 8px;
+}
+
+.recap__pc {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--fs-sm);
+}
+
+.recap__pc.is-down strong {
+  color: var(--muted);
+}
+
+.recap__facts {
+  font-size: var(--fs-sm);
+}

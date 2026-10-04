@@ -156,7 +156,18 @@ export function sceneBranches(scene: Scene): XNode[] {
   const cast = (scene.cast ?? []).map((id) => ent<NPC>('npc', id)).filter((n): n is NPC => !!n);
   const loot = (scene.loot ?? []).map((id) => ent<Item>('item', id)).filter((i): i is Item => !!i);
   const clues = all<Clue>('clue').filter((c) => c.source === scene.id);
+  const notes = game().mapNotes.filter((n) => n.scene === scene.id && n.text.trim());
   return keep([
+    notes.length
+      ? {
+          key: `${k}/mine`,
+          kind: 'cat',
+          icon: 'sticky-note',
+          title: 'Your notes',
+          count: notes.length,
+          kids: () => notes.map((n) => text(`${k}/mine/${n.id}`, n.text, { tone: 'note' })),
+        }
+      : null,
     loc && locationNode(loc, `${k}/loc`),
     scene.objective || must.length
       ? {
@@ -199,7 +210,7 @@ export function sceneBranches(scene: Scene): XNode[] {
 
 // ─── layout ───────────────────────────────────────────────────────────────
 
-export const ROOT_W = 300;
+export const ROOT_W = 324;
 const GAP_X = 36;
 const GAP_Y = 10;
 const WIDTH: Record<XNode['kind'], number> = { cat: 236, ent: 256, text: 300, line: 300, roll: 300 };
@@ -265,12 +276,35 @@ export function connector(p: Placed, c: Placed): string {
 // ─── rendering ────────────────────────────────────────────────────────────
 
 /** The open scene: a bigger card in place of its node, with the ways into the rest of the app. */
-export function SceneCard({ scene, p, onClose }: { scene: Scene; p: Placed; onClose: () => void }) {
+export function SceneCard({
+  scene,
+  p,
+  onClose,
+  onGrab,
+  onNote,
+}: {
+  scene: Scene;
+  p: Placed;
+  onClose: () => void;
+  /** drag the scene by its card */
+  onGrab: (e: PointerEvent) => void;
+  /** add a note next to this scene */
+  onNote: () => void;
+}) {
   const act = ent<Act>('act', scene.act);
   const pic = scene.location ? portraitOf('location', scene.location) : undefined;
   const current = game().scene === scene.id;
   return (
-    <div class="xroot hue nopan" data-xkey={p.key} style={{ left: `${p.x}px`, top: `${p.y}px`, width: `${p.w}px`, '--c': hueVar(act?.hue) } as JSX.CSSProperties}>
+    <div
+      class="xroot hue nopan"
+      data-xkey={p.key}
+      style={{ left: `${p.x}px`, top: `${p.y}px`, width: `${p.w}px`, '--c': hueVar(act?.hue) } as JSX.CSSProperties}
+      onPointerDown={(e) => {
+        // the picture and the heading are handles for moving the scene; buttons and text links are not
+        if ((e.target as HTMLElement).closest('button, a, [role=button], .xroot__log')) return;
+        onGrab(e);
+      }}
+    >
       {pic && (
         <div class="xroot__pic">
           <img src={pic} alt="" draggable={false} />
@@ -304,6 +338,9 @@ export function SceneCard({ scene, p, onClose }: { scene: Scene; p: Placed; onCl
         </button>
         <button type="button" class="btn btn--xs btn--ghost" onClick={() => openDrawer('scene', scene.id)}>
           <Icon name="info" /> Details
+        </button>
+        <button type="button" class="btn btn--xs btn--ghost" onClick={onNote} title="Stick a note next to this scene">
+          <Icon name="sticky-note" /> Note
         </button>
       </div>
     </div>

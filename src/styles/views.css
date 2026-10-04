@@ -1183,6 +1183,216 @@
   }
 }
 
+/* ─── moving things on the story flow ───────────────────── */
+
+.fnode {
+  touch-action: none;
+}
+
+.fnode.is-dragging {
+  z-index: 3;
+  cursor: grabbing;
+  transform: scale(1.03);
+  box-shadow: var(--shadow-2), 0 0 0 2px var(--gold);
+  transition: none;
+}
+
+.flow--dragging,
+.flow--dragging .mapvp {
+  cursor: grabbing;
+}
+
+.flow--dragging .fnode:not(.is-dragging) {
+  transition: none;
+}
+
+.xroot__pic,
+.xroot__head {
+  cursor: grab;
+}
+
+/* ─── DM notes on the story flow ────────────────────────── */
+
+.mnote {
+  --nc: #e9c46a;
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  border: 1px solid color-mix(in oklab, var(--nc) 62%, var(--line));
+  background: color-mix(in oklab, var(--nc) 18%, var(--surface));
+  color: var(--fg);
+  box-shadow: var(--shadow-1);
+  cursor: default;
+  animation: xpop 0.2s var(--ease);
+}
+
+.mnote--pink {
+  --nc: #e58fb4;
+}
+
+.mnote--blue {
+  --nc: #7fb0e6;
+}
+
+.mnote--green {
+  --nc: #86c27e;
+}
+
+.mnote.is-dragging {
+  z-index: 4;
+  box-shadow: var(--shadow-2);
+  transform: rotate(-1.2deg) scale(1.02);
+}
+
+.mnote__bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 3px 4px 3px 6px;
+  border-radius: 9px 9px 0 0;
+  background: color-mix(in oklab, var(--nc) 34%, var(--surface));
+  cursor: grab;
+  touch-action: none;
+}
+
+.mnote.is-dragging .mnote__bar {
+  cursor: grabbing;
+}
+
+.mnote__grip {
+  flex: none;
+  color: var(--fg-2);
+}
+
+.mnote__scene {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--fg-2);
+}
+
+.mnote__colors {
+  display: flex;
+  gap: 3px;
+}
+
+.mnote__dot {
+  --nc: #e9c46a;
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--nc) 60%, #000);
+  background: var(--nc);
+  opacity: 0.55;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.mnote__dot:hover,
+.mnote__dot.is-on {
+  opacity: 1;
+}
+
+.mnote__dot.is-on {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.mnote__dot--pink {
+  --nc: #e58fb4;
+}
+
+.mnote__dot--blue {
+  --nc: #7fb0e6;
+}
+
+.mnote__dot--green {
+  --nc: #86c27e;
+}
+
+.mnote__del {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--fg-2);
+}
+
+.mnote__del:hover {
+  background: color-mix(in oklab, var(--bad) 18%, transparent);
+  color: var(--bad);
+}
+
+.mnote__text {
+  display: block;
+  width: 100%;
+  min-height: 72px;
+  padding: 8px 10px 10px;
+  border: 0;
+  border-radius: 0 0 10px 10px;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  resize: none;
+  field-sizing: content;
+  user-select: text;
+  cursor: text;
+}
+
+.mnote__text:focus {
+  outline: none;
+  background: color-mix(in oklab, var(--surface) 55%, transparent);
+}
+
+.mnote__text::placeholder {
+  color: var(--muted);
+}
+
+.flow__notelink {
+  stroke: color-mix(in oklab, #e9c46a 70%, var(--line-2));
+  stroke-width: 1.5;
+  stroke-dasharray: 3 5;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+.flow__notelink--pink {
+  stroke: color-mix(in oklab, #e58fb4 70%, var(--line-2));
+}
+
+.flow__notelink--blue {
+  stroke: color-mix(in oklab, #7fb0e6 70%, var(--line-2));
+}
+
+.flow__notelink--green {
+  stroke: color-mix(in oklab, #86c27e 70%, var(--line-2));
+}
+
+.flow__notelink.is-live {
+  stroke-width: 2;
+  opacity: 1;
+}
+
+.flow--open .flow__notelink {
+  opacity: 0.4;
+}
+
 .mapctl {
   position: absolute;
   top: 12px;
