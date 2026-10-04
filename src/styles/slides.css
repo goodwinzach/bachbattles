@@ -935,3 +935,78 @@
 .sl--enter .sl__quote {
   border-left-color: #e5b862;
 }
+
+/* ─── establishing shot ─────────────────────────────────── */
+
+.sl--place {
+  justify-content: flex-end;
+  padding: 0;
+  background: #0b0a0e;
+  overflow: hidden;
+}
+
+.sl--place-none {
+  align-items: center;
+  justify-content: center;
+  color: rgb(241 236 228 / 0.35);
+}
+
+.sl__placeimg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: sl-drift 14s ease-out both;
+}
+
+@keyframes sl-drift {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl__placeimg {
+    animation: none;
+  }
+}
+
+.sl__placeshade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(11 10 14 / 0) 40%, rgb(11 10 14 / 0.88) 100%);
+}
+
+.sl__placetext {
+  position: relative;
+  padding: 0 7cqw 8cqh;
+}
+
+.sl__placename {
+  margin: 1cqh 0 0;
+  font-family: var(--f-display);
+  font-size: 7.4cqw;
+  font-weight: 800;
+  line-height: 0.92;
+  text-transform: uppercase;
+  text-shadow: 0 0.4cqw 2.4cqw rgb(0 0 0 / 0.5);
+}
+
+/* the place, faintly, behind a scene's read-aloud */
+.sl__backdrop {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.16;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 55%);
+  pointer-events: none;
+}
+
+.sl--scene > :not(.sl__backdrop, .sl__clap) {
+  position: relative;
+}

@@ -1,7 +1,7 @@
 // Entity detail panels: used in the side drawer, hover cards and codex.
 
 import type { JSX } from 'preact';
-import type { Ability, Act, Clue, Condition, EntityType, Film, Hue, Item, NPC, PC, Rule, Scene } from '../data/types';
+import type { Ability, Act, Clue, Condition, EntityType, Film, Hue, Item, Location, NPC, PC, Rule, Scene } from '../data/types';
 import { STAT_ABBR, STAT_NAME, STATS } from '../data/types';
 import {
   adjustNpcHp,
@@ -46,6 +46,7 @@ import {
   SceneStatusControl,
 } from './controls';
 import { Icon } from './icons';
+import { LocationDetail } from './location';
 import { Face, NpcProfile, PcProfile } from './profile';
 import { Avatar, Badge, Expander, HpBar, Label, Pips, Stepper, cx, hueVar } from './kit';
 import { Ref, Rich, RichList, RichParas, iconOf } from './rich';
@@ -833,6 +834,8 @@ export function EntityDetail({ type, id }: { type: EntityType; id: string }) {
       return <FilmDetail film={e as Film} />;
     case 'act':
       return <ActDetail act={e as Act} />;
+    case 'location':
+      return <LocationDetail loc={e as Location} />;
   }
 }
 

@@ -3,7 +3,7 @@
 
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import type { Ability, Act, Clue, Film, NPC, PC, Scene } from '../../data/types';
+import type { Ability, Act, Clue, Film, Location, NPC, PC, Scene } from '../../data/types';
 import { STAT_ABBR, STATS } from '../../data/types';
 import { goScene } from '../../state/actions';
 import { abilitiesOf, abilityStatus, KIND_LABEL, npcStat, portraitOf, sceneInPlay, sceneMust, shielded, sourcesOf, strip } from '../../state/derive';
@@ -14,7 +14,7 @@ import { Icon } from '../icons';
 import { cx, hueVar } from '../kit';
 import { Rich, RichList } from '../rich';
 
-type SlideKind = 'title' | 'rules' | 'cast' | 'act' | 'scene' | 'boss' | 'enter' | 'riddle' | 'reveal' | 'credits';
+type SlideKind = 'title' | 'rules' | 'cast' | 'act' | 'place' | 'scene' | 'boss' | 'enter' | 'riddle' | 'reveal' | 'credits';
 
 interface Slide {
   key: string;
@@ -162,6 +162,23 @@ function ActSlide({ act }: { act: Act }) {
   );
 }
 
+/** The establishing shot when the story moves somewhere new: the place, full screen. */
+function PlaceSlide({ loc }: { loc: Location }) {
+  const src = portraitOf('location', loc.id);
+  return (
+    <div class={cx('sl sl--place', !src && 'sl--place-none')}>
+      {src ? <img class="sl__placeimg" src={src} alt="" /> : <Icon name={loc.icon} size={120} stroke={1.2} />}
+      <div class="sl__placeshade" />
+      <div class="sl__placetext">
+        <div class="sl__eyebrow">
+          {loc.kind} · {loc.where}
+        </div>
+        <h2 class="sl__placename">{loc.name}</h2>
+      </div>
+    </div>
+  );
+}
+
 /** Split read-aloud text into slide-sized pages. */
 function pages(paras: string[], budget = 640): string[][] {
   const out: string[][] = [];
@@ -186,6 +203,9 @@ function SceneSlide({ scene, dm, text, page, of }: { scene: Scene; dm: boolean; 
   const long = text.map(strip).join(' ').length > 520;
   return (
     <div class="sl sl--scene hue" style={{ '--c': hueVar(act?.hue) } as never}>
+      {scene.location && portraitOf('location', scene.location) && (
+        <div class="sl__backdrop" style={{ backgroundImage: `url("${portraitOf('location', scene.location)}")` }} aria-hidden="true" />
+      )}
       <div class="sl__clap" aria-hidden="true" />
       <div class="sl__slate">
         <span class="sl__slateno">{scene.slate}</span>
@@ -343,11 +363,26 @@ function buildDeck(dm: boolean): Slide[] {
   }
   const acts = all<Act>('act');
   const unmasked = ent<Ability>('ability', 'unmasked');
+  let here = '';
   for (const a of acts) {
     const scenes = all<Scene>('scene').filter((s) => s.act === a.id && sceneInPlay(s));
     if (!scenes.length) continue;
     deck.push({ key: `act-${a.id}`, kind: 'act', title: `${a.num}: ${a.title}`, act: a.id, scene: scenes[0].id, render: () => <ActSlide act={a} /> });
     for (const s of scenes) {
+      // an establishing shot whenever the story arrives somewhere new
+      const loc = s.location ? ent<Location>('location', s.location) : undefined;
+      if (loc && loc.id !== here) {
+        here = loc.id;
+        deck.push({
+          key: `place-${s.id}`,
+          kind: 'place',
+          title: loc.name,
+          scene: s.id,
+          act: a.id,
+          render: () => <PlaceSlide loc={loc} />,
+          notes: (d) => (d && loc.describe?.length ? <RichList items={loc.describe} /> : null),
+        });
+      }
       const pg = pages(s.readAloud ?? []);
       pg.forEach((text, i) =>
         deck.push({

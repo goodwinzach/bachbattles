@@ -1,6 +1,6 @@
 # One Ring to Rule Flynn: DM console
 
-A dungeon master's console for the bachelor-party one-shot *One Ring to Rule Flynn*. The whole campaign is in it (27 scenes, 5 players, 42 characters with portraits, full profiles and dialogue options, 32 items, 14 abilities, clues, conditions, rules and the film references), laid out seven ways, and editable from any of them.
+A dungeon master's console for the bachelor-party one-shot *One Ring to Rule Flynn*. The whole campaign is in it (27 scenes in 10 pictured locations, 5 players, 42 characters with portraits, full profiles and dialogue options, 32 items, 14 abilities, clues, conditions, rules and the film references), laid out seven ways, and editable from any of them.
 
 ## Open it
 
@@ -17,7 +17,7 @@ Your progress saves automatically in that browser. Use **⋯ → Export save** b
 | **Map** | Three charts: the story flow (every scene and branch, pan and zoom), the connections web (who is tied to whom, which films they come from), and pacing (time spent against the 4 to 6 hour plan). |
 | **Slides** | A presentation deck. The *Table* deck is safe to show players; the *DM* deck adds stats, secrets and notes. Player cast slides and character entrances use the portraits. Long read-alouds split across slides. Arrow keys to move, F for fullscreen, speaker notes optional. |
 | **Cast** | A portrait gallery of every player and character, grouped by when the story introduces them, and a full profile page for each: portrait, the film or show they come from, personality and how to play them, lines to use, stats, the scenes they appear in, connections and what they carry. ← → page through the cast. |
-| **Codex** | Cards for everything: party, characters, bestiary (stat blocks), items grouped by owner or kind, abilities, clues, conditions and films. Search and filters on every tab. |
+| **Codex** | Cards for everything: party, characters, bestiary (stat blocks), locations, items grouped by owner or kind, abilities, clues, conditions and films. Search and filters on every tab. |
 | **Rules** | The rules reference and DM craft, plus quick references built from the campaign: the party's live stats, a roll cheat sheet by scene and the fights in order. |
 
 ## Character profiles
@@ -29,6 +29,10 @@ Portraits follow the game: ghosts fade, stone goes grey, defeated characters dim
 **Dialogue options:** every character has the situations that come up at the table (walking in, being asked about the ring, being pushed too far, losing a fight), each with a few interchangeable lines. Tap a line once you have said it so you do not repeat yourself, or press **Pick one** and let the dice choose an unused line. Each scene also has a **Dialogue options** panel with everyone in it, open by default in conversation scenes.
 
 Some sources are spoilers. The guy who looks like Edward Norton is introduced as a man who does not know his own name; his real identity stays a DM secret, hidden by the spoiler shield, on gallery tiles and on the Table slides.
+
+## Locations
+
+Ten places, each with its picture: the Green Dragon Inn, the field, Abbott and Costello's craft, the airfield, the harbor, Odysseus's ship, the island, Hollywood Harbor, the Volume and the bagel shop. Every scene opens with its location as an establishing shot; click it for the location's page: what the party sees and hears when they get there, the scenes that happen there, who they meet and what they can find. The slides cut to a full-screen shot of the place whenever the story moves, the Codex has a Locations tab, and each character's profile shows where to find them. The phone call and the plane-or-boat decision have no fixed place, so they have no picture.
 
 ## Editing
 
@@ -60,17 +64,18 @@ npm run build      # writes dist/index.html
 npm run dev        # rebuilds on change
 npm test           # typecheck, data validation, build, then a browser smoke test
 node scripts/portraits.mjs <folder>   # rebuild src/assets/portraits from the original icon PNGs
+node scripts/locations.mjs <folder>   # rebuild src/assets/locations from the original location PNGs
 ```
 
-The portraits come from the two character icon packs (1000 px PNGs). `scripts/portraits.mjs` shrinks them to 400 px WebP files (about 18 KB each, under 600 KB for all 33) and maps each file to a player, character or mask; `src/data/portraits.ts` says who uses which by default.
+The portraits come from the two character icon packs (1000 px PNGs). `scripts/portraits.mjs` shrinks them to 400 px WebP files (about 18 KB each, under 600 KB for all 33) and maps each file to a player, character or mask; `src/data/portraits.ts` says who uses which by default. The location pictures come from the locations pack: `scripts/locations.mjs` crops away their transparent frame and converts them to WebP (about 500 KB for all ten); `src/data/location-pictures.ts` lists them.
 
 The smoke test drives Chromium through every view at phone and desktop sizes in both themes, then exercises editing, undo, reload persistence, search, dice and the gauntlet switch. It uses `playwright-core` without downloading a browser; point `CHROMIUM_PATH` at a Chromium binary if it is not at `/opt/pw-browsers/chromium`.
 
 ```
 src/data/     the campaign: scenes.ts (acts, scenes, pacing), cast.ts (players, characters, relations),
-              dialogue.ts (dialogue options), things.ts (items, abilities, conditions, clues),
-              rules.ts (rules, films), portraits.ts, types.ts
-src/assets/   portraits (WebP), inlined by the build
+              dialogue.ts (dialogue options), locations.ts, things.ts (items, abilities, conditions, clues),
+              rules.ts (rules, films), portraits.ts, location-pictures.ts, types.ts
+src/assets/   portraits and location pictures (WebP), inlined by the build
 src/state/    store (base data + an edit layer, undo/redo), derive (effective stats, ability locks,
               backlinks), actions, dice, persist (localStorage, optional claude.ai sync)
 src/ui/       shell, drawer, profiles (profile.tsx), editor, rich text (live [[type:id]] references), dice, palette

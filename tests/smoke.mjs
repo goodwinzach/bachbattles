@@ -325,6 +325,39 @@ try {
     await ctx.close();
   }
 
+  // ── 4c. locations ──────────────────────────────────────────────────────
+  console.log('\nLocations');
+  {
+    const { ctx, page, errors } = await open(browser, { hash: 'run' });
+    await page.click('.strip__s >> nth=2');
+    await page.waitForSelector('.locbanner img');
+    const banner = await page.$eval('.locbanner', (el) => el.textContent ?? '');
+    check(/Green Dragon Inn/.test(banner), 'each scene opens with its location picture', banner);
+    await page.click('.locbanner');
+    await page.waitForSelector('.drawer.is-on .locpic--hero img');
+    const loc = await page.evaluate(() => ({
+      scenes: document.querySelectorAll('.drawer.is-on .chip[data-ref^="scene:"]').length,
+      people: document.querySelectorAll('.drawer.is-on .chip[data-ref^="npc:"]').length,
+    }));
+    check(loc.scenes === 3 && loc.people >= 6, 'the location page lists its scenes and who the party meets there', JSON.stringify(loc));
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => (location.hash = 'codex'));
+    await page.click('button[role=tab]:has-text("Locations")');
+    await page.waitForSelector('.card--loc');
+    const cards = await page.$$eval('.card--loc .locpic > img', (els) => els.length);
+    check(cards === 10, 'the Codex has a card with a picture for every location', `cards=${cards}`);
+    await page.evaluate(() => (location.hash = 'slides'));
+    await page.waitForSelector('.frame');
+    const places = await page.$$eval('.frame--place', (els) => els.length);
+    check(places >= 8, 'the slides cut to an establishing shot whenever the story moves', `places=${places}`);
+    await page.goto(`${URL_BASE}#cast/npc/odysseus`);
+    await page.waitForSelector('.phero--page');
+    const where = await page.$$eval('.prof__places [data-ref^="location:"]', (els) => els.map((e) => e.textContent));
+    check(where.length >= 3, 'profiles show where to find a character', where.join(', '));
+    check(errors.length === 0, 'no console errors with locations', errors.join(' | '));
+    await ctx.close();
+  }
+
   // ── 5. palette, dice, shield, scene flow ───────────────────────────────
   console.log('\nTools');
   {

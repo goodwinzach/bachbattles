@@ -20,7 +20,7 @@ export const STAT_ABBR: Record<Stat, string> = { str: 'STR', agi: 'AGI', cha: 'C
 
 export type Hue = 'blue' | 'orange' | 'aqua' | 'yellow' | 'magenta' | 'green' | 'violet' | 'red';
 
-export type EntityType = 'act' | 'scene' | 'pc' | 'npc' | 'item' | 'ability' | 'condition' | 'clue' | 'rule' | 'film';
+export type EntityType = 'act' | 'scene' | 'pc' | 'npc' | 'item' | 'ability' | 'condition' | 'clue' | 'rule' | 'film' | 'location';
 
 export interface Act {
   id: string;
@@ -145,6 +145,8 @@ export interface Scene {
   next: string[];
   layout: { col: number; lane: number };
   films?: string[];
+  /** where it happens (a location id); none for phone calls and decisions */
+  location?: string;
   /** runtime */
   status: SceneStatus;
   dmNote?: string;
@@ -369,6 +371,24 @@ export interface Film {
   kind?: 'film' | 'series' | 'myth';
 }
 
+export interface Location {
+  id: string;
+  name: string;
+  icon: string;
+  /** what kind of place, in a word or two: "Pub", "Soundstage" */
+  kind: string;
+  /** where it is, in a few words (plain text) */
+  where: string;
+  summary: Rich;
+  /** what the party sees, hears and smells when they arrive; read or paraphrase */
+  describe?: Rich[];
+  notes?: Rich[];
+  films?: string[];
+  /** picture key (src/data/location-pictures.ts); 'none' shows the icon instead */
+  picture?: string;
+  dmNote: string;
+}
+
 export interface Campaign {
   acts: Act[];
   scenes: Scene[];
@@ -380,6 +400,7 @@ export interface Campaign {
   clues: Clue[];
   rules: Rule[];
   films: Film[];
+  locations: Location[];
 }
 
-export type AnyEntity = Act | Scene | PC | NPC | Item | Ability | Condition | Clue | Rule | Film;
+export type AnyEntity = Act | Scene | PC | NPC | Item | Ability | Condition | Clue | Rule | Film | Location;

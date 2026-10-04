@@ -21,7 +21,7 @@ interface Hit {
   run: () => void;
 }
 
-const SEARCH_TYPES: EntityType[] = ['scene', 'pc', 'npc', 'item', 'ability', 'clue', 'condition', 'rule', 'film', 'act'];
+const SEARCH_TYPES: EntityType[] = ['scene', 'pc', 'npc', 'location', 'item', 'ability', 'clue', 'condition', 'rule', 'film', 'act'];
 
 let indexFor = -1;
 let index: { type: EntityType; e: AnyEntity; name: string; text: string }[] = [];

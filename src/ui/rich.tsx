@@ -116,6 +116,7 @@ const TYPE_ICON: Record<EntityType, string> = {
   clue: 'lightbulb',
   rule: 'book-open-text',
   film: 'film',
+  location: 'map-pin',
 };
 
 export function iconOf(type: EntityType, e?: AnyEntity): string {
@@ -157,7 +158,7 @@ export function Ref({ type, id, label, chip, noDot }: { type: EntityType; id: st
           {face ? <img src={face} alt="" decoding="async" draggable={false} /> : <Icon name={hidden ? 'lock' : iconOf(type, e)} size={13} />}
         </span>
         <span class="chip__label">{name}</span>
-        {!noDot && type !== 'film' && type !== 'rule' && type !== 'act' && <span class="chip__dot" />}
+        {!noDot && type !== 'film' && type !== 'rule' && type !== 'act' && type !== 'location' && <span class="chip__dot" />}
       </span>
     );
   }

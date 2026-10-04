@@ -31,6 +31,7 @@ const ids = (list) => new Set(list.map((e) => e.id));
 const sceneIds = ids(CAMPAIGN.scenes), npcIds = ids(CAMPAIGN.npcs), pcIds = ids(CAMPAIGN.pcs);
 const itemIds = ids(CAMPAIGN.items), filmIds = ids(CAMPAIGN.films), actIds = ids(CAMPAIGN.acts);
 const clueIds = ids(CAMPAIGN.clues), abilityIds = ids(CAMPAIGN.abilities), condIds = ids(CAMPAIGN.conditions);
+const locationIds = ids(CAMPAIGN.locations);
 for (const s of CAMPAIGN.scenes) {
   if (!actIds.has(s.act)) errors.push(`scene:${s.id}: unknown act ${s.act}`);
   for (const n of s.next) if (!sceneIds.has(n)) errors.push(`scene:${s.id}: next -> ${n}`);
@@ -42,6 +43,7 @@ for (const s of CAMPAIGN.scenes) {
   for (const l of s.loot ?? []) if (!itemIds.has(l)) errors.push(`scene:${s.id}: loot ${l}`);
   for (const l of s.lines ?? []) if (!npcIds.has(l.by) && !pcIds.has(l.by)) errors.push(`scene:${s.id}: line by ${l.by}`);
   for (const f of s.films ?? []) if (!filmIds.has(f)) errors.push(`scene:${s.id}: film ${f}`);
+  if (s.location && !locationIds.has(s.location)) errors.push(`scene:${s.id}: location ${s.location}`);
   for (const ef of s.effects ?? []) {
     const check = (set, list, label) => list.forEach((x) => set.has(x) || errors.push(`scene:${s.id}: effect ${label} ${x}`));
     if (ef.kind === 'items') check(itemIds, ef.ids, 'item');
@@ -62,7 +64,8 @@ for (const a of CAMPAIGN.abilities) {
 for (const p of CAMPAIGN.pcs) for (const a of p.abilities) if (!abilityIds.has(a)) errors.push(`pc:${p.id}: ability ${a}`);
 for (const n of CAMPAIGN.npcs) if (n.film && !filmIds.has(n.film)) errors.push(`npc:${n.id}: film ${n.film}`);
 for (const c of CAMPAIGN.clues) if (!sceneIds.has(c.source)) errors.push(`clue:${c.id}: source ${c.source}`);
-for (const coll of ['pcs', 'npcs', 'items', 'abilities', 'rules']) for (const e of CAMPAIGN[coll]) for (const f of e.films ?? []) if (!filmIds.has(f)) errors.push(`${coll}:${e.id}: film ${f}`);
+for (const coll of ['pcs', 'npcs', 'items', 'abilities', 'rules', 'locations']) for (const e of CAMPAIGN[coll]) for (const f of e.films ?? []) if (!filmIds.has(f)) errors.push(`${coll}:${e.id}: film ${f}`);
+for (const l of CAMPAIGN.locations) if (!CAMPAIGN.scenes.some((s) => s.location === l.id)) errors.push(`location:${l.id}: no scene happens here`);
 for (const r of RELATIONS) for (const k of [r.a, r.b]) if (!BASE_INDEX[k]) errors.push(`relation: missing ${k}`);
 // dialogue options: every key is a character, every situation has a name and at least two lines
 for (const [id, cues] of Object.entries(DIALOGUE)) {
@@ -84,6 +87,15 @@ for (const [key, portrait] of Object.entries(DEFAULT_PORTRAIT)) {
   if (!portraitKeys.has(portrait)) errors.push(`${key}: unknown portrait ${portrait}`);
 }
 for (const e of Object.values(BASE_INDEX)) if (e.portrait && e.portrait !== 'none' && !portraitKeys.has(e.portrait)) errors.push(`${e.id}: unknown portrait ${e.portrait}`);
+// location pictures: every location has one, and every picture file exists
+const lout = join(dir, 'location-pictures.mjs');
+await esbuild.build({ entryPoints: ['src/data/location-pictures.ts'], bundle: true, format: 'esm', outfile: lout, logLevel: 'error', loader: { '.webp': 'empty' } });
+const { LOCATION_PICTURES } = await import(lout);
+const pictureKeys = new Set(LOCATION_PICTURES.map((p) => p.key));
+for (const l of CAMPAIGN.locations) {
+  const key = l.picture ?? l.id;
+  if (key !== 'none' && !pictureKeys.has(key)) errors.push(`location:${l.id}: no picture "${key}"`);
+}
 const dupes = Object.keys(BASE_INDEX).length !== Object.values(CAMPAIGN).reduce((n, l) => n + l.length, 0);
 if (dupes) errors.push('duplicate ids within a type');
 

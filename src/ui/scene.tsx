@@ -23,6 +23,7 @@ import { SIN_ROOMS } from '../data/scenes';
 import { NpcStatusControl } from './controls';
 import { DmNote, ItemRow, Secret } from './detail';
 import { DialogueOptions } from './dialogue';
+import { LocationBanner } from './location';
 import { Icon } from './icons';
 import { Face } from './profile';
 import { Badge, Expander, cx } from './kit';
@@ -538,6 +539,7 @@ export function SceneBody({ scene, prefix, compact }: { scene: Scene; prefix: st
   const stats = scene.rolls?.map((r) => r.stat).filter((s): s is Stat => s !== 'any');
   return (
     <div class="scenebody">
+      <LocationBanner scene={scene} compact={compact} />
       <Rich text={scene.logline} class="logline" />
       {(scene.objective || sceneMust(scene).length > 0) && (
         <div class="scenebody__top">

@@ -1,5 +1,6 @@
 import { NPCS, PCS, RELATIONS } from './cast';
 import { DIALOGUE } from './dialogue';
+import { LOCATIONS } from './locations';
 import { FILMS, RULES } from './rules';
 import { ACTS, SCENES } from './scenes';
 import { ABILITIES, CLUES, CONDITIONS, ITEMS } from './things';
@@ -18,6 +19,7 @@ export const CAMPAIGN: Campaign = {
   clues: CLUES,
   rules: RULES,
   films: FILMS,
+  locations: LOCATIONS,
 };
 
 /** Which campaign list holds each entity type. */
@@ -32,6 +34,7 @@ export const COLLECTION: Record<EntityType, keyof Campaign> = {
   clue: 'clues',
   rule: 'rules',
   film: 'films',
+  location: 'locations',
 };
 
 /** Token prefixes used in rich text ([[cond:hangover]] etc.). */
@@ -47,6 +50,8 @@ export const TOKEN_TYPE: Record<string, EntityType> = {
   clue: 'clue',
   rule: 'rule',
   film: 'film',
+  loc: 'location',
+  location: 'location',
 };
 
 export const TYPE_LABEL: Record<EntityType, string> = {
@@ -60,6 +65,7 @@ export const TYPE_LABEL: Record<EntityType, string> = {
   clue: 'Clue',
   rule: 'Rule',
   film: 'Film',
+  location: 'Location',
 };
 
 export const BASE_INDEX: Record<string, AnyEntity> = (() => {

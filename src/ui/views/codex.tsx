@@ -1,7 +1,7 @@
 // CODEX: every player, character, item, ability, clue, condition and film as cards.
 
 import { useMemo, useState } from 'preact/hooks';
-import type { Ability, Clue, Condition, EntityType, Film, Item, ItemState, NPC, PC, Scene } from '../../data/types';
+import type { Ability, Clue, Condition, EntityType, Film, Item, ItemState, Location, NPC, PC, Scene } from '../../data/types';
 import { adjustHp, adjustQty, revive, toggleEffect } from '../../state/actions';
 import {
   abilitiesOf,
@@ -31,16 +31,18 @@ import {
 import { AbilityCard, DmNote, ItemRow, MaskPicker, StatBlockView, StatGrid } from '../detail';
 import { createCustomItem, createCustomNpc } from '../editor';
 import { Icon } from '../icons';
+import { LocationCard } from '../location';
 import { Face } from '../profile';
 import { Badge, Empty, Expander, HpBar, Pips, Stepper, cx } from '../kit';
 import { Ref, Rich, RichList } from '../rich';
 
-type Tab = 'party' | 'cast' | 'bestiary' | 'items' | 'abilities' | 'clues' | 'conditions' | 'films';
+type Tab = 'party' | 'cast' | 'bestiary' | 'locations' | 'items' | 'abilities' | 'clues' | 'conditions' | 'films';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'party', label: 'Party', icon: 'users' },
   { id: 'cast', label: 'Characters', icon: 'drama' },
   { id: 'bestiary', label: 'Bestiary', icon: 'swords' },
+  { id: 'locations', label: 'Locations', icon: 'map-pin' },
   { id: 'items', label: 'Items', icon: 'package' },
   { id: 'abilities', label: 'Abilities', icon: 'sparkles' },
   { id: 'clues', label: 'Clues', icon: 'lightbulb' },
@@ -388,6 +390,7 @@ export function CodexView() {
       party: all('pc').length,
       cast: all('npc').length,
       bestiary: all<NPC>('npc').filter((n) => n.stat && (n.side === 'foe' || n.side === 'boss')).length,
+      locations: all('location').length,
       items: all('item').length,
       abilities: all('ability').length,
       clues: all('clue').length,
@@ -502,6 +505,15 @@ export function CodexView() {
             </section>
           );
         })}
+      </div>
+    );
+  } else if (tab === 'locations') {
+    const locs = all<Location>('location').filter((l) => search('location', l));
+    body = (
+      <div class="cgrid cgrid--locs">
+        {locs.map((l) => (
+          <LocationCard key={l.id} loc={l} />
+        ))}
       </div>
     );
   } else if (tab === 'clues') {

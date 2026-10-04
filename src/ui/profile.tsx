@@ -11,6 +11,7 @@ import {
   dialogueOf,
   FILM_KIND_LABEL,
   itemsHeldBy,
+  locationsOf,
   npcMaxHp,
   npcStat,
   portraitOf,
@@ -359,9 +360,17 @@ export function NpcProfile({ npc, mode = 'drawer' }: { npc: NPC; mode?: 'drawer'
       </div>
     </Expander>
   );
+  const places = locationsOf('npc', npc.id);
   const appears = (
     <Sec key="appears" icon="clapperboard" title="Appears in">
       <SceneChips scenes={scenes} />
+      {places.length ? (
+        <div class="chips prof__places" aria-label="Where to find them">
+          {places.map((l) => (
+            <Ref key={l.id} type="location" id={l.id} chip />
+          ))}
+        </div>
+      ) : null}
     </Sec>
   );
   const carrying = items.length ? (

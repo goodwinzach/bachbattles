@@ -1,6 +1,7 @@
 // Derived values: effective stats, display states, scene ordering, references.
 
 import { RELATIONS, TOKEN_TYPE } from '../data/campaign';
+import { LOCATION_PICTURE_SRC } from '../data/location-pictures';
 import { DEFAULT_PORTRAIT, PORTRAIT_SRC } from '../data/portraits';
 import type {
   Ability,
@@ -12,6 +13,7 @@ import type {
   Film,
   Item,
   ItemState,
+  Location,
   NPC,
   NpcStatus,
   PC,
@@ -338,7 +340,7 @@ const TEXT_FIELDS = new Set([
   'logline', 'readAloud', 'beats', 'objective', 'mustHappen', 'variantMust', 'rolls', 'failsafes', 'tips', 'notes', 'secrets',
   'bio', 'play', 'tagline', 'role', 'look', 'personality', 'wants', 'knows', 'important', 'stat', 'phases', 'effect',
   'summary', 'mechanics', 'limits', 'examples', 'table', 'body', 'list', 'text', 'starts', 'ends', 'note',
-  'dialogue', 'unknowns', 'portray', 'ifs', 'fight',
+  'dialogue', 'unknowns', 'portray', 'ifs', 'fight', 'describe',
 ]);
 
 let refsFor = -1;
@@ -361,7 +363,7 @@ function buildRefs() {
     const list = (refIndex[target] ??= []);
     if (!list.some((h) => h.type === hit.type && h.id === hit.id)) list.push(hit);
   };
-  const types: EntityType[] = ['scene', 'pc', 'npc', 'item', 'ability', 'condition', 'clue', 'rule', 'film', 'act'];
+  const types: EntityType[] = ['scene', 'pc', 'npc', 'item', 'ability', 'condition', 'clue', 'rule', 'film', 'act', 'location'];
   for (const type of types) {
     for (const e of all(type)) {
       const rec = e as unknown as Record<string, unknown>;
@@ -376,7 +378,9 @@ function buildRefs() {
         for (const f of sceneFoes(s)) add(`npc:${f}`, { type, id: s.id, field: 'encounters' });
         for (const l of s.loot ?? []) add(`item:${l}`, { type, id: s.id, field: 'loot' });
         for (const f of s.films ?? []) add(`film:${f}`, { type, id: s.id, field: 'films' });
+        if (s.location) add(`location:${s.location}`, { type, id: s.id, field: 'location' });
       }
+      if (type === 'location') for (const f of (e as Location).films ?? []) add(`film:${f}`, { type, id: e.id, field: 'films' });
       if (type === 'item') {
         const it = e as Item;
         if (it.holder && it.holder !== 'party') add(`${ent('pc', it.holder) ? 'pc' : 'npc'}:${it.holder}`, { type, id: it.id, field: 'holder' });
@@ -413,19 +417,39 @@ export function scenesFor(type: EntityType, id: string): Scene[] {
 
 // ─── portraits and sources ────────────────────────────────────────────────
 
-/** The portrait key an entity uses: its own choice, else the default. '' when it has none. */
+/** The portrait key an entity uses: its own choice, else the default. '' when it has none. A location's is its picture. */
 export function portraitKey(type: EntityType, id: string): string {
-  const e = ent(type, id) as { portrait?: string } | undefined;
+  const e = ent(type, id) as { portrait?: string; picture?: string } | undefined;
   if (!e) return '';
-  const key = e.portrait ?? DEFAULT_PORTRAIT[`${type}:${id}`] ?? '';
+  const key = type === 'location' ? e.picture ?? (LOCATION_PICTURE_SRC[id] ? id : '') : e.portrait ?? DEFAULT_PORTRAIT[`${type}:${id}`] ?? '';
   return key === 'none' ? '' : key;
 }
 
-/** Image for a player, character or item, or undefined (icon fallback). Secrets stay hidden behind the shield. */
+/** Image for a player, character, item or location, or undefined (icon fallback). Secrets stay hidden behind the shield. */
 export function portraitOf(type: EntityType, id: string): string | undefined {
   if (isSecretHidden(type, id)) return undefined;
   const key = portraitKey(type, id);
-  return key ? PORTRAIT_SRC[key] : undefined;
+  if (!key) return undefined;
+  return type === 'location' ? LOCATION_PICTURE_SRC[key] : PORTRAIT_SRC[key];
+}
+
+// ─── locations ────────────────────────────────────────────────────────────
+
+/** The scenes that happen at a location, in story order. */
+export function scenesAt(locationId: string): Scene[] {
+  return all<Scene>('scene').filter((s) => s.location === locationId);
+}
+
+/** Where a character turns up: the locations of the scenes they appear in, in story order. */
+export function locationsOf(type: EntityType, id: string): Location[] {
+  const ids = [...new Set(scenesFor(type, id).map((s) => s.location).filter((l): l is string => !!l))];
+  return ids.map((l) => ent<Location>('location', l)).filter((l): l is Location => !!l);
+}
+
+/** Everyone the party can meet at a location: the cast and foes of its scenes, in order of appearance. */
+export function peopleAt(locationId: string): NPC[] {
+  const ids = [...new Set(scenesAt(locationId).flatMap((s) => [...(s.cast ?? []), ...sceneFoes(s)]))];
+  return ids.map((n) => ent<NPC>('npc', n)).filter((n): n is NPC => !!n);
 }
 
 export const FILM_KIND_LABEL: Record<NonNullable<Film['kind']>, string> = { film: 'Film', series: 'Series', myth: 'Myth' };

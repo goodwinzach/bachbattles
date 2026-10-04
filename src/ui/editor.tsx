@@ -1,7 +1,8 @@
 // Edit forms. Every field writes into the entity's patch, so the change appears in every view.
 
 import type { ComponentChildren } from 'preact';
-import type { AnyEntity, Attack, DialogueCue, EntityType, Film, NPC, StatBlock } from '../data/types';
+import type { AnyEntity, Attack, DialogueCue, EntityType, Film, Location, NPC, StatBlock } from '../data/types';
+import { LOCATION_PICTURES } from '../data/location-pictures';
 import { DEFAULT_PORTRAIT, PORTRAITS } from '../data/portraits';
 import { STAT_ABBR, STATS } from '../data/types';
 import { TYPE_LABEL } from '../data/campaign';
@@ -22,7 +23,7 @@ import { holderOptions } from './controls';
 import { Icon } from './icons';
 import { CommitInput, Expander, NumberInput, Switch, cx } from './kit';
 
-type FieldKind = 'text' | 'area' | 'paras' | 'list' | 'number' | 'select' | 'toggle' | 'stats' | 'mods' | 'range2' | 'portrait' | 'dialogue';
+type FieldKind = 'text' | 'area' | 'paras' | 'list' | 'number' | 'select' | 'toggle' | 'stats' | 'mods' | 'range2' | 'portrait' | 'picture' | 'dialogue';
 
 interface FieldDef {
   key: string;
@@ -121,6 +122,7 @@ const SCHEMAS: Record<EntityType, FieldDef[]> = {
     { key: 'slug', label: 'Slug line', kind: 'text' },
     { key: 'status', label: 'Status', kind: 'select', options: SCENE_STATUSES.filter((s) => s.id !== 'active').map((s) => ({ value: s.id, label: s.label })) },
     { key: 'kind', label: 'Kind', kind: 'select', options: opt(KIND_LABEL) },
+    { key: 'location', label: 'Location', kind: 'select' },
     { key: 'minutes', label: 'Target minutes', kind: 'range2' },
     { key: 'logline', label: 'Logline', kind: 'area', rows: 2 },
     { key: 'objective', label: 'Objective', kind: 'area', rows: 2 },
@@ -159,6 +161,15 @@ const SCHEMAS: Record<EntityType, FieldDef[]> = {
     { key: 'title', label: 'Title', kind: 'text' },
     { key: 'tagline', label: 'Tagline', kind: 'text' },
     { key: 'summary', label: 'Summary', kind: 'area', rows: 3 },
+  ],
+  location: [
+    { key: 'name', label: 'Name', kind: 'text' },
+    { key: 'picture', label: 'Picture', kind: 'picture', hint: 'Shows at the top of its scenes, on the slides, in the Codex and on the story map.' },
+    { key: 'kind', label: 'Kind of place', kind: 'text', hint: 'A word or two: Pub, Soundstage, Jungle island.' },
+    { key: 'where', label: 'Where it is', kind: 'text' },
+    { key: 'summary', label: 'Summary', kind: 'area', rows: 3 },
+    { key: 'describe', label: 'When they get there (one per line)', kind: 'list', hint: 'What they see, hear and smell. Read or paraphrase.' },
+    { key: 'notes', label: 'DM notes (one per line)', kind: 'list' },
   ],
 };
 
@@ -273,6 +284,7 @@ export function EntityEditor({ type, id }: { type: EntityType; id: string }) {
             if (f.key === 'holder') options = holderOptions();
             if (f.key === 'owner') options = all('pc').map((p) => ({ value: p.id, label: (p as { name: string }).name }));
             if (f.key === 'film' && type === 'npc') options = [{ value: '', label: 'Original to this campaign' }, ...all<Film>('film').map((x) => ({ value: x.id, label: x.title }))];
+            if (f.key === 'location') options = [{ value: '', label: 'No fixed place' }, ...all<Location>('location').map((x) => ({ value: x.id, label: x.name }))];
             return (
               <FieldRow key={f.key} type={type} id={id} f={f}>
                 <select id={uid(f.key)} class="select" value={v ?? ''} onChange={(ev) => set(f.key, f.label, (ev.target as HTMLSelectElement).value)}>
@@ -340,6 +352,23 @@ export function EntityEditor({ type, id }: { type: EntityType; id: string }) {
                   <button type="button" class="btn btn--sm" onClick={() => write([...cues, { cue: 'New situation', options: [] }])}>
                     <Icon name="plus" /> Add a situation
                   </button>
+                </div>
+              </FieldRow>
+            );
+          }
+          case 'picture': {
+            const cur = (v as string | undefined) ?? (LOCATION_PICTURES.some((p) => p.key === id) ? id : 'none');
+            return (
+              <FieldRow key={f.key} type={type} id={id} f={f}>
+                <div class="portpick portpick--wide" role="radiogroup" aria-label={f.label}>
+                  <button type="button" role="radio" aria-checked={cur === 'none'} class={cx('portpick__opt portpick__none', cur === 'none' && 'is-on')} onClick={() => set(f.key, f.label, 'none')} title="No picture: use the icon">
+                    <Icon name={(e.icon as string) ?? 'map-pin'} size={18} />
+                  </button>
+                  {LOCATION_PICTURES.map((p) => (
+                    <button key={p.key} type="button" role="radio" aria-checked={cur === p.key} class={cx('portpick__opt', cur === p.key && 'is-on')} onClick={() => set(f.key, f.label, p.key)} title={p.label}>
+                      <img src={p.src} alt={p.label} decoding="async" />
+                    </button>
+                  ))}
                 </div>
               </FieldRow>
             );
