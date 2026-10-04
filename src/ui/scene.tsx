@@ -12,6 +12,8 @@ import {
   rollMedusa,
   setClue,
   setCostello,
+  setItemHolder,
+  setItemState,
   setCatVariant,
   setMask,
   setPcStatus,
@@ -480,6 +482,58 @@ function UnmaskWidget() {
   );
 }
 
+/** The voyage: share out everything the party has picked up so far. */
+function GearWidget() {
+  const pcs = all<PC>('pc');
+  const ours = (i: Item) => i.holder === 'party' || pcs.some((p) => p.id === i.holder);
+  const found = (i: Item) => i.state === 'unclaimed' && !!i.source && ent<Scene>('scene', i.source)?.status === 'done';
+  const items = all<Item>('item').filter((i) => (i.kind === 'weapon' || i.kind === 'gear') && i.state !== 'destroyed' && i.state !== 'spent' && (ours(i) || found(i)));
+  return (
+    <div class="widget">
+      <div class="widget__head">
+        <Icon name="package" size={16} />
+        <span class="widget__title">Share out the gear</span>
+        <span class="muted">{items.length ? `${items.length} weapons and gear picked up so far` : 'Nothing picked up yet'}</span>
+      </div>
+      {items.length ? (
+        <ul class="gear">
+          {items.map((i) => (
+            <li key={i.id} class="gear__row">
+              <Icon name={i.icon} size={15} class="gear__icon" />
+              <span class="gear__name">
+                <Ref type="item" id={i.id} noDot />
+                <span class="muted num">
+                  {[i.dmg, i.range, i.ammoMax != null ? `${i.ammo ?? 0}/${i.ammoMax} shots` : null].filter(Boolean).join(' · ')}
+                </span>
+              </span>
+              <select
+                class="select select--sm"
+                aria-label={`Who carries the ${i.name}`}
+                value={ours(i) ? i.holder : ''}
+                onChange={(e) => {
+                  const v = (e.target as HTMLSelectElement).value;
+                  if (v) setItemHolder(i.id, v);
+                  else setItemState(i.id, 'unclaimed', '');
+                }}
+              >
+                <option value="">Left behind</option>
+                <option value="party">The party</option>
+                {pcs.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="muted">Weapons from the bar, the Gentlemen and the airfield show up here once those scenes are done.</div>
+      )}
+    </div>
+  );
+}
+
 function BagelWidget({ shop }: { shop?: boolean }) {
   const ghosts = all<PC>('pc').filter((p) => p.status === 'ghost');
   const bagels = ent<Item>('item', 'bagels');
@@ -516,6 +570,7 @@ export function SceneWidget({ scene }: { scene: Scene }) {
   const parts = [];
   if (scene.id === 'costello') parts.push(<CostelloWidget key="c" />);
   if (scene.id === 'route-choice') parts.push(<RouteWidget key="r" />);
+  if (scene.id === 'voyage') parts.push(<GearWidget key="g" />);
   if (scene.id === 'gentlemen') parts.push(<BillWidget key="b" />);
   if (scene.id === 'john-doe') parts.push(<MedusaWidget key="m" />);
   if (SIN_ROOMS.includes(scene.id)) parts.push(<SinsWidget key="s" scene={scene} />);

@@ -1578,3 +1578,48 @@
   color: var(--gold);
   font-weight: 700;
 }
+
+/* ─── the voyage: share out the gear ────────────────────── */
+
+.gear {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gear__row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+
+.gear__icon {
+  flex: none;
+  color: var(--gold);
+}
+
+.gear__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.gear__name .muted {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+}
+
+.gear__row .select {
+  flex: none;
+  max-width: 46%;
+}

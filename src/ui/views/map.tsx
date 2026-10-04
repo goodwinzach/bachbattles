@@ -378,14 +378,16 @@ function FlowMap() {
     const m = 28;
     // when the node and its new children cannot both fit (phones), show the children
     const span = (list: Placed[]) => (Math.max(...list.map((p) => p.x + p.w)) - Math.min(...list.map((p) => p.x))) * v.k;
-    if (kids.length && span(box) > vp.clientWidth - 2 * m) box = kids;
+    if (kids.length && span(box) > vp.clientWidth - 2 * m - 52) box = kids;
     const minX = Math.min(...box.map((p) => p.x)) * v.k + v.x;
     const maxX = Math.max(...box.map((p) => p.x + p.w)) * v.k + v.x;
     const minY = Math.min(...box.map((p) => p.y)) * v.k + v.y;
     const maxY = Math.max(...box.map((p) => p.y + p.h)) * v.k + v.y;
     let dx = 0;
     let dy = 0;
-    if (maxX > vp.clientWidth - m) dx = vp.clientWidth - m - maxX;
+    // keep clear of the zoom controls down the right side
+    const right = vp.clientWidth - m - 52;
+    if (maxX > right) dx = right - maxX;
     if (minX + dx < m) dx = m - minX;
     if (maxY > vp.clientHeight - m) dy = vp.clientHeight - m - maxY;
     if (minY + dy < m + 40) dy = m + 40 - minY;
@@ -613,9 +615,6 @@ function FlowMap() {
           <span><i class="lg lg--active" /> now playing</span>
           <span><i class="lg lg--up" /> upcoming</span>
           <span><i class="lg lg--out" /> optional or skipped</span>
-          <span class="muted">
-            Click a scene to open it · drag scenes and notes to move them · double-click empty space for a note · double-click a scene to play
-          </span>
         </div>
       </div>
     </div>
@@ -1238,7 +1237,7 @@ export function MapView() {
           ))}
         </div>
         <p class="map__hint muted">
-          {ui.mapMode === 'flow' && 'Every scene in story order. Click a scene to open it up, then click its branches for more. Optional rooms and the other route stay dimmed.'}
+          {ui.mapMode === 'flow' && 'Every scene in story order. Click a scene to open it, then its branches. Drag scenes and notes to arrange them; double-click empty space to add a note, or a scene to play it.'}
           {ui.mapMode === 'web' && 'Who is connected to whom: characters, the films they come from, key items and scenes.'}
           {ui.mapMode === 'timeline' && 'Where the night stands against the 4 to 6 hour plan, from the session timer.'}
         </p>
