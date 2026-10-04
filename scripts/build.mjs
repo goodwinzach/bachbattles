@@ -1,6 +1,7 @@
 // Bundles src/ into one self-contained HTML file (works offline, from file://, or on any static host).
 // Outputs:
 //   dist/index.html        full document
+//   docs/index.html        the same document, served by GitHub Pages (Settings → Pages → branch, /docs)
 //   .build/artifact.html   body fragment for publishing as a claude.ai Artifact
 import * as esbuild from 'esbuild';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -56,6 +57,12 @@ async function emit(result) {
   await mkdir(join(root, 'dist'), { recursive: true });
   await mkdir(join(root, '.build'), { recursive: true });
   await writeFile(join(root, 'dist/index.html'), html);
+  if (!watch) {
+    await mkdir(join(root, 'docs'), { recursive: true });
+    await writeFile(join(root, 'docs/index.html'), html);
+    // serve the file as-is: no Jekyll processing on GitHub Pages
+    await writeFile(join(root, 'docs/.nojekyll'), '');
+  }
   await writeFile(join(root, '.build/artifact.html'), fragment);
   const kb = (n) => (n / 1024).toFixed(0) + ' KB';
   console.log(`built dist/index.html (${kb(html.length)}; js ${kb(js.length)}, css ${kb(css.length)})`);

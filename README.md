@@ -4,7 +4,9 @@ A dungeon master's console for the bachelor-party one-shot *One Ring to Rule Fly
 
 ## Open it
 
-Open `dist/index.html` in a browser. It is a single self-contained file (scripts, styles and portraits inlined), so it works offline and from a USB stick. The display fonts load from Google Fonts when online and fall back to system fonts otherwise.
+**Online:** https://goodwinzach.github.io/bachbattles/ (GitHub Pages, served from `docs/index.html` on the default branch; every push updates it). It is public, so anyone with the link can read the DM secrets: do not send it to the players.
+
+**Offline:** open `dist/index.html` in a browser. It is a single self-contained file (scripts, styles and portraits inlined), so it works offline and from a USB stick. The display fonts load from Google Fonts when online and fall back to system fonts otherwise.
 
 Your progress saves automatically in that browser. Use **⋯ → Export save** before game night to keep a copy, and **Import save** to move your prep to another device.
 
@@ -72,7 +74,7 @@ Every DC in the text is clickable and opens the dice tray preset to it; every di
 
 ```sh
 npm install
-npm run build      # writes dist/index.html
+npm run build      # writes dist/index.html, and docs/index.html for the website
 npm run dev        # rebuilds on change
 npm test           # typecheck, data validation, build, then a browser smoke test
 node scripts/portraits.mjs <folder>   # rebuild src/assets/portraits from the original icon PNGs
