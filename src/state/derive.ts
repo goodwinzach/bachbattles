@@ -1,12 +1,14 @@
 // Derived values: effective stats, display states, scene ordering, references.
 
 import { RELATIONS, TOKEN_TYPE } from '../data/campaign';
+import { DEFAULT_PORTRAIT, PORTRAIT_SRC } from '../data/portraits';
 import type {
   Ability,
   AnyEntity,
   Clue,
   Condition,
   EntityType,
+  Film,
   Item,
   ItemState,
   NPC,
@@ -403,6 +405,49 @@ export function scenesFor(type: EntityType, id: string): Scene[] {
   const hits = backlinks(type, id).filter((h) => h.type === 'scene');
   const ids = new Set(hits.map((h) => h.id));
   return all<Scene>('scene').filter((s) => ids.has(s.id));
+}
+
+// ─── portraits and sources ────────────────────────────────────────────────
+
+/** The portrait key an entity uses: its own choice, else the default. '' when it has none. */
+export function portraitKey(type: EntityType, id: string): string {
+  const e = ent(type, id) as { portrait?: string } | undefined;
+  if (!e) return '';
+  const key = e.portrait ?? DEFAULT_PORTRAIT[`${type}:${id}`] ?? '';
+  return key === 'none' ? '' : key;
+}
+
+/** Image for a player, character or item, or undefined (icon fallback). Secrets stay hidden behind the shield. */
+export function portraitOf(type: EntityType, id: string): string | undefined {
+  if (isSecretHidden(type, id)) return undefined;
+  const key = portraitKey(type, id);
+  return key ? PORTRAIT_SRC[key] : undefined;
+}
+
+export const FILM_KIND_LABEL: Record<NonNullable<Film['kind']>, string> = { film: 'Film', series: 'Series', myth: 'Myth' };
+
+/** Where a character comes from: their film or show first, then other references. Empty = an original. */
+export function sourcesOf(type: EntityType, id: string): Film[] {
+  const e = ent(type, id) as { film?: string; films?: string[] } | undefined;
+  if (!e) return [];
+  const ids = [...(e.film ? [e.film] : []), ...(e.films ?? [])];
+  return [...new Set(ids)].map((f) => ent<Film>('film', f)).filter((f): f is Film => !!f);
+}
+
+/** The mask a character has on right now: Flynn's chosen mask, or Lou's V mask while he is in his masked phase. */
+export function wornMask(type: EntityType, id: string): Item | undefined {
+  if (type === 'pc' && id === 'flynn') {
+    const pc = ent<PC>('pc', id);
+    return pc ? maskOf(pc) : undefined;
+  }
+  if (type === 'npc') {
+    const n = ent<NPC>('npc', id);
+    if (n?.phases?.[n.phase]?.label === 'Masked') {
+      const v = all<Item>('item').find((i) => i.kind === 'mask' && i.holder === id && i.state !== 'destroyed');
+      return v && !isSecretHidden('item', v.id) ? v : undefined;
+    }
+  }
+  return undefined;
 }
 
 export interface Relation {

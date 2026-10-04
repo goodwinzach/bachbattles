@@ -488,7 +488,8 @@
     bottom: 0;
     z-index: 40;
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: color-mix(in oklab, var(--bg) 92%, transparent);
     backdrop-filter: blur(14px);
@@ -1188,4 +1189,39 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+}
+
+/* tighten the top bar step by step before it would run out of room (desktop widths) */
+@media (min-width: 900px) and (max-width: 1360px) {
+  .searchbtn__label {
+    display: none;
+  }
+
+  .tab {
+    padding: 0 9px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1220px) {
+  .wordmark__sub,
+  .clock__label {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1120px) {
+  .tab > span,
+  .searchbtn__kbd {
+    display: none;
+  }
+
+  .tab {
+    padding: 0 11px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1000px) {
+  .topbar__undo {
+    display: none;
+  }
 }

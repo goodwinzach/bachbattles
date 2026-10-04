@@ -9,7 +9,8 @@ import { SceneStatusControl } from '../controls';
 import { Secret } from '../detail';
 import { setBulk } from '../hooks';
 import { Icon } from '../icons';
-import { Avatar, Badge, cx, hueVar } from '../kit';
+import { Face } from '../profile';
+import { Badge, cx, hueVar } from '../kit';
 import { Ref, Rich, RichList } from '../rich';
 import { ReadAloud, SceneBody, SceneMeta } from '../scene';
 
@@ -29,7 +30,7 @@ function TitleBlock() {
           <dd class="doc__players">
             {pcs.map((p) => (
               <span key={p.id} class="doc__player">
-                <Avatar icon={p.icon} hue={p.hue} size={22} />
+                <Face type="pc" id={p.id} size={24} />
                 <Ref type="pc" id={p.id} noDot /> <span class="muted">({p.player})</span>
               </span>
             ))}

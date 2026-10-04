@@ -6,7 +6,8 @@ import { statCalc } from '../state/derive';
 import { signed, type RollResult } from '../state/dice';
 import { all, clearLog, getData, getUi, setUi } from '../state/store';
 import { Icon } from './icons';
-import { Avatar, cx } from './kit';
+import { Face } from './profile';
+import { cx } from './kit';
 import { getRoller, onRoller, setRollerOpen } from './rollbus';
 
 export function RollResultView({ r, big }: { r: RollResult; big?: boolean }) {
@@ -91,7 +92,7 @@ export function DicePanel({ docked }: { docked?: boolean }) {
         <div class="dice__who" role="group" aria-label="Who rolls">
           {pcs.map((p) => (
             <button key={p.id} type="button" class={cx('dice__pc', p.id === who && 'is-on')} aria-pressed={p.id === who} onClick={() => setWho(p.id)} title={p.name}>
-              <Avatar icon={p.icon} hue={p.hue} size={28} ring={p.status === 'ghost' ? 'ghost' : undefined} />
+              <Face type="pc" id={p.id} size={30} />
               <span>{p.player}</span>
             </button>
           ))}

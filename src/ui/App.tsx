@@ -12,6 +12,7 @@ import { BottomNav, Drawer, PeekLayer, Toasts, TopBar } from './shell';
 import { CodexView } from './views/codex';
 import { MapView } from './views/map';
 import { RulesView } from './views/rules';
+import { CastView } from './views/cast';
 import { RunView } from './views/run';
 import { SlidesView } from './views/slides';
 import { StoryView } from './views/story';
@@ -47,7 +48,7 @@ function useKeyboard() {
       if (isTyping(e) || mod || e.altKey) return;
       if (ui.modal || ui.palette) return;
       const k = e.key;
-      if (k >= '1' && k <= '6') {
+      if (k >= '1' && k <= String(VIEWS.length)) {
         setUi({ view: VIEWS[parseInt(k, 10) - 1].id });
       } else if (k === '/') {
         e.preventDefault();
@@ -73,18 +74,23 @@ function useKeyboard() {
 }
 
 function useHashSync() {
-  const view = getUi().view;
+  const { view, castFocus } = getUi();
+  // #cast/npc/lou opens that profile page; every other view is just #view
+  const hash = view === 'cast' && castFocus ? `cast/${castFocus.replace(':', '/')}` : view;
   useEffect(() => {
     try {
-      if (location.hash.slice(1) !== view) history.replaceState(null, '', `#${view}`);
+      if (location.hash.slice(1) !== hash) history.replaceState(null, '', `#${hash}`);
     } catch {
       /* some hosts forbid history changes */
     }
-  }, [view]);
+  }, [hash]);
   useEffect(() => {
     const onHash = () => {
-      const h = location.hash.slice(1);
-      if (VIEWS.some((v) => v.id === h) && h !== getUi().view) setUi({ view: h as never });
+      const [h, type, id] = location.hash.slice(1).split('/');
+      if (!VIEWS.some((v) => v.id === h)) return;
+      const focus = h === 'cast' && (type === 'pc' || type === 'npc') && id ? `${type}:${id}` : null;
+      const ui = getUi();
+      if (h !== ui.view || (h === 'cast' && focus !== ui.castFocus)) setUi({ view: h as never, ...(h === 'cast' ? { castFocus: focus } : {}) });
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
@@ -107,6 +113,9 @@ export function App() {
       break;
     case 'slides':
       view = <SlidesView />;
+      break;
+    case 'cast':
+      view = <CastView />;
       break;
     case 'codex':
       view = <CodexView />;

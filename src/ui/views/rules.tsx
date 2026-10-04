@@ -10,7 +10,8 @@ import { all, ent, getUi, openDrawer, setUi } from '../../state/store';
 import { RuleTable, Secret } from '../detail';
 import { setBulk } from '../hooks';
 import { Icon } from '../icons';
-import { Avatar, Expander, cx, hueVar } from '../kit';
+import { Face } from '../profile';
+import { Expander, cx, hueVar } from '../kit';
 import { CheckChip, Ref, Rich, RichList, RichParas } from '../rich';
 
 function RuleBody({ rule }: { rule: Rule }) {
@@ -73,6 +74,15 @@ function BossOrder() {
         return (
           <li key={s.id} class={cx('bossorder__row hue', !sceneInPlay(s) && 'is-out')} style={{ '--c': hueVar(act?.hue) } as never}>
             <span class="bossorder__slate num">{s.slate}</span>
+            <span class="bossorder__faces">
+              {s.encounters!
+                .flatMap((e) => e.foes)
+                .filter((f, i, arr) => arr.indexOf(f) === i)
+                .slice(0, 3)
+                .map((f) => (
+                  <Face key={f} type="npc" id={f} size={30} />
+                ))}
+            </span>
             <div class="grow">
               <div class="bossorder__name">
                 {s.encounters!.map((e) => e.label).join(' · ')}
@@ -81,12 +91,16 @@ function BossOrder() {
                 {s.encounters!
                   .flatMap((e) => e.foes)
                   .slice(0, 4)
-                  .map((f) => {
+                  .map((f, i) => {
                     const n = ent<NPC>('npc', f);
                     const st = n ? npcStat(n) : undefined;
-                    return n ? `${n.name} ${st?.invincible ? '(invincible)' : `AC ${st?.ac} HP ${st?.hp}`}` : '';
-                  })
-                  .join(' · ')}
+                    return n ? (
+                      <span key={f} class="bossorder__foe">
+                        {i ? ' · ' : ''}
+                        <Ref type="npc" id={f} noDot /> {st?.invincible ? '(invincible)' : `AC ${st?.ac} HP ${st?.hp}`}
+                      </span>
+                    ) : null;
+                  })}
               </div>
             </div>
             <button type="button" class="btn btn--xs btn--ghost" onClick={() => openDrawer('scene', s.id)}>
@@ -120,7 +134,7 @@ function PartyCard() {
             <tr key={p.id}>
               <td>
                 <span class="row row--nowrap" style={{ gap: '8px' }}>
-                  <Avatar icon={p.icon} hue={p.hue} size={24} />
+                  <Face type="pc" id={p.id} size={26} />
                   <Ref type="pc" id={p.id} noDot />
                 </span>
               </td>

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { Ability, Act, Clue, Film, NPC, PC, Scene } from '../../data/types';
 import { STAT_ABBR, STATS } from '../../data/types';
 import { goScene } from '../../state/actions';
-import { abilitiesOf, abilityStatus, KIND_LABEL, npcStat, sceneInPlay, sceneMust, strip } from '../../state/derive';
+import { abilitiesOf, abilityStatus, KIND_LABEL, npcStat, portraitOf, sceneInPlay, sceneMust, sourcesOf, strip } from '../../state/derive';
 import { signed } from '../../state/dice';
 import { all, ent, game, getDataVersion, getUi, setUi } from '../../state/store';
 import { isTyping } from '../hooks';
@@ -14,7 +14,7 @@ import { Icon } from '../icons';
 import { cx, hueVar } from '../kit';
 import { Rich, RichList } from '../rich';
 
-type SlideKind = 'title' | 'rules' | 'cast' | 'act' | 'scene' | 'boss' | 'riddle' | 'reveal' | 'credits';
+type SlideKind = 'title' | 'rules' | 'cast' | 'act' | 'scene' | 'boss' | 'enter' | 'riddle' | 'reveal' | 'credits';
 
 interface Slide {
   key: string;
@@ -113,8 +113,8 @@ function CastSlide({ pc, dm }: { pc: PC; dm: boolean }) {
   const abs = abilitiesOf(pc.id).filter((a) => dm || !a.secret || a.revealed);
   return (
     <div class="sl sl--cast hue" style={{ '--c': hueVar(pc.hue) } as never}>
-      <div class="sl__portrait">
-        <Icon name={pc.icon} size={120} stroke={1.4} />
+      <div class={cx('sl__portrait', portraitOf('pc', pc.id) && 'sl__portrait--img')}>
+        {portraitOf('pc', pc.id) ? <img src={portraitOf('pc', pc.id)} alt="" /> : <Icon name={pc.icon} size={120} stroke={1.4} />}
       </div>
       <div class="sl__castbody">
         <div class="sl__eyebrow">Played by {pc.player}</div>
@@ -217,17 +217,18 @@ function SceneSlide({ scene, dm, text, page, of }: { scene: Scene; dm: boolean; 
   );
 }
 
-function BossSlide({ npc, dm }: { npc: NPC; dm: boolean }) {
-  const film = npc.film ? ent<Film>('film', npc.film) : undefined;
+/** A character's entrance: portrait, where they're from, and one line. Bosses get stats in the DM deck. */
+function CharacterSlide({ npc, dm }: { npc: NPC; dm: boolean }) {
+  const film = sourcesOf('npc', npc.id)[0];
   const stat = npcStat(npc);
-  const line = npc.lines?.[0];
+  const line = npc.lines?.find((l) => !l.trim().startsWith('('));
+  const src = portraitOf('npc', npc.id);
+  const boss = npc.side === 'boss';
   return (
-    <div class="sl sl--boss">
-      <div class="sl__bossicon">
-        <Icon name={npc.icon} size={110} stroke={1.3} />
-      </div>
+    <div class={cx('sl sl--boss', !boss && 'sl--enter')}>
+      <div class={cx('sl__bossicon', src && 'sl__bossicon--img')}>{src ? <img src={src} alt="" /> : <Icon name={npc.icon} size={110} stroke={1.3} />}</div>
       <div class="sl__bossbody">
-        <div class="sl__eyebrow">{film ? `From ${film.title}` : 'Enter'}</div>
+        <div class="sl__eyebrow">{film ? `From ${film.title}` : boss ? 'Enter' : 'Meet'}</div>
         <h2 class="sl__h sl__h--xl">{npc.name}</h2>
         {line && <blockquote class="sl__quote">“{line}”</blockquote>}
         {dm && stat && (
@@ -288,20 +289,27 @@ function CreditsSlide() {
 
 // ─── deck ─────────────────────────────────────────────────────────────────
 
-const BOSS_SCENES: Record<string, string> = {
-  gentlemen: 'michael-pearson',
-  airfield: 'tyler',
-  docks: 'tyler',
-  'john-doe': 'john-doe',
-  pride: 'david-frame',
-  greed: 'ted-terger',
-  wrath: 'kingpin',
-  sloth: 'cypher',
-  gluttony: 'baron',
-  'oh-dae-su': 'oh-dae-su',
-  toothless: 'toothless',
-  cat: 'cat',
-  'fourth-mask': 'lou',
+/** Who gets an entrance slide after each scene's read-aloud (bosses, plus the characters the table should meet). */
+const ENTRANCES: Record<string, string[]> = {
+  'green-dragon': ['narrator', 'antinous'],
+  gentlemen: ['michael-pearson'],
+  'louise-call': ['louise'],
+  costello: ['costello'],
+  airfield: ['tyler'],
+  docks: ['tyler'],
+  voyage: ['odysseus'],
+  'john-doe': ['john-doe', 'medusa'],
+  pride: ['david-frame'],
+  greed: ['ted-terger'],
+  envy: ['truman'],
+  wrath: ['kingpin'],
+  sloth: ['cypher'],
+  gluttony: ['baron'],
+  fielder: ['nathan-fielder'],
+  'oh-dae-su': ['oh-dae-su'],
+  toothless: ['toothless'],
+  cat: ['cat'],
+  'fourth-mask': ['lou'],
 };
 
 function sceneNotes(scene: Scene, dm: boolean) {
@@ -352,13 +360,19 @@ function buildDeck(dm: boolean): Slide[] {
           notes: (d) => sceneNotes(s, d),
         }),
       );
-      const boss = BOSS_SCENES[s.id];
-      const npc = boss ? ent<NPC>('npc', boss) : undefined;
-      if (npc) {
-        const key = `boss-${npc.id}`;
-        if (!deck.some((x) => x.key === key)) {
-          deck.push({ key, kind: 'boss', title: npc.name, scene: s.id, act: a.id, render: (d) => <BossSlide npc={npc} dm={d} />, notes: (d) => (d ? <Rich text={npc.play ?? npc.role} /> : null) });
-        }
+      for (const id of ENTRANCES[s.id] ?? []) {
+        const npc = ent<NPC>('npc', id);
+        const key = `enter-${id}`;
+        if (!npc || deck.some((x) => x.key === key)) continue;
+        deck.push({
+          key,
+          kind: npc.side === 'boss' ? 'boss' : 'enter',
+          title: npc.name,
+          scene: s.id,
+          act: a.id,
+          render: (d) => <CharacterSlide npc={npc} dm={d} />,
+          notes: (d) => (d ? <Rich text={npc.play ?? npc.role} /> : null),
+        });
       }
       if (s.id === 'costello') {
         const riddle = ent<Clue>('clue', 'fact-riddle');

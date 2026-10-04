@@ -195,7 +195,7 @@ export function TopBar() {
         <Wordmark />
         <nav class="tabs" aria-label="Views">
           {VIEWS.map((v, i) => (
-            <button key={v.id} type="button" class={cx('tab', ui.view === v.id && 'is-on')} aria-current={ui.view === v.id ? 'page' : undefined} onClick={() => go(v.id)} title={`${v.hint} (${i + 1})`}>
+            <button key={v.id} type="button" class={cx('tab', ui.view === v.id && 'is-on')} aria-current={ui.view === v.id ? 'page' : undefined} onClick={() => go(v.id)} title={`${v.label}: ${v.hint} (${i + 1})`} aria-label={v.label}>
               <Icon name={v.icon} size={16} />
               <span>{v.label}</span>
             </button>

@@ -12,7 +12,7 @@ import {
   ITEM_KIND_LABEL,
   itemsHeldBy,
   npcStat,
-  pcStatusInfo,
+  portraitOf,
   scenesFor,
   shielded,
   SIDE_LABEL,
@@ -30,7 +30,8 @@ import {
 import { AbilityCard, DmNote, ItemRow, MaskPicker, StatBlockView, StatGrid } from '../detail';
 import { createCustomItem, createCustomNpc } from '../editor';
 import { Icon } from '../icons';
-import { Avatar, Badge, Empty, Expander, HpBar, Pips, Stepper, cx } from '../kit';
+import { Face } from '../profile';
+import { Badge, Empty, Expander, HpBar, Pips, Stepper, cx } from '../kit';
 import { Ref, Rich, RichList } from '../rich';
 
 type Tab = 'party' | 'cast' | 'bestiary' | 'items' | 'abilities' | 'clues' | 'conditions' | 'films';
@@ -65,7 +66,9 @@ function PcCard({ pc }: { pc: PC }) {
   return (
     <article class={cx('card card--pc hue', `card--${pc.status}`)} style={{ '--c': `var(--c-${pc.hue})` } as never}>
       <header class="card__head">
-        <Avatar icon={pc.icon} hue={pc.hue} size={52} ring={pc.status === 'alive' ? undefined : pcStatusInfo(pc.status).tone} />
+        <button type="button" class="facebtn" onClick={() => openDrawer('pc', pc.id)} aria-label={`${pc.name}: profile`}>
+          <Face type="pc" id={pc.id} size={64} />
+        </button>
         <div class="card__titles">
           <button type="button" class="card__name" onClick={() => openDrawer('pc', pc.id)}>
             {pc.name}
@@ -137,7 +140,9 @@ function NpcCard({ npc, bestiary }: { npc: NPC; bestiary?: boolean }) {
   return (
     <article class={cx('card card--npc', `card--side-${npc.side}`, ['defeated', 'dead', 'fled'].includes(npc.status) && 'is-done')}>
       <header class="card__head">
-        <Avatar icon={npc.icon} size={42} />
+        <button type="button" class="facebtn" onClick={() => openDrawer('npc', npc.id)} aria-label={`${npc.name}: profile`}>
+          <Face type="npc" id={npc.id} size={52} />
+        </button>
         <div class="card__titles">
           <button type="button" class="card__name" onClick={() => openDrawer('npc', npc.id)}>
             {npc.name}
@@ -203,9 +208,13 @@ function ItemCard({ item }: { item: Item }) {
   return (
     <article class={cx('card card--item', `card--state-${item.state}`)}>
       <header class="card__head">
-        <span class="card__icon">
-          <Icon name={hidden ? 'lock' : item.icon} size={20} />
-        </span>
+        {!hidden && portraitOf('item', item.id) ? (
+          <Face type="item" id={item.id} size={44} />
+        ) : (
+          <span class="card__icon">
+            <Icon name={hidden ? 'lock' : item.icon} size={20} />
+          </span>
+        )}
         <div class="card__titles">
           <button type="button" class="card__name" onClick={() => openDrawer('item', item.id)}>
             {hidden ? item.alias ?? 'Secret item' : item.name}
@@ -458,7 +467,7 @@ export function CodexView() {
           return (
             <section key={p.id} class="cgroup">
               <h2 class="cgroup__h">
-                <Avatar icon={p.icon} hue={p.hue} size={24} /> {p.name}
+                <Face type="pc" id={p.id} size={28} /> <Ref type="pc" id={p.id} noDot />
               </h2>
               <div class="cgrid">
                 {abs.map((a) => {

@@ -177,6 +177,9 @@ import {
   X,
   Zap,
   ZoomIn,
+  Contact,
+  Scroll,
+  Tv,
   Waypoints,
   ZoomOut,
 } from 'lucide-preact';
@@ -363,6 +366,9 @@ const ICONS: Record<string, IconComp> = {
   x: X,
   zap: Zap,
   'zoom-in': ZoomIn,
+  contact: Contact,
+  scroll: Scroll,
+  tv: Tv,
   waypoints: Waypoints,
   'zoom-out': ZoomOut,
 };

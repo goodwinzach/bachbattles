@@ -4,11 +4,9 @@ import type { JSX } from 'preact';
 import type { Ability, Act, Clue, Condition, EntityType, Film, Hue, Item, NPC, PC, Rule, Scene } from '../data/types';
 import { STAT_ABBR, STAT_NAME, STATS } from '../data/types';
 import {
-  adjustHp,
   adjustNpcHp,
   adjustQty,
   goScene,
-  revive,
   rollAttack,
   rollFor,
   rollSpiritual,
@@ -18,25 +16,22 @@ import {
   useAbility,
 } from '../state/actions';
 import {
-  abilitiesOf,
   abilityStatus,
-  acCalc,
   allStats,
   backlinks,
   holderName,
   holderType,
   isUnmasked,
   ITEM_KIND_LABEL,
-  itemsHeldBy,
   KIND_LABEL,
   npcMaxHp,
   npcStat,
   RECHARGE_LABEL,
+  portraitOf,
   relationsOf,
   sceneMust,
-  scenesFor,
+  sourcesOf,
   shielded,
-  SIDE_LABEL,
 } from '../state/derive';
 import { signed } from '../state/dice';
 import { all, closeDrawer, ent, game, getUi, go, openDrawer, setUi } from '../state/store';
@@ -51,6 +46,7 @@ import {
   SceneStatusControl,
 } from './controls';
 import { Icon } from './icons';
+import { Face, NpcProfile, PcProfile } from './profile';
 import { Avatar, Badge, Expander, HpBar, Label, Pips, Stepper, cx, hueVar } from './kit';
 import { Ref, Rich, RichList, RichParas, iconOf } from './rich';
 
@@ -146,7 +142,7 @@ export function MaskPicker({ pc }: { pc: PC }) {
             title={usable ? `Wear the ${m.name}` : `${m.name} is not available`}
             onClick={() => setMask(m.id)}
           >
-            <Icon name={hidden ? 'lock' : m.icon} size={15} />
+            {!hidden && portraitOf('item', m.id) ? <Face type="item" id={m.id} size={22} /> : <Icon name={hidden ? 'lock' : m.icon} size={15} />}
             <span>{hidden ? 'Mask' : m.name.replace(/ (Mask|Cowl|Face Cover)$/, '')}</span>
           </button>
         );
@@ -236,21 +232,6 @@ export function ItemRow({ item, showHolder = true }: { item: Item; showHolder?: 
   );
 }
 
-function Lines({ lines, by }: { lines?: string[]; by?: string }) {
-  if (!lines?.length) return null;
-  return (
-    <ul class="lines">
-      {lines.map((l, i) => (
-        <li key={i} class="line">
-          <Icon name="quote" size={14} />
-          <span>{l}</span>
-          {by && <span class="sr-only">{by}</span>}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export function StatBlockView({ npc, live = true }: { npc: NPC; live?: boolean }) {
   const stat = npcStat(npc);
   if (!stat) return null;
@@ -335,10 +316,10 @@ export function StatBlockView({ npc, live = true }: { npc: NPC; live?: boolean }
   );
 }
 
-function Head({ icon, hue, title, sub, right, ring }: { icon: string; hue?: Hue; title: string; sub?: JSX.Element | string; right?: JSX.Element | null; ring?: any }) {
+function Head({ icon, hue, title, sub, right, ring, face }: { icon: string; hue?: Hue; title: string; sub?: JSX.Element | string; right?: JSX.Element | null; ring?: any; face?: { type: EntityType; id: string } }) {
   return (
     <div class="dhead">
-      <Avatar icon={icon} hue={hue} size={46} ring={ring} />
+      {face && portraitOf(face.type, face.id) ? <Face type={face.type} id={face.id} size={64} /> : <Avatar icon={icon} hue={hue} size={46} ring={ring} />}
       <div class="dhead__text">
         <h2 class="dhead__title">{title}</h2>
         {sub && <div class="dhead__sub">{sub}</div>}
@@ -348,7 +329,7 @@ function Head({ icon, hue, title, sub, right, ring }: { icon: string; hue?: Hue;
   );
 }
 
-function SceneChips({ scenes }: { scenes: Scene[] }) {
+export function SceneChips({ scenes }: { scenes: Scene[] }) {
   if (!scenes.length) return <span class="muted">Not in any scene.</span>;
   return (
     <div class="chips">
@@ -361,128 +342,8 @@ function SceneChips({ scenes }: { scenes: Scene[] }) {
 
 // ─── per type ─────────────────────────────────────────────────────────────
 
-export function PcDetail({ pc }: { pc: PC }) {
-  const ac = acCalc(pc);
-  const abilities = abilitiesOf(pc.id);
-  const items = itemsHeldBy(pc.id);
-  const pcConds = all<Condition>('condition').filter((c) => c.scope === 'pc');
-  const partyConds = all<Condition>('condition').filter((c) => c.scope === 'party' && c.active);
-  const donuts = ent<Item>('item', 'donuts');
-  return (
-    <div class="detail stack" style={{ '--gap': '18px' } as never}>
-      <Head
-        icon={pc.icon}
-        hue={pc.hue}
-        title={pc.name}
-        sub={
-          <>
-            {pc.title} · played by <strong>{pc.player}</strong>
-          </>
-        }
-        right={<PcStatusControl pc={pc} />}
-      />
-      <Rich text={pc.tagline} class="dlead" />
-      <div class="vitals">
-        <div class="vitals__hp">
-          <div class="row row--nowrap" style={{ gap: '10px' }}>
-            <Icon name={pc.status === 'ghost' ? 'ghost' : 'heart-pulse'} size={16} />
-            <HpBar hp={pc.hp} max={pc.hpMax} ghost={pc.status === 'ghost'} />
-            <span class="num vitals__num">
-              {pc.hp}/{pc.hpMax}
-            </span>
-          </div>
-          <Stepper value={pc.hp} label={`${pc.name} HP`} onDelta={(d) => adjustHp(pc.id, d)} steps={[1, 5]} render={() => 'HP'} />
-        </div>
-        <div class="vitals__ac" title={ac.parts.map((p) => `${p.label} +${p.value}`).join('\n') || 'Armor Class'}>
-          <Icon name="shield" size={16} />
-          <span class="num">{ac.total}</span>
-          <span class="vitals__k">AC</span>
-        </div>
-      </div>
-      {pc.status === 'ghost' && (
-        <div class="callout callout--ghost">
-          <Icon name="ghost" size={18} />
-          <div class="grow">
-            <strong>{pc.name} is a ghost.</strong> Can talk, move, distract and roll CHA / PER / INT. Cannot be hurt or attack. <Ref type="rule" id="ghosts" label="Ghost rules" />
-          </div>
-          <button type="button" class="btn btn--sm btn--good" onClick={() => revive(pc.id, true)} disabled={!donuts || (donuts.qty ?? 0) < 1 || (donuts.state !== 'held' && donuts.state !== 'equipped')}>
-            <Icon name="donut" /> Revive ({donuts?.state === 'held' ? donuts.qty ?? 0 : 0})
-          </button>
-        </div>
-      )}
-      <div>
-        <Label icon="dices">Stats (click to roll)</Label>
-        <StatGrid pc={pc} />
-        {partyConds.length > 0 && (
-          <div class="statnote">
-            {partyConds.map((c) => (
-              <Ref key={c.id} type="condition" id={c.id} />
-            ))}{' '}
-            in effect.
-          </div>
-        )}
-      </div>
-      {pc.id === 'flynn' && (
-        <div>
-          <Label icon="venetian-mask">Mask</Label>
-          <MaskPicker pc={pc} />
-        </div>
-      )}
-      <div>
-        <Label icon="sparkles">Abilities</Label>
-        <div class="stack" style={{ '--gap': '8px' } as never}>
-          {abilities.map((a) => (
-            <AbilityCard key={a.id} ab={a} />
-          ))}
-        </div>
-      </div>
-      <div>
-        <Label icon="activity">Effects on {pc.name}</Label>
-        <div class="chips">
-          {pcConds.map((c) => {
-            const on = pc.effects.includes(c.id);
-            return (
-              <button key={c.id} type="button" class={cx('toggle-chip', on && 'is-on')} aria-pressed={on} onClick={() => toggleEffect(pc.id, c.id)} title={c.summary}>
-                <Icon name={c.icon} size={13} />
-                {c.name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      <Expander id={`pc:${pc.id}:inv`} title="Inventory" icon="package" count={items.length} defaultOpen variant="box">
-        {items.length ? (
-          <div class="stack" style={{ '--gap': '6px' } as never}>
-            {items.map((i) => (
-              <ItemRow key={i.id} item={i} showHolder={false} />
-            ))}
-          </div>
-        ) : (
-          <span class="muted">Nothing yet. Give an item from its card or the Codex.</span>
-        )}
-      </Expander>
-      <Expander id={`pc:${pc.id}:bio`} title="Who they are" icon="user" defaultOpen variant="box">
-        <div class="prose">
-          <Rich text={pc.bio} />
-        </div>
-        <div class="prose muted" style={{ marginTop: '10px' }}>
-          <strong>How to play it:</strong> <Rich text={pc.play} />
-        </div>
-        {pc.notes && <RichList items={pc.notes} />}
-      </Expander>
-      {pc.secrets?.length ? (
-        <Secret>
-          <RichList items={pc.secrets} />
-        </Secret>
-      ) : null}
-      <Connections type="pc" id={pc.id} />
-      <DmNote text={pc.dmNote} />
-    </div>
-  );
-}
-
 /** Story relationships (the same links the connections web draws), with a jump to the web. */
-function Connections({ type, id }: { type: 'pc' | 'npc' | 'item'; id: string }) {
+export function Connections({ type, id }: { type: 'pc' | 'npc' | 'item'; id: string }) {
   const rels = relationsOf(type, id);
   if (!rels.length) return null;
   const showOnWeb = () => {
@@ -518,105 +379,6 @@ function Connections({ type, id }: { type: 'pc' | 'npc' | 'item'; id: string }) 
   );
 }
 
-export function NpcDetail({ npc }: { npc: NPC }) {
-  const film = npc.film ? ent<Film>('film', npc.film) : undefined;
-  const scenes = scenesFor('npc', npc.id);
-  const items = itemsHeldBy(npc.id);
-  return (
-    <div class="detail stack" style={{ '--gap': '18px' } as never}>
-      <Head
-        icon={npc.icon}
-        title={npc.name}
-        sub={
-          <>
-            {npc.aka && <span>{npc.aka} · </span>}
-            {SIDE_LABEL[npc.side]}
-            {film && (
-              <>
-                {' · '}
-                <Ref type="film" id={film.id} noDot />
-              </>
-            )}
-          </>
-        }
-        right={<NpcStatusControl npc={npc} />}
-      />
-      <Rich text={npc.role} class="dlead" />
-      {npc.stat && <StatBlockView npc={npc} />}
-      {npc.lines?.length ? (
-        <Expander id={`npc:${npc.id}:lines`} title="Lines" icon="message-square-quote" count={npc.lines.length} defaultOpen variant="box">
-          <Lines lines={npc.lines} />
-        </Expander>
-      ) : null}
-      {(npc.look || npc.personality || npc.play || npc.wants) && (
-        <Expander id={`npc:${npc.id}:play`} title="How to play them" icon="drama" defaultOpen variant="box">
-          <dl class="facts">
-            {npc.look && (
-              <>
-                <dt>Look</dt>
-                <dd>
-                  <Rich text={npc.look} />
-                </dd>
-              </>
-            )}
-            {npc.personality && (
-              <>
-                <dt>Personality</dt>
-                <dd>
-                  <Rich text={npc.personality} />
-                </dd>
-              </>
-            )}
-            {npc.play && (
-              <>
-                <dt>Play it</dt>
-                <dd>
-                  <Rich text={npc.play} />
-                </dd>
-              </>
-            )}
-            {npc.wants && (
-              <>
-                <dt>Wants</dt>
-                <dd>
-                  <Rich text={npc.wants} />
-                </dd>
-              </>
-            )}
-          </dl>
-        </Expander>
-      )}
-      {npc.knows?.length ? (
-        <Expander id={`npc:${npc.id}:knows`} title="What they know" icon="lightbulb" count={npc.knows.length} variant="box" defaultOpen>
-          <RichList items={npc.knows} />
-        </Expander>
-      ) : null}
-      {npc.important?.length ? (
-        <div class="callout callout--gold">
-          <Icon name="triangle-alert" size={16} />
-          <RichList items={npc.important} />
-        </div>
-      ) : null}
-      <Connections type="npc" id={npc.id} />
-      <div>
-        <Label icon="clapperboard">Appears in</Label>
-        <SceneChips scenes={scenes} />
-      </div>
-      {items.length > 0 && (
-        <div>
-          <Label icon="package">Carrying</Label>
-          <div class="stack" style={{ '--gap': '6px' } as never}>
-            {items.map((i) => (
-              <ItemRow key={i.id} item={i} showHolder={false} />
-            ))}
-          </div>
-        </div>
-      )}
-      <DmNote text={npc.dmNote} />
-    </div>
-  );
-}
-
 export function ItemDetail({ item }: { item: Item }) {
   const hidden = item.secret && !item.revealed && shielded();
   const users = all<Ability>('ability').filter((a) => a.requires === item.id);
@@ -626,6 +388,7 @@ export function ItemDetail({ item }: { item: Item }) {
     <div class="detail stack" style={{ '--gap': '18px' } as never}>
       <Head
         icon={hidden ? 'lock' : item.icon}
+        face={{ type: 'item', id: item.id }}
         title={hidden ? item.alias ?? 'Secret item' : item.name}
         sub={
           <>
@@ -1046,9 +809,9 @@ export function EntityDetail({ type, id }: { type: EntityType; id: string }) {
   if (!e) return <div class="muted">This entry no longer exists.</div>;
   switch (type) {
     case 'pc':
-      return <PcDetail pc={e as PC} />;
+      return <PcProfile pc={e as PC} />;
     case 'npc':
-      return <NpcDetail npc={e as NPC} />;
+      return <NpcProfile npc={e as NPC} />;
     case 'item':
       return <ItemDetail item={e as Item} />;
     case 'ability':
@@ -1129,11 +892,16 @@ export function PeekCard({ type, id }: { type: EntityType; id: string }) {
     type === 'clue' ? <ClueControl clue={e as Clue} size="sm" /> :
     type === 'condition' ? <ConditionControl cond={e as Condition} size="sm" /> :
     type === 'scene' ? <SceneStatusControl scene={e as Scene} size="sm" /> : null;
+  const face = portraitOf(type, id);
+  const film = type === 'npc' || type === 'pc' ? sourcesOf(type, id)[0] : undefined;
   return (
-    <div class="peek">
+    <div class={cx('peek', face && 'peek--face')}>
       <div class="peek__head">
-        <Icon name={iconOf(type, e)} size={15} />
-        <span class="peek__name">{(any.name ?? any.title) as string}</span>
+        {face ? <Face type={type} id={id} size={44} /> : <Icon name={iconOf(type, e)} size={15} />}
+        <span class="peek__name">
+          {(any.name ?? any.title) as string}
+          {face && (type === 'npc' || type === 'pc') && <span class="peek__src">{film ? film.title : 'Original'}</span>}
+        </span>
         {statusEl}
       </div>
       {body}

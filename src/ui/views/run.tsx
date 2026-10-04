@@ -29,7 +29,6 @@ import {
   neighbors,
   npcMaxHp,
   npcStat,
-  pcStatusInfo,
   sceneInPlay,
   sceneStatus,
   shielded,
@@ -45,7 +44,8 @@ import { DicePanel } from '../dice';
 import { ItemRow, MaskPicker, StatGrid } from '../detail';
 import { useMedia, useTick } from '../hooks';
 import { Icon } from '../icons';
-import { Avatar, CommitInput, Expander, HpBar, Pips, cx, hueVar } from '../kit';
+import { Face } from '../profile';
+import { CommitInput, Expander, HpBar, Pips, cx, hueVar } from '../kit';
 import { Ref, Rich } from '../rich';
 import { EncounterList, SceneBody, SceneMeta } from '../scene';
 
@@ -163,7 +163,7 @@ function CombatRow({ c, active, index }: { c: { key: string; type: 'pc' | 'npc';
     return (
       <li class={cx('crow', active && 'is-active', pc.status !== 'alive' && `crow--${pc.status}`)}>
         <input class="crow__init input input--sm num" value={c.init} inputMode="numeric" aria-label={`${pc.name} initiative`} onChange={(e) => setInit(c.key, parseInt((e.target as HTMLInputElement).value, 10) || 0)} />
-        <Avatar icon={pc.icon} hue={pc.hue} size={30} ring={pc.status === 'ghost' ? 'ghost' : undefined} />
+        <Face type="pc" id={pc.id} size={36} />
         <div class="crow__main">
           <div class="crow__top">
             <button type="button" class="crow__name" onClick={() => openDrawer('pc', pc.id)}>
@@ -216,7 +216,7 @@ function NpcCombatRow({ c, n, active, target, setTarget, index }: { c: { key: st
   return (
     <li class={cx('crow crow--npc', active && 'is-active', out && 'is-out')}>
       <input class="crow__init input input--sm num" value={c.init} inputMode="numeric" aria-label={`${n.name} initiative`} onChange={(e) => setInit(c.key, parseInt((e.target as HTMLInputElement).value, 10) || 0)} />
-      <Avatar icon={n.icon} size={30} />
+      <Face type="npc" id={n.id} size={36} />
       <div class="crow__main">
         <div class="crow__top">
           <button type="button" class="crow__name" onClick={() => openDrawer('npc', n.id)}>
@@ -371,11 +371,10 @@ function PartyMember({ pc }: { pc: PC }) {
   const items = all<Item>('item').filter((i) => i.holder === pc.id && i.state !== 'spent' && i.state !== 'destroyed' && i.kind !== 'mask');
   const donuts = ent<Item>('item', 'donuts');
   const canRevive = pc.status === 'ghost' && donuts && (donuts.state === 'held' || donuts.state === 'equipped') && (donuts.qty ?? 0) > 0;
-  const status = pcStatusInfo(pc.status);
   return (
     <li class={cx('member hue', `member--${pc.status}`)} style={{ '--c': hueVar(pc.hue) } as never}>
       <div class="member__head">
-        <Avatar icon={pc.icon} hue={pc.hue} size={38} ring={pc.status === 'alive' ? undefined : status.tone} />
+        <Face type="pc" id={pc.id} size={44} />
         <div class="member__id">
           <button type="button" class="member__name" onClick={() => openDrawer('pc', pc.id)}>
             {pc.name}

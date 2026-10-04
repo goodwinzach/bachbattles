@@ -1,0 +1,768 @@
+/* ═══ PORTRAITS, PROFILES AND THE CAST VIEW ═══════════════ */
+
+/* ─── faces ─────────────────────────────────────────────── */
+
+.face {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  border-radius: 50%;
+  background: var(--surface-3);
+  box-shadow: 0 0 0 var(--ring-w, 1.5px) var(--face-ring, color-mix(in oklab, var(--fg) 16%, transparent));
+}
+
+.face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: filter 0.3s, opacity 0.3s;
+}
+
+.face.hue {
+  --face-ring: var(--hue);
+}
+
+.face--ring {
+  --face-ring: var(--tone);
+  --ring-w: 2px;
+}
+
+/* state shows on the face itself: ghosts fade, stone greys out, the defeated dim */
+.face--ghost {
+  --face-ring: var(--ghost);
+}
+
+.face--ghost img {
+  filter: grayscale(1) brightness(1.2);
+  opacity: 0.5;
+}
+
+.face--ghost::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--ghost) 26%, transparent);
+}
+
+.face--stone {
+  --face-ring: var(--stone);
+}
+
+.face--stone img {
+  filter: grayscale(1) contrast(1.2) brightness(0.92);
+}
+
+.face--down {
+  --face-ring: var(--warn);
+}
+
+.face--down img {
+  filter: saturate(0.4) brightness(0.8);
+}
+
+.face--out img {
+  filter: grayscale(0.9);
+  opacity: 0.55;
+}
+
+/* ─── sources ───────────────────────────────────────────── */
+
+.srcline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.srcline__k {
+  font-weight: 600;
+}
+
+.srcchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in oklab, var(--gold) 42%, var(--line));
+  background: var(--gold-wash);
+  color: var(--fg);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  transition: border-color 0.15s;
+}
+
+.srcchip svg {
+  color: var(--gold);
+}
+
+.srcchip:hover {
+  border-color: var(--gold);
+}
+
+/* ─── profile hero ──────────────────────────────────────── */
+
+.phero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 20px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.phero.hue {
+  border-color: var(--hue-line);
+}
+
+/* the portrait, blurred into a glow behind the header */
+.phero__backdrop {
+  position: absolute;
+  inset: -60px;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  filter: blur(46px) saturate(1.4);
+  opacity: var(--glow);
+}
+
+.phero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 0%, color-mix(in oklab, var(--surface-2) 55%, transparent) 45%, color-mix(in oklab, var(--surface-2) 82%, transparent) 100%);
+}
+
+.phero__face {
+  position: relative;
+  justify-self: center;
+}
+
+.phero .face {
+  --ring-w: 3px;
+  box-shadow:
+    0 0 0 var(--ring-w) var(--face-ring, color-mix(in oklab, var(--fg) 22%, transparent)),
+    0 24px 48px -20px rgb(0 0 0 / 0.65);
+}
+
+.phero__mask {
+  position: absolute;
+  right: -6%;
+  bottom: -2%;
+  display: grid;
+  place-items: center;
+  width: 38%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 3px solid var(--surface-2);
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--fg-2);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+  transition: transform 0.2s var(--ease);
+}
+
+.phero__mask:hover {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+.phero__mask img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phero__text {
+  min-width: 0;
+}
+
+.phero__eyebrow {
+  color: var(--muted);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.phero__eyebrow strong {
+  color: var(--fg-2);
+}
+
+.phero.hue .phero__eyebrow {
+  color: var(--hue-fg);
+}
+
+.phero__name {
+  margin: 3px 0 0;
+  font-family: var(--f-display);
+  font-size: 2.15rem;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.phero__aka {
+  margin-top: 5px;
+  color: var(--fg-2);
+  font-size: var(--fs-sm);
+  font-style: italic;
+}
+
+.phero__lead {
+  display: block;
+  margin-top: 10px;
+  color: var(--fg);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+}
+
+.phero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.phero__open {
+  margin-left: auto;
+}
+
+.qfact {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--surface) 78%, transparent);
+  color: var(--fg-2);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.qfact svg {
+  color: var(--muted);
+}
+
+.qfact strong {
+  color: var(--fg);
+}
+
+.qfact.t-gold,
+.qfact.t-gold svg {
+  color: var(--gold);
+}
+
+.qfact.t-gold {
+  border-color: color-mix(in oklab, var(--gold) 40%, var(--line));
+}
+
+/* big version for the profile page */
+.phero--page {
+  gap: 40px;
+  padding: 40px 44px;
+  border-radius: 22px;
+}
+
+.phero--page .face {
+  --ring-w: 4px;
+}
+
+.phero--page .phero__name {
+  font-size: clamp(2.6rem, 5.2vw, 4.6rem);
+}
+
+.phero--page .phero__aka {
+  font-size: var(--fs-md);
+}
+
+.phero--page .phero__lead {
+  max-width: 62ch;
+  font-size: var(--fs-lg);
+}
+
+@media (max-width: 760px) {
+  .phero--page {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 22px;
+    padding: 28px 18px 22px;
+    text-align: center;
+  }
+
+  .phero--page .phero__facts,
+  .phero--page .srcline {
+    justify-content: center;
+  }
+
+  .phero--page .phero__open {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .phero--drawer {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .phero--drawer .phero__facts,
+  .phero--drawer .srcline {
+    justify-content: center;
+  }
+
+  .phero--drawer .phero__open {
+    margin-left: 0;
+  }
+}
+
+/* ─── profile body ──────────────────────────────────────── */
+
+.prof--drawer,
+.prof--page,
+.prof__main,
+.prof__side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.prof--page {
+  gap: 22px;
+}
+
+.prof__cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+@media (min-width: 1000px) {
+  .prof__cols {
+    grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+  }
+}
+
+.prof--page .prof__sec {
+  padding: 18px 20px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.prof__none {
+  margin: 0;
+}
+
+.prof__play {
+  margin-top: 10px;
+}
+
+/* lines to use */
+.quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quote {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  border-left: 3px solid var(--gold);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-family: var(--f-script);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+}
+
+.quote__mark {
+  flex: none;
+  margin-top: 3px;
+  color: var(--gold);
+}
+
+.quote--cue {
+  border: 1px dashed var(--line-2);
+  border-left: 3px solid var(--line-2);
+  background: transparent;
+  color: var(--fg-2);
+  font-family: var(--f-body);
+  font-size: var(--fs-sm);
+  font-style: italic;
+}
+
+.quote--cue .quote__mark {
+  color: var(--muted);
+}
+
+/* ─── cast gallery ──────────────────────────────────────── */
+
+.cast__head {
+  margin-bottom: 18px;
+}
+
+.cast__title {
+  margin: 3px 0 6px;
+  font-family: var(--f-display);
+  font-size: var(--fs-3xl);
+  font-weight: 800;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.cast__blurb {
+  max-width: 72ch;
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.cast__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+.cast__search {
+  flex: 1 1 240px;
+  max-width: 360px;
+}
+
+.cast__group {
+  margin-bottom: 32px;
+}
+
+.cast__gh {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-display);
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cast__gh .swatch {
+  width: 11px;
+  height: 11px;
+}
+
+.cast__gh .muted {
+  font-family: var(--f-body);
+  font-size: var(--fs-sm);
+  letter-spacing: 0;
+}
+
+.cast__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 520px) {
+  .cast__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+.ctile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 18px 10px 14px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  text-align: center;
+  transition: transform 0.18s var(--ease), border-color 0.18s, background-color 0.18s, opacity 0.18s;
+}
+
+.ctile:hover {
+  transform: translateY(-3px);
+  border-color: var(--line-2);
+  background: var(--surface-2);
+}
+
+.ctile.hue {
+  border-color: var(--hue-line);
+}
+
+.ctile__face {
+  position: relative;
+  display: inline-flex;
+  margin-bottom: 6px;
+}
+
+.ctile .face {
+  transition: transform 0.25s var(--ease);
+}
+
+.ctile:hover .face {
+  transform: scale(1.04);
+}
+
+.ctile__name {
+  max-width: 100%;
+  font-size: var(--fs-md);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.ctile__src {
+  max-width: 100%;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+}
+
+.ctile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.ctile--out {
+  opacity: 0.62;
+}
+
+.ctile--out:hover {
+  opacity: 1;
+}
+
+.ctile.is-here {
+  border-color: color-mix(in oklab, var(--rec) 55%, var(--line));
+}
+
+.ctile__here {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  transform: translateX(-50%);
+  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in oklab, var(--rec) 55%, var(--line));
+  background: var(--surface);
+  color: var(--fg);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ─── profile page chrome ───────────────────────────────── */
+
+.cast--page {
+  max-width: 1320px;
+}
+
+.castnav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.castnav__btn {
+  gap: 7px;
+}
+
+.castnav__name {
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .castnav__name {
+    display: none;
+  }
+}
+
+/* ─── portraits inside other components ─────────────────── */
+
+.chip__icon--face {
+  overflow: hidden;
+  background: var(--surface-3);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--hue, var(--fg)) 35%, transparent);
+}
+
+.chip__icon--face img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chip--struck .chip__icon--face img {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.palette__icon--face {
+  overflow: hidden;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+}
+
+.palette__icon--face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.peek--face .peek__head {
+  gap: 11px;
+}
+
+.peek__name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.peek__src {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.maskpick__btn .face {
+  margin-left: -6px;
+}
+
+.maskpick__btn:disabled .face img {
+  filter: grayscale(1);
+}
+
+.card__head > .face {
+  margin-top: 1px;
+}
+
+/* ─── portrait picker (editor) ──────────────────────────── */
+
+.portpick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+  gap: 7px;
+  max-height: 212px;
+  padding: 8px;
+  overflow-y: auto;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+
+.portpick__opt {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--fg-2);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.portpick__opt img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.portpick__opt:hover {
+  transform: scale(1.07);
+}
+
+.portpick__opt.is-on {
+  box-shadow: 0 0 0 2px var(--bg-2), 0 0 0 4px var(--gold);
+}
+
+/* a portrait that opens the profile */
+.facebtn {
+  display: inline-grid;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.18s var(--ease);
+}
+
+.facebtn:hover {
+  transform: scale(1.06);
+}
+
+.encounter__avatars .facebtn + .facebtn {
+  margin-left: -8px;
+}
+
+.encounter__avatars .face {
+  box-shadow: 0 0 0 2px var(--surface-2);
+}
+
+.bossorder__faces {
+  display: inline-flex;
+  flex: none;
+}
+
+.bossorder__faces .face + .face,
+.bossorder__faces .avatar + .face,
+.bossorder__faces .face + .avatar,
+.bossorder__faces .avatar + .avatar {
+  margin-left: -9px;
+}
+
+.bossorder__faces .face,
+.bossorder__faces .avatar {
+  box-shadow: 0 0 0 2px var(--surface-2);
+}

@@ -62,8 +62,18 @@ for (const a of CAMPAIGN.abilities) {
 for (const p of CAMPAIGN.pcs) for (const a of p.abilities) if (!abilityIds.has(a)) errors.push(`pc:${p.id}: ability ${a}`);
 for (const n of CAMPAIGN.npcs) if (n.film && !filmIds.has(n.film)) errors.push(`npc:${n.id}: film ${n.film}`);
 for (const c of CAMPAIGN.clues) if (!sceneIds.has(c.source)) errors.push(`clue:${c.id}: source ${c.source}`);
-for (const coll of ['pcs', 'items', 'abilities', 'rules']) for (const e of CAMPAIGN[coll]) for (const f of e.films ?? []) if (!filmIds.has(f)) errors.push(`${coll}:${e.id}: film ${f}`);
+for (const coll of ['pcs', 'npcs', 'items', 'abilities', 'rules']) for (const e of CAMPAIGN[coll]) for (const f of e.films ?? []) if (!filmIds.has(f)) errors.push(`${coll}:${e.id}: film ${f}`);
 for (const r of RELATIONS) for (const k of [r.a, r.b]) if (!BASE_INDEX[k]) errors.push(`relation: missing ${k}`);
+// portraits: every default points at a real entity and a real image (a missing file fails the build)
+const pout = join(dir, 'portraits.mjs');
+await esbuild.build({ entryPoints: ['src/data/portraits.ts'], bundle: true, format: 'esm', outfile: pout, logLevel: 'error', loader: { '.webp': 'empty' } });
+const { PORTRAITS, DEFAULT_PORTRAIT } = await import(pout);
+const portraitKeys = new Set(PORTRAITS.map((p) => p.key));
+for (const [key, portrait] of Object.entries(DEFAULT_PORTRAIT)) {
+  if (!BASE_INDEX[key]) errors.push(`portrait for missing ${key}`);
+  if (!portraitKeys.has(portrait)) errors.push(`${key}: unknown portrait ${portrait}`);
+}
+for (const e of Object.values(BASE_INDEX)) if (e.portrait && e.portrait !== 'none' && !portraitKeys.has(e.portrait)) errors.push(`${e.id}: unknown portrait ${e.portrait}`);
 const dupes = Object.keys(BASE_INDEX).length !== Object.values(CAMPAIGN).reduce((n, l) => n + l.length, 0);
 if (dupes) errors.push('duplicate ids within a type');
 
@@ -73,4 +83,4 @@ if (errors.length) {
   process.exit(1);
 }
 const counts = Object.entries(CAMPAIGN).map(([k, v]) => `${k} ${v.length}`).join(', ');
-console.log(`data ok: ${counts}`);
+console.log(`data ok: ${counts}, portraits ${PORTRAITS.length}`);

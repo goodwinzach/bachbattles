@@ -2033,3 +2033,28 @@
   flex: 1 1 auto;
   max-width: none;
 }
+
+/* portraits on the connections web */
+.wnode .wnode__ring {
+  fill: none;
+  stroke-width: 2;
+}
+
+.wnode--npc .wnode__ring {
+  stroke: color-mix(in oklab, var(--fg) 45%, transparent);
+}
+
+.wnode--item .wnode__ring {
+  stroke: var(--info);
+}
+
+.wnode.is-struck .wnode__img {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.wnode.is-focus .wnode__ring,
+.wnode:hover .wnode__ring {
+  stroke: var(--gold);
+  stroke-width: 3;
+}

@@ -70,6 +70,7 @@ export const PCS: PC[] = [
       'Spent last night trying to talk up [[npc:nerissa]], an elven fairy, and could not stop staring at her wings. Frequently operating on a completely different wavelength from the danger around him.',
     play: 'Let his clumsiness become a weapon. Never require real substance use; miming the bong rip is fine.',
     abilities: ['bong-flight', 'drunken-momentum'],
+    films: ['big-lebowski'],
   }),
   pc({
     id: 'haydn',
@@ -118,6 +119,11 @@ export const NPCS: NPC[] = [
     role: 'Wakes [[pc:flynn]] up in the field.',
     look: 'Staring. Judging.',
     minor: true,
+    personality: 'Unbothered. Chews. Judges.',
+    lines: [
+      'Baa.',
+      '(It keeps chewing and stares straight at the Spider-Man mask.)',
+    ],
   }),
 
   // ── The Green Dragon ────────────────────────────────────
@@ -136,6 +142,8 @@ export const NPCS: NPC[] = [
       'He does **not** know where the ring went.',
     ],
     lines: ["You shouldn't stay long."],
+    personality: 'Nervous, loyal to his boss, wants this group gone before Michael arrives.',
+    wants: 'For the group to leave before [[npc:michael-pearson]] gets there.',
   }),
   npc({
     id: 'narrator',
@@ -155,6 +163,7 @@ export const NPCS: NPC[] = [
       'Why does everyone keep asking me about last night?',
       'Why am I on a dock? Why is there an arrow in me?',
     ],
+    wants: 'To be left alone, and to remember his own name.',
   }),
   npc({
     id: 'antinous',
@@ -169,7 +178,10 @@ export const NPCS: NPC[] = [
     wants: 'The number of the redheaded woman who was hitting on [[pc:flynn]] last night.',
     play: 'Teases Flynn about the woman being out of his league. Do not let a side fight run past 2 rounds unless the table loves it.',
     knows: ['Does not know where the ring went.', 'Remembers the redheaded woman.'],
-    lines: ["You don't remember her? That's somehow worse. Give me the number."],
+    lines: [
+      "You don't remember her? That's somehow worse. Give me the number.",
+      'Out of your league, Spider-Man. Way, way out.',
+    ],
     stat: { ac: 14, hp: 20, attacks: [{ name: 'Sword', bonus: 4, dmg: '1d8', range: 'Close' }] },
   }),
   npc({
@@ -184,6 +196,7 @@ export const NPCS: NPC[] = [
     play: 'Escalates the teasing. Not important enough for long conversations.',
     lines: ['She was out of your league even before the vomit mask.'],
     stat: { ac: 12, hp: 12, attacks: [{ name: 'Bow', bonus: 3, dmg: '1d8', range: 'Far Away' }] },
+    personality: 'Sycophantic. Laughs a beat too loud at everything Antinous says.',
   }),
   npc({
     id: 'suitor-shield',
@@ -199,6 +212,12 @@ export const NPCS: NPC[] = [
       hp: 12,
       attacks: [{ name: 'Dagger', bonus: 3, dmg: '1d6', range: 'Close', note: 'AC includes the shield (+1).' }],
     },
+    personality: 'Quiet muscle who thinks he is funnier than he is.',
+    play: 'Backs up every insult with a shield tap. Folds the moment Antinous does.',
+    lines: [
+      'Do it, Antinous. Do the thing.',
+      "(Taps the shield with the dagger, grinning.) He's not gonna do anything.",
+    ],
   }),
   npc({
     id: 'nerissa',
@@ -212,6 +231,7 @@ export const NPCS: NPC[] = [
     knows: ['Nothing about the ring.'],
     important: ['If Alex somehow rolls a natural 20 on Charisma, she gives him one useful fact just to make him leave: Flynn was with the redhead.'],
     lines: ['No.', 'Still no.'],
+    wants: 'For Dude Bro to leave. Immediately.',
   }),
 
   // ── The Gentlemen ───────────────────────────────────────
@@ -259,6 +279,11 @@ export const NPCS: NPC[] = [
       ],
       behavior: 'Targets whoever seems most competent.',
     },
+    wants: 'The bill settled quietly, with nobody important hurt.',
+    lines: [
+      "Mr. Pearson is being very generous. I'd take the deal.",
+      'Hands where I can see them. All of them. Yes, yours too.',
+    ],
   }),
   npc({
     id: 'coach',
@@ -279,6 +304,11 @@ export const NPCS: NPC[] = [
       ],
       behavior: 'Closes distance and brawls.',
     },
+    wants: 'To be home for dinner.',
+    lines: [
+      "Lads. It's a bar bill, not a war. Don't make it a war.",
+      "Right. Fine. Let's get this over with.",
+    ],
   }),
 
   // ── Arrival ─────────────────────────────────────────────
@@ -300,6 +330,7 @@ export const NPCS: NPC[] = [
       'I have something else that could go on your face.',
       'I know someone who experiences answers differently. Come alone if you want. Bring your friends if you have to.',
     ],
+    wants: 'For Flynn to call because he remembered her, not because he needs something.',
   }),
   npc({
     id: 'abbott',
@@ -310,6 +341,9 @@ export const NPCS: NPC[] = [
     role: 'Heptapod. Floats beside Costello in the bean-shaped craft.',
     personality: 'Alien, unreadable, not hostile.',
     play: 'Silent presence. Costello does the answering.',
+    lines: [
+      '(Abbott presses a limb to the glass. Ink blooms into a ring and slowly fades.)',
+    ],
   }),
   npc({
     id: 'costello',
@@ -376,6 +410,8 @@ export const NPCS: NPC[] = [
       film: 'fight-club',
       role: 'One of five goons who step out of the airplane hangar for [[npc:tyler]].',
       look: 'Can look like anything.',
+      personality: "Disposable, enthusiastic, slightly unhinged. Tyler's biggest fans.",
+      lines: ['Tyler says nobody flies today.', "First rule of the airfield: you don't leave the airfield."],
       play: 'Goons should fall quickly. They exist so everyone gets to use combat toys.',
       minor: true,
       stat: {
@@ -404,6 +440,7 @@ export const NPCS: NPC[] = [
     play: 'Dry acceptance. He is not impressed by the groomsmen.',
     important: ['Boat route: if Flynn is clearly losing to Tyler, Odysseus shoots Tyler in the head with an arrow.'],
     lines: ['California is west. Eventually.', "I've been lost longer than you've been married, which apparently is not at all. Get on the boat."],
+    wants: "California, in time for the premiere of Anne Hathaway's new movie.",
   }),
   npc({
     id: 'odysseus-crew',
@@ -423,6 +460,11 @@ export const NPCS: NPC[] = [
       ],
       behavior: 'HP is per man. Five men.',
     },
+    personality: "Salty, loyal, unimpressed by anything after everything they've seen.",
+    lines: [
+      'Captain says row, we row.',
+      'Is it always like this with you lot?',
+    ],
   }),
 
   // ── The Island ──────────────────────────────────────────
@@ -445,6 +487,24 @@ export const NPCS: NPC[] = [
       specials: [{ name: "Medusa's Head", text: 'A hazard, not a normal attack. See [[item:medusa-head]].' }],
       behavior: 'Deliberately easy. Medusa is the encounter. Only Flynn can safely approach.',
     },
+    wants: 'For the group to prove something about themselves, one sin at a time.',
+  }),
+  npc({
+    id: 'medusa',
+    name: 'Medusa',
+    film: 'greek-myth',
+    side: 'foe',
+    icon: 'eye',
+    role: "The gorgon's severed head, packed in [[npc:john-doe]]'s box. Whoever looks at her turns to stone.",
+    look: 'Snakes for hair, mouth open mid-scream, still very much awake.',
+    personality: 'No speech, all stare. The snakes do the moving.',
+    wants: 'To be looked at. Once.',
+    play: "Run her as the room's hazard, not a fighter. Whenever someone looks her way, call for an inverted Perception check (DC 11): low is safe. Flynn is immune while he wears any mask.",
+    important: [
+      'Whoever opens [[item:the-box]] turns to stone instantly.',
+      'She is [[item:medusa-head]] on the item list. Neutralize the head and she is done.',
+    ],
+    lines: ['(A wet hiss. Every snake turns toward whoever just looked up.)', 'Look at me.'],
   }),
   npc({
     id: 'david-frame',
@@ -464,6 +524,7 @@ export const NPCS: NPC[] = [
       attacks: [{ name: 'Knife', bonus: 4, dmg: '1d6', range: 'Close' }],
       specials: [{ name: 'Knife flurry', uses: '1/fight', text: 'Attack twice; each hit deals {{1d4}}.' }],
     },
+    wants: 'To show Flynn his new tricks. Personally.',
   }),
   ...[1, 2, 3].map((n) =>
     npc({
@@ -475,6 +536,8 @@ export const NPCS: NPC[] = [
       group: 'gladiators',
       minor: true,
       role: 'LUST. One of a group of naked gladiators who enthusiastically want to seduce the party.',
+      personality: 'Enthusiastic, oiled, shameless, weirdly polite about it.',
+      lines: ['Are you not entertained?', 'No armor. No weapons. No problem.'],
       play: 'Do not over-describe this. The joke is the premise. The room should be brief.',
       stat: { ac: 12, hp: 12, attacks: [{ name: 'Grapple / punch', bonus: 3, dmg: '1d4', range: 'Close' }] },
     }),
@@ -503,6 +566,11 @@ export const NPCS: NPC[] = [
         },
       ],
     },
+    wants: 'Nobody touches the stash.',
+    lines: [
+      "That's mine. All of it. Put it down, slowly.",
+      'You want a drink? Pay for it like everybody else.',
+    ],
   }),
   npc({
     id: 'truman',
@@ -514,12 +582,16 @@ export const NPCS: NPC[] = [
     personality: 'Earnest, desperate, excited by the idea of seeing the real world.',
     play: 'He asks where they are going and becomes obsessed with leaving. He does not attack first.',
     important: ['If they leave him alive and unattended, Truman later steals a boat. No strategic punishment. It is just funny.'],
-    lines: ['Hollywood is real, right? Like actually real?'],
+    lines: [
+      'Hollywood is real, right? Like actually real?',
+      "Good morning, and in case I don't see ya, good afternoon, good evening, and good night!",
+    ],
     stat: {
       ac: 11,
       hp: 18,
       attacks: [{ name: 'Improvised object', bonus: 1, dmg: '1d4', range: 'Close', note: 'Only if the players attack him first.' }],
     },
+    wants: 'Out. Hollywood, the real world, anywhere real.',
   }),
   npc({
     id: 'kingpin',
@@ -531,7 +603,10 @@ export const NPCS: NPC[] = [
     personality: 'Huge, brutal, impatient.',
     play: "Only attacks if Flynn is wearing the [[item:spider-mask]]. If Flynn enters as Batman or Inkblot, Kingpin stares, grunts, and does not care. If Flynn switches into Spider-Man inside, he is immediately furious.",
     important: ['Clever solution: Flynn removes or switches the Spider-Man mask and Kingpin\'s aggression collapses. Do not explain this unless players notice.'],
-    lines: ['Spider-Man.'],
+    lines: [
+      'Spider-Man.',
+      'Take. It. Off.',
+    ],
     stat: {
       ac: 15,
       hp: 38,
@@ -540,6 +615,7 @@ export const NPCS: NPC[] = [
         { name: 'Slam', uses: '1/fight', text: 'Everyone Close rolls {{agi:12}}. Failure takes {{1d8}} and is knocked to Nearby.' },
       ],
     },
+    wants: 'Spider-Man, gone.',
   }),
   npc({
     id: 'cypher',
@@ -550,7 +626,10 @@ export const NPCS: NPC[] = [
     role: 'SLOTH. Lounging with a lightning rifle.',
     personality: 'Cynical, tired, wants comfort instead of truth or effort.',
     play: 'Complains that he does not want to take any pills, then immediately fires.',
-    lines: ["I don't want to take any pills."],
+    lines: [
+      "I don't want to take any pills.",
+      'Ignorance is bliss.',
+    ],
     stat: {
       ac: 13,
       hp: 24,
@@ -559,6 +638,7 @@ export const NPCS: NPC[] = [
         { name: 'Close shove', bonus: 2, dmg: '1d4', range: 'Close' },
       ],
     },
+    wants: 'To be left alone with his comforts.',
   }),
   npc({
     id: 'baron',
@@ -577,6 +657,11 @@ export const NPCS: NPC[] = [
       attacks: [{ name: 'Oil splash', bonus: 3, dmg: '1d6', range: 'Nearby' }],
       specials: [{ name: 'Command', text: 'Instead of attacking, give [[npc:feyd]] or [[npc:rabban]] advantage on their next attack.' }],
     },
+    wants: 'More. Of everything.',
+    lines: [
+      'Sit. Eat. Everyone in this house eats... and then everyone pays.',
+      'Feyd. Rabban. Our guests look hungry.',
+    ],
   }),
   npc({
     id: 'feyd',
@@ -594,6 +679,11 @@ export const NPCS: NPC[] = [
       attacks: [{ name: 'Dagger', bonus: 5, dmg: '1d6', range: 'Close' }],
       specials: [{ name: 'Blood rush', text: 'When below 13 HP, his dagger damage becomes {{1d8}}.' }],
     },
+    wants: 'A worthy fight.',
+    lines: [
+      'Again. Hurt me again.',
+      '(Smiles wider every time he bleeds.)',
+    ],
   }),
   npc({
     id: 'rabban',
@@ -613,13 +703,19 @@ export const NPCS: NPC[] = [
         { name: 'Shove', bonus: 4, range: 'Close', note: 'Instead of damage, push the target from Close to Nearby.' },
       ],
     },
+    wants: 'To hit something.',
+    lines: [
+      'Enough talk.',
+      '(A roar, and the heavy swing comes before the sentence ends.)',
+    ],
   }),
 
   // ── Hollywood ───────────────────────────────────────────
   npc({
     id: 'nathan-fielder',
     name: 'Nathan Fielder',
-    film: 'the-rehearsal',
+    film: 'nathan-for-you',
+    films: ['the-rehearsal'],
     side: 'neutral',
     icon: 'monitor-play',
     role: 'Awkward host who helped film the group. Now terrified of Lou.',
@@ -631,6 +727,7 @@ export const NPCS: NPC[] = [
       'I am technically also being held hostage, although I did sign a release.',
       'I thought there would be more consent paperwork before the deaths.',
     ],
+    wants: 'To survive this production, and ideally get the release forms signed.',
   }),
   npc({
     id: 'camera-crew',
@@ -640,6 +737,11 @@ export const NPCS: NPC[] = [
     role: "Nathan's crew. Their camcorders are decoys that fire sedative needles.",
     play: 'Everyone eventually goes down. A good roll only changes how.',
     minor: true,
+    personality: 'Silent professionals. Apologetic about the needles.',
+    lines: [
+      "Sorry. We're rolling.",
+      '(The red record light blinks. Nobody says anything.)',
+    ],
   }),
   npc({
     id: 'lou',
@@ -711,6 +813,11 @@ export const NPCS: NPC[] = [
         { name: 'Relentless', uses: '1/fight', text: 'When reduced below 10 HP, he immediately moves Close to the nearest living player.' },
       ],
     },
+    wants: 'To finish what he started, one hammer swing at a time.',
+    lines: [
+      'Laugh, and the world laughs with you. Weep, and you weep alone.',
+      '(He smiles. He keeps walking.)',
+    ],
   }),
   npc({
     id: 'toothless',
@@ -731,6 +838,11 @@ export const NPCS: NPC[] = [
       ],
       specials: [{ name: 'Wing burst', uses: '1/fight', text: 'Everyone Close rolls {{agi:12}} or gets pushed to Nearby.' }],
     },
+    wants: 'Nothing cruel. He is being weaponized.',
+    lines: [
+      '(A low warble, then the rising whine of a plasma blast charging.)',
+      '(He tilts his head like a curious cat, a second before the dive.)',
+    ],
   }),
   npc({
     id: 'cat',
@@ -746,7 +858,11 @@ export const NPCS: NPC[] = [
       'Cannot kill Flynn. A lethal hit leaves Flynn at 1 HP; do not explain why.',
       'Ghosts can distract him (he can see them). A good ghost trick gives a living player advantage, never makes the Cat vulnerable.',
     ],
-    lines: ['Well. This set is a mess.', 'Much better. One groom. Cleaner composition.'],
+    lines: [
+      'Well. This set is a mess.',
+      'Oh, do not frown and do not fuss. It is only a game, and the game is us!',
+      'Much better. One groom. Cleaner composition.',
+    ],
     stat: {
       ac: null,
       hp: null,
@@ -771,6 +887,7 @@ export const NPCS: NPC[] = [
       ],
       behavior: 'When every other player is a ghost, he bows, tidies his hat, and leaves.',
     },
+    wants: 'To tidy the set down to one groom.',
   }),
 
   // ── Epilogue ────────────────────────────────────────────
@@ -805,6 +922,8 @@ export const RELATIONS: { a: string; b: string; label: string }[] = [
   { a: 'npc:suitor-shield', b: 'npc:antinous', label: 'hanger-on' },
   { a: 'npc:odysseus-crew', b: 'npc:odysseus', label: 'his crew' },
   { a: 'npc:odysseus', b: 'npc:tyler', label: 'shoots him if Flynn is losing' },
+  { a: 'npc:john-doe', b: 'npc:medusa', label: 'keeps her head in a box' },
+  { a: 'npc:medusa', b: 'pc:flynn', label: 'cannot touch him while he wears a mask' },
   { a: 'npc:goon-crowbar', b: 'npc:tyler', label: 'goon' },
   { a: 'npc:goon-sledgehammer', b: 'npc:tyler', label: 'goon' },
   { a: 'npc:goon-machete', b: 'npc:tyler', label: 'goon' },

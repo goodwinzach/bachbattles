@@ -897,3 +897,41 @@
     animation: none;
   }
 }
+
+/* portraits on the cast and entrance slides */
+.sl__portrait--img {
+  overflow: hidden;
+  background: #0b0a0e;
+}
+
+.sl__portrait--img img,
+.sl__bossicon--img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sl__bossicon--img {
+  width: 27cqw;
+  height: 27cqw;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 0.5cqw solid #ff5b4f;
+  background: #0b0a0e;
+  box-shadow: 0 0 6cqw rgb(255 91 79 / 0.35);
+}
+
+.sl--enter {
+  background: radial-gradient(80% 90% at 15% 50%, rgb(229 184 98 / 0.18), #0b0a0e 65%);
+}
+
+.sl--enter .sl__bossicon--img {
+  border-color: #e5b862;
+  box-shadow: 0 0 6cqw rgb(229 184 98 / 0.3);
+}
+
+.sl--enter .sl__quote {
+  border-left-color: #e5b862;
+}

@@ -173,6 +173,8 @@ export interface PC extends PcRuntime {
   secrets?: Rich[];
   notes?: Rich[];
   films?: string[];
+  /** portrait key (src/data/portraits.ts); 'none' shows the icon instead */
+  portrait?: string;
 }
 
 export type NpcStatus = 'unmet' | 'present' | 'friendly' | 'hostile' | 'defeated' | 'dead' | 'fled' | 'stone' | 'captured';
@@ -228,6 +230,10 @@ export interface NPC extends NpcRuntime {
   phases?: { label: string; stat: StatBlock }[];
   group?: string;
   minor?: boolean;
+  /** other films or shows they are tied to, after `film` */
+  films?: string[];
+  /** portrait key (src/data/portraits.ts); 'none' shows the icon instead */
+  portrait?: string;
 }
 
 export type ItemKind = 'mask' | 'key' | 'weapon' | 'gear' | 'consumable' | 'money' | 'prop' | 'hazard';
@@ -258,6 +264,8 @@ export interface Item extends ItemRuntime {
   secret?: boolean;
   alias?: string;
   films?: string[];
+  /** portrait key (src/data/portraits.ts); 'none' shows the icon instead */
+  portrait?: string;
 }
 
 export type Recharge = 'scene' | 'fight' | 'campaign' | 'turn' | 'passive' | 'unlimited';
@@ -330,6 +338,8 @@ export interface Film {
   title: string;
   favorite: boolean;
   note?: Rich;
+  /** what kind of source it is; films are the default */
+  kind?: 'film' | 'series' | 'myth';
 }
 
 export interface Campaign {

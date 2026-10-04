@@ -7,13 +7,14 @@ import type { Ability, AnyEntity, Clue, Condition, EntityType, Hue, Item, NPC, P
 import { STAT_ABBR, type Stat } from '../data/types';
 import { rollPlain } from '../state/actions';
 import {
-  abilityStatus,
   ABILITY_STATUS,
+  abilityStatus,
   isSecretHidden,
   itemStateInfo,
   nameOf,
   npcStatusInfo,
   pcStatusInfo,
+  portraitOf,
   sceneStatus,
   type Tone,
 } from '../state/derive';
@@ -149,10 +150,11 @@ export function Ref({ type, id, label, chip, noDot }: { type: EntityType; id: st
   };
   if (chip) {
     const hue = (e as { hue?: Hue }).hue;
+    const face = hidden ? undefined : portraitOf(type, id);
     return (
       <span {...common} class={cx('chip', `t-${tone}`, struck && 'chip--struck', hidden && 'chip--secret')}>
-        <span class={cx('chip__icon', hue && 'hue')} style={hue ? ({ '--c': hueVar(hue) } as never) : undefined}>
-          <Icon name={hidden ? 'lock' : iconOf(type, e)} size={13} />
+        <span class={cx('chip__icon', hue && 'hue', face && 'chip__icon--face')} style={hue ? ({ '--c': hueVar(hue) } as never) : undefined}>
+          {face ? <img src={face} alt="" decoding="async" draggable={false} /> : <Icon name={hidden ? 'lock' : iconOf(type, e)} size={13} />}
         </span>
         <span class="chip__label">{name}</span>
         {!noDot && type !== 'film' && type !== 'rule' && type !== 'act' && <span class="chip__dot" />}

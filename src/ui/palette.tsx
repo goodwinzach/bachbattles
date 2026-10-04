@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { TYPE_LABEL } from '../data/campaign';
 import type { AnyEntity, EntityType, Scene } from '../data/types';
 import { completeAndNext, goScene, toggleTimer } from '../state/actions';
-import { entityText, isSecretHidden, nameOf, strip } from '../state/derive';
+import { entityText, isSecretHidden, nameOf, portraitOf, strip } from '../state/derive';
 import { all, game, getDataVersion, getUi, openDrawer, openModal, setUi, VIEWS } from '../state/store';
 import { setBulk } from './hooks';
 import { Icon } from './icons';
@@ -13,6 +13,7 @@ import { openRoller } from './rollbus';
 interface Hit {
   key: string;
   icon: string;
+  face?: string;
   title: string;
   sub: string;
   kind: string;
@@ -101,6 +102,7 @@ function entityHit(type: EntityType, e: AnyEntity, score: number): Hit {
   return {
     key: `${type}:${e.id}`,
     icon: iconOf(type, e),
+    face: portraitOf(type, e.id),
     title: nameOf(type, e.id),
     sub,
     kind: TYPE_LABEL[type],
@@ -170,8 +172,8 @@ export function Palette() {
           {hits.length === 0 && <li class="palette__empty">Nothing matches "{q}". Try a name, a movie or a rule.</li>}
           {hits.map((h, i) => (
             <li key={h.key} role="option" aria-selected={i === sel} class={cx('palette__item', i === sel && 'is-sel')} onMouseEnter={() => setSel(i)} onClick={() => run(h)}>
-              <span class="palette__icon">
-                <Icon name={h.icon} size={16} />
+              <span class={cx('palette__icon', h.face && 'palette__icon--face')}>
+                {h.face ? <img src={h.face} alt="" decoding="async" /> : <Icon name={h.icon} size={16} />}
               </span>
               <span class="palette__text">
                 <span class="palette__title">{h.title}</span>

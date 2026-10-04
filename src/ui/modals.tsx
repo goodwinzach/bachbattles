@@ -5,7 +5,8 @@ import { pcStatusInfo, sceneFoes } from '../state/derive';
 import { applyTheme, exportText, getSyncState, parseImport, saveFile } from '../state/persist';
 import { all, closeModal, ent, game, getUi, latestUndoId, replaceData, resetAll, setUi, toast, undo, undoInfo, type ModalSpec } from '../state/store';
 import { Icon } from './icons';
-import { Avatar, Switch, cx } from './kit';
+import { Face } from './profile';
+import { Switch, cx } from './kit';
 
 function Dialog({ title, children, onClose, wide, tone }: { title: string; children: preact.ComponentChildren; onClose: () => void; wide?: boolean; tone?: 'gold' }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -313,13 +314,14 @@ function HistoryModal() {
 function ShortcutsModal() {
   const rows: [string, string][] = [
     ['⌘ K  or  /', 'Search everything'],
-    ['1 – 6', 'Switch view: Run, Script, Map, Slides, Codex, Rules'],
+    ['1 – 7', 'Switch view: Run, Script, Map, Slides, Cast, Codex, Rules'],
     ['E', 'Toggle edit mode'],
     ['H', 'Toggle the spoiler shield'],
     ['D', 'Open the dice tray'],
     ['⌘ Z  /  ⌘ ⇧ Z', 'Undo / redo'],
     [']  /  [', 'Next / previous scene (Run view)'],
     ['← → Space', 'Previous / next slide'],
+    ['← →', 'Previous / next character (Cast profile page)'],
     ['F', 'Fullscreen slides'],
     ['Esc', 'Close the drawer or dialog'],
   ];
@@ -362,7 +364,7 @@ function EncounterModal({ m }: { m: Extract<ModalSpec, { kind: 'encounter' }> })
               const on = fighters.includes(p.id);
               return (
                 <button key={p.id} type="button" class={cx('encset__opt', on && 'is-on')} aria-pressed={on} onClick={() => setFighters(toggle(fighters, p.id))}>
-                  <Avatar icon={p.icon} hue={p.hue} size={26} />
+                  <Face type="pc" id={p.id} size={28} />
                   <span class="grow">{p.name}</span>
                   <span class="muted">{pcStatusInfo(p.status).label}</span>
                   <Icon name={on ? 'circle-check' : 'circle-dashed'} size={16} />
@@ -380,7 +382,7 @@ function EncounterModal({ m }: { m: Extract<ModalSpec, { kind: 'encounter' }> })
               const on = foes.includes(id);
               return (
                 <button key={id} type="button" class={cx('encset__opt', on && 'is-on')} aria-pressed={on} onClick={() => setFoes(toggle(foes, id))}>
-                  <Avatar icon={n.icon} size={26} />
+                  <Face type="npc" id={n.id} size={28} />
                   <span class="grow">{n.name}</span>
                   <span class="muted num">{n.stat?.invincible ? '∞' : `HP ${n.stat?.hp ?? '—'}`}</span>
                   <Icon name={on ? 'circle-check' : 'circle-dashed'} size={16} />

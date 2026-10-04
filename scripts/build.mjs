@@ -28,6 +28,8 @@ const options = {
   legalComments: 'none',
   sourcemap: false,
   define: { 'process.env.NODE_ENV': watch ? '"development"' : '"production"' },
+  // character portraits are inlined so the page stays a single offline file
+  loader: { '.webp': 'dataurl' },
   logLevel: 'warning',
 };
 

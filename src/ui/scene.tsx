@@ -17,12 +17,13 @@ import {
   setRoute,
 } from '../state/actions';
 import { isUnmasked, KIND_LABEL, sceneFoes, sceneMust, shielded } from '../state/derive';
-import { all, ent, game, getUi, openModal } from '../state/store';
+import { all, ent, game, getUi, openDrawer, openModal } from '../state/store';
 import { SIN_ROOMS } from '../data/scenes';
 import { NpcStatusControl } from './controls';
 import { DmNote, ItemRow, Secret } from './detail';
 import { Icon } from './icons';
-import { Avatar, Badge, Expander, cx } from './kit';
+import { Face } from './profile';
+import { Badge, Expander, cx } from './kit';
 import { Ref, Rich, RichList, RichParas, CheckChip } from './rich';
 
 // ─── pieces ───────────────────────────────────────────────────────────────
@@ -68,7 +69,7 @@ function CastList({ scene }: { scene: Scene }) {
         const line = scene.lines?.find((l) => l.by === id)?.text ?? n.lines?.[0];
         return (
           <div key={id} class="castcard">
-            <Avatar icon={n.icon} size={34} />
+            <Face type="npc" id={id} size={40} />
             <div class="castcard__main">
               <div class="castcard__top">
                 <Ref type="npc" id={id} noDot />
@@ -296,7 +297,7 @@ function MedusaWidget() {
       <div class="chips">
         {groomsmen.map((p) => (
           <button key={p.id} type="button" class={cx('toggle-chip', p.status === 'stone' && 'is-on')} aria-pressed={p.status === 'stone'} onClick={() => setPcStatus(p.id, p.status === 'stone' ? 'alive' : 'stone')}>
-            <Icon name={p.icon} size={13} /> {p.name}
+            <Face type="pc" id={p.id} size={20} /> {p.name}
           </button>
         ))}
       </div>
@@ -368,11 +369,17 @@ function KingpinWidget() {
         <span>
           {hostile ? (
             <>
-              <strong>Kingpin is furious.</strong> Flynn is wearing the Spider-Man mask. “Spider-Man.”
+              <strong>
+                <Ref type="npc" id="kingpin" noDot /> is furious.
+              </strong>{' '}
+              <Ref type="pc" id="flynn" noDot /> is wearing the <Ref type="item" id="spider-mask" />. “Spider-Man.”
             </>
           ) : (
             <>
-              <strong>Kingpin does not care.</strong> Flynn is {flynn.mask === 'none' ? 'unmasked' : !flynn.mask ? 'bare-faced' : `wearing the ${ent<Item>('item', flynn.mask)?.name ?? 'mask'}`}.
+              <strong>
+                <Ref type="npc" id="kingpin" noDot /> does not care.
+              </strong>{' '}
+              <Ref type="pc" id="flynn" noDot /> is {flynn.mask === 'none' ? 'unmasked' : !flynn.mask ? 'bare-faced' : `wearing the ${ent<Item>('item', flynn.mask)?.name ?? 'mask'}`}.
             </>
           )}
         </span>
@@ -452,9 +459,9 @@ function DonutWidget({ shop }: { shop?: boolean }) {
         <div class="stack" style={{ '--gap': '8px' } as never}>
           {ghosts.map((p) => (
             <div key={p.id} class="ghostrow">
-              <Avatar icon={p.icon} hue={p.hue} size={28} ring="ghost" />
+              <Face type="pc" id={p.id} size={30} />
               <span class="grow">
-                <strong>{p.name}</strong> <span class="muted">is a ghost</span>
+                <Ref type="pc" id={p.id} noDot /> <span class="muted">is a ghost</span>
               </span>
               <button type="button" class="btn btn--sm btn--good" disabled={!shop && have < 1} onClick={() => revive(p.id, !shop)} title="Only after a living player does something statistically improbable in real life">
                 <Icon name="sparkles" /> Improbable act done: revive
@@ -611,7 +618,9 @@ export function EncounterList({ scene }: { scene: Scene }) {
           <div key={i} class="encounter">
             <div class="encounter__avatars">
               {foes.slice(0, 5).map((f) => (
-                <Avatar key={f.id} icon={f.icon} size={30} title={f.name} />
+                <button key={f.id} type="button" class="facebtn" onClick={() => openDrawer('npc', f.id)} aria-label={`${f.name}: profile`} title={f.name}>
+                  <Face type="npc" id={f.id} size={34} />
+                </button>
               ))}
             </div>
             <div class="encounter__main">

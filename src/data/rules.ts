@@ -399,7 +399,9 @@ export const FILMS: Film[] = [
   { id: 'se7en', title: 'Se7en', favorite: false },
   { id: 'oldboy', title: 'Oldboy', favorite: false },
   { id: 'cat-in-the-hat', title: 'The Cat in the Hat', favorite: false },
-  { id: 'the-rehearsal', title: 'The Rehearsal', favorite: false, note: 'Nathan Fielder.' },
+  { id: 'the-rehearsal', title: 'The Rehearsal', favorite: false, note: 'Nathan Fielder.', kind: 'series' },
+  { id: 'nathan-for-you', title: 'Nathan for You', favorite: false, note: 'Nathan Fielder.', kind: 'series' },
+  { id: 'big-lebowski', title: 'The Big Lebowski', favorite: false, note: 'Dude Bro.' },
   { id: 'spirited-away', title: 'Spirited Away', favorite: false },
   { id: 'kung-fu-panda', title: 'Kung Fu Panda', favorite: false },
   { id: 'forrest-gump', title: 'Forrest Gump', favorite: false },
@@ -407,5 +409,5 @@ export const FILMS: Film[] = [
   { id: 'deadpool-wolverine', title: 'Deadpool & Wolverine', favorite: false },
   { id: 'batman', title: 'Batman', favorite: false },
   { id: 'watchmen', title: 'Watchmen', favorite: false },
-  { id: 'greek-myth', title: 'Greek mythology', favorite: false, note: 'Medusa.' },
+  { id: 'greek-myth', title: 'Greek mythology', favorite: false, note: 'Medusa.', kind: 'myth' },
 ];

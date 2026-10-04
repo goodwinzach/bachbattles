@@ -6,16 +6,7 @@ import { RELATIONS } from '../../data/campaign';
 import { CLOCK_RHYTHM, PACING } from '../../data/scenes';
 import type { Act, EntityType, Film, Item, NPC, PC, Scene } from '../../data/types';
 import { goScene } from '../../state/actions';
-import {
-  fmtDuration,
-  KIND_LABEL,
-  nameOf,
-  sceneInPlay,
-  sceneMust,
-  sceneStatus,
-  timeSpent,
-  totalSpent,
-} from '../../state/derive';
+import { fmtDuration, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneMust, sceneStatus, timeSpent, totalSpent } from '../../state/derive';
 import { all, ent, game, getDataVersion, getUi, openDrawer, setUi } from '../../state/store';
 import { useMedia, useTick } from '../hooks';
 import { Icon } from '../icons';
@@ -611,6 +602,11 @@ function WebGraph() {
       </div>
       <div class="mapvp" ref={pz.ref} onClick={(e) => (e.target as Element).tagName === 'svg' && setSel(null)}>
         <svg class="web__svg" width={W} height={H} style={{ transform: `translate(${pz.view.x}px, ${pz.view.y}px) scale(${pz.view.k})` }} role="img" aria-label="Connections between characters, films, items and scenes">
+          <defs>
+            <clipPath id="wface" clipPathUnits="objectBoundingBox">
+              <circle cx="0.5" cy="0.5" r="0.5" />
+            </clipPath>
+          </defs>
           <g class="web__edges">
             {graph.edges.map((e) => {
               const a = byKey.get(e.a)!;
@@ -632,7 +628,8 @@ function WebGraph() {
             {graph.nodes.map((n) => {
               const dim = (neighbors && !neighbors.has(n.key)) || (matches && !matches.has(n.key));
               const e = ent(n.type, n.id) as { hue?: PC['hue']; status?: string; favorite?: boolean; state?: string; act?: string } | undefined;
-              const r = n.type === 'pc' ? 15 : n.type === 'npc' ? 6 + Math.min(6, n.deg) : 8;
+              const face = n.type === 'pc' || n.type === 'npc' || n.type === 'item' ? portraitOf(n.type, n.id) : undefined;
+              const r = n.type === 'pc' ? (face ? 19 : 15) : n.type === 'npc' ? (face ? 11 + Math.min(5, n.deg) : 6 + Math.min(6, n.deg)) : face ? 11 : 8;
               const hueC = n.type === 'pc' ? hueVar(e?.hue) : n.type === 'scene' ? hueVar(ent<Act>('act', e?.act ?? '')?.hue) : undefined;
               const struck = n.type === 'npc' && (e?.status === 'defeated' || e?.status === 'dead');
               return (
@@ -658,7 +655,12 @@ function WebGraph() {
                   onDblClick={() => openDrawer(n.type, n.id)}
                 >
                   <circle r={Math.max(14, r + 6)} class="wnode__hit" />
-                  {n.type === 'film' ? (
+                  {face ? (
+                    <>
+                      <image href={face} x={-r} y={-r} width={r * 2} height={r * 2} clip-path="url(#wface)" preserveAspectRatio="xMidYMid slice" class="wnode__img" />
+                      <circle r={r} class="wnode__shape wnode__ring" />
+                    </>
+                  ) : n.type === 'film' ? (
                     <rect x={-8} y={-8} width={16} height={16} rx={3} class="wnode__shape" />
                   ) : n.type === 'item' ? (
                     <rect x={-6.5} y={-6.5} width={13} height={13} rx={2} transform="rotate(45)" class="wnode__shape" />

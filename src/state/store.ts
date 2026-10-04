@@ -7,12 +7,13 @@ import { BASE_INDEX, CAMPAIGN, COLLECTION } from '../data/campaign';
 import type { AnyEntity, EntityType, Stat } from '../data/types';
 import type { RollResult } from './dice';
 
-export type View = 'run' | 'story' | 'map' | 'slides' | 'codex' | 'rules';
+export type View = 'run' | 'story' | 'map' | 'slides' | 'cast' | 'codex' | 'rules';
 export const VIEWS: { id: View; label: string; icon: string; hint: string }[] = [
   { id: 'run', label: 'Run', icon: 'clapperboard', hint: 'DM screen for the live session' },
   { id: 'story', label: 'Script', icon: 'scroll-text', hint: 'The whole campaign as an organized script' },
   { id: 'map', label: 'Map', icon: 'workflow', hint: 'Story flow, connections web and pacing chart' },
   { id: 'slides', label: 'Slides', icon: 'presentation', hint: 'A deck for the table or for prep' },
+  { id: 'cast', label: 'Cast', icon: 'contact', hint: 'A profile page for every player and character' },
   { id: 'codex', label: 'Codex', icon: 'library-big', hint: 'Every character, item, ability and clue' },
   { id: 'rules', label: 'Rules', icon: 'book-open-text', hint: 'Rules reference and DM craft' },
 ];
@@ -113,6 +114,8 @@ export interface UiState extends Prefs {
   mapSelected: string | null;
   /** an entity key ('npc:lou') the connections web should select when it next renders */
   webFocus: string | null;
+  /** the profile page open in the Cast view ('npc:lou'), or null for the gallery */
+  castFocus: string | null;
 }
 
 // ─── defaults ──────────────────────────────────────────────────────────────
@@ -161,6 +164,7 @@ let ui: UiState = {
   focusScene: null,
   mapSelected: null,
   webFocus: null,
+  castFocus: null,
 };
 let dataVersion = 0;
 let uiVersion = 0;
@@ -457,6 +461,10 @@ export function openDrawer(type: EntityType, id: string, tab?: DrawerSpec['tab']
   setUi({ drawer: { type, id, tab: tab ?? (ui.edit ? 'edit' : 'info') }, palette: false });
 }
 export const closeDrawer = () => setUi({ drawer: null });
+/** Open a player's or character's full profile page in the Cast view. */
+export function openProfile(type: 'pc' | 'npc', id: string) {
+  setUi({ view: 'cast', castFocus: `${type}:${id}`, drawer: null, palette: false });
+}
 export const openModal = (modal: ModalSpec) => setUi({ modal, palette: false });
 export const closeModal = () => setUi({ modal: null });
 
@@ -465,7 +473,8 @@ export function confirmThen(title: string, body: string, confirm: string, onConf
 }
 
 export function go(view: View) {
-  setUi({ view, palette: false });
+  // picking Cast again from a profile page goes back to the gallery
+  setUi({ view, palette: false, ...(view === 'cast' && ui.view === 'cast' ? { castFocus: null } : {}) });
 }
 
 export function lastRoll(r: RollResult, logIt = true) {

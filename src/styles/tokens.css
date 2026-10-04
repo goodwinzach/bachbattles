@@ -44,6 +44,8 @@
   --ink-target: #ffffff;
   --ink-mix: 74%;
 
+  --glow: 0.34;
+
   /* type */
   --f-display: 'Big Shoulders Display', 'Oswald', 'Arial Narrow', 'Roboto Condensed', sans-serif;
   --f-body: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -113,6 +115,7 @@
     --c-red: #e34948;
     --ink-target: #000000;
     --ink-mix: 68%;
+    --glow: 0.22;
     color-scheme: light;
   }
 }
@@ -156,6 +159,7 @@
   --c-red: #e34948;
   --ink-target: #000000;
   --ink-mix: 68%;
+  --glow: 0.22;
   color-scheme: light;
 }
 
@@ -198,6 +202,7 @@
   --c-red: #e66767;
   --ink-target: #ffffff;
   --ink-mix: 74%;
+  --glow: 0.34;
   color-scheme: dark;
 }
 

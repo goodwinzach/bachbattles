@@ -653,7 +653,7 @@ export const SCENES: Scene[] = [
       'Only one groomsman may open the box. Whoever does is turned to stone for the rest of this encounter.',
       'When John Doe is defeated and the head is covered, neutralized or destroyed, everyone turned to stone returns to normal.',
     ],
-    cast: ['john-doe', 'odysseus', 'odysseus-crew'],
+    cast: ['john-doe', 'medusa', 'odysseus', 'odysseus-crew'],
     encounters: [{ label: 'John Doe', foes: ['john-doe'] }],
     rolls: [
       {

@@ -8,7 +8,7 @@ import { resolve } from 'node:path';
 
 const exe = process.env.CHROMIUM_PATH ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
 const URL_BASE = 'file://' + resolve('dist/index.html');
-const VIEWS = ['run', 'story', 'map', 'slides', 'codex', 'rules'];
+const VIEWS = ['run', 'story', 'map', 'slides', 'cast', 'codex', 'rules'];
 
 let failures = 0;
 function check(cond, msg, detail) {
@@ -149,7 +149,87 @@ try {
     await ctx.close();
   }
 
-  // ── 4. palette, dice, shield, scene flow ───────────────────────────────
+  // ── 4. character profiles and portraits ────────────────────────────────
+  console.log('\nCharacter profiles');
+  {
+    const { ctx, page, errors } = await open(browser, { hash: 'cast' });
+    const tiles = await page.$$eval('.ctile', (els) => els.length);
+    const faces = await page.$$eval('.ctile .face img', (els) => els.filter((i) => i.complete && i.naturalWidth > 0).length);
+    check(tiles >= 46 && faces >= 30, 'cast gallery shows everyone, with portraits', `tiles=${tiles} portraits=${faces}`);
+
+    await page.click('.ctile:has(.ctile__name:text-is("Lou Bloom"))');
+    await page.waitForSelector('.phero--page');
+    const lou = await page.evaluate(() => ({
+      name: document.querySelector('.phero__name')?.textContent,
+      from: document.querySelector('.phero .srcline')?.textContent,
+      quotes: document.querySelectorAll('.quote').length,
+      mask: document.querySelector('.phero__mask')?.getAttribute('title'),
+      hash: location.hash,
+    }));
+    check(lou.name === 'Lou Bloom' && /Nightcrawler/.test(lou.from ?? '') && lou.quotes >= 3, 'profile page: name, source and lines', JSON.stringify(lou));
+    check(lou.mask === 'Wearing the V Mask' && lou.hash === '#cast/npc/lou', 'masked Lou wears the V mask; the page has its own link', JSON.stringify(lou));
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(150);
+    const nextName = await page.textContent('.phero__name');
+    check(nextName && nextName !== 'Lou Bloom', 'arrow keys page through the cast', `next=${nextName}`);
+
+    // a mention anywhere opens the same profile in the drawer, with a jump to the full page
+    await page.evaluate(() => (location.hash = 'story'));
+    await page.waitForTimeout(300);
+    await page.click('[data-ref="npc:louise"] >> nth=0');
+    await page.waitForSelector('.drawer.is-on .phero');
+    const drawer = await page.evaluate(() => ({
+      name: document.querySelector('.drawer.is-on .phero__name')?.textContent,
+      img: !!document.querySelector('.drawer.is-on .phero .face img'),
+      quotes: document.querySelectorAll('.drawer.is-on .quote').length,
+    }));
+    check(drawer.name === 'Louise Banks' && drawer.img && drawer.quotes > 0, 'clicking a name opens their profile with portrait and lines', JSON.stringify(drawer));
+    await page.click('.drawer.is-on button:has-text("Full profile")');
+    await page.waitForSelector('.cast--page .phero__name');
+    check((await page.evaluate(() => location.hash)) === '#cast/npc/louise' && !(await page.$('.drawer.is-on')), '"Full profile" opens the page and closes the drawer');
+
+    // state shows on the portrait: Flynn's mask, a defeated boss
+    await page.goto(`${URL_BASE}#cast/pc/flynn`);
+    await page.waitForSelector('.phero__mask');
+    await page.click('.prof .maskpick__btn:has-text("Batman")');
+    await page.waitForTimeout(150);
+    check((await page.getAttribute('.phero__mask', 'title')) === 'Wearing the Batman Cowl', "switching Flynn's mask updates his portrait badge");
+    await page.goto(`${URL_BASE}#cast/npc/kingpin`);
+    await page.waitForSelector('.phero--page');
+    if (!(await page.$eval('.app', (el) => el.classList.contains('is-editing')))) await page.keyboard.press('e');
+    await page.waitForSelector('.phero select');
+    await page.selectOption('.phero select', 'defeated');
+    await page.waitForTimeout(150);
+    await page.click('button:has-text("All cast")');
+    const kp = await page.$eval('.ctile:has(.ctile__name:text-is("Kingpin"))', (el) => el.className);
+    check(kp.includes('ctile--out'), 'a defeated character greys out in the gallery', kp);
+
+    // the editor's portrait picker changes the picture everywhere; undo brings it back
+    await page.goto(`${URL_BASE}#cast/npc/narrator`);
+    await page.waitForSelector('.phero--page .phero__face .face img');
+    await page.click('.phero__open');
+    await page.waitForSelector('.drawer.is-on .portpick');
+    await page.click('.drawer.is-on .portpick__none');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(150);
+    check(!(await page.$('.phero--page .phero__face .face')), 'choosing "no picture" swaps the portrait for the icon');
+    await page.keyboard.press('Control+z');
+    await page.waitForTimeout(150);
+    check(!!(await page.$('.phero--page .phero__face .face img')), 'undo restores the portrait');
+
+    // portraits show up across the app
+    await page.evaluate(() => (location.hash = 'run'));
+    await page.waitForTimeout(300);
+    const runFaces = await page.$$eval('.member__head .face img', (els) => els.length);
+    check(runFaces === 5, 'run screen: the party shows their portraits', `faces=${runFaces}`);
+    await page.keyboard.press('5');
+    await page.waitForTimeout(200);
+    check((await page.evaluate(() => location.hash)).startsWith('#cast'), 'key 5 opens the Cast view');
+    check(errors.length === 0, 'no console errors on the profile pages', errors.join(' | '));
+    await ctx.close();
+  }
+
+  // ── 5. palette, dice, shield, scene flow ───────────────────────────────
   console.log('\nTools');
   {
     const { ctx, page, errors } = await open(browser, { hash: 'run' });

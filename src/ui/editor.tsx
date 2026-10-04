@@ -1,10 +1,12 @@
 // Edit forms. Every field writes into the entity's patch, so the change appears in every view.
 
 import type { ComponentChildren } from 'preact';
-import type { AnyEntity, Attack, EntityType, NPC, StatBlock } from '../data/types';
+import type { AnyEntity, Attack, EntityType, Film, NPC, StatBlock } from '../data/types';
+import { DEFAULT_PORTRAIT, PORTRAITS } from '../data/portraits';
 import { STAT_ABBR, STATS } from '../data/types';
 import { TYPE_LABEL } from '../data/campaign';
 import {
+  FILM_KIND_LABEL,
   ITEM_KIND_LABEL,
   ITEM_STATES,
   KIND_LABEL,
@@ -20,7 +22,7 @@ import { holderOptions } from './controls';
 import { Icon } from './icons';
 import { CommitInput, Expander, NumberInput, Switch, cx } from './kit';
 
-type FieldKind = 'text' | 'area' | 'paras' | 'list' | 'number' | 'select' | 'toggle' | 'stats' | 'mods' | 'range2';
+type FieldKind = 'text' | 'area' | 'paras' | 'list' | 'number' | 'select' | 'toggle' | 'stats' | 'mods' | 'range2' | 'portrait';
 
 interface FieldDef {
   key: string;
@@ -39,6 +41,7 @@ const opt = (rec: Record<string, string>) => Object.entries(rec).map(([value, la
 const SCHEMAS: Record<EntityType, FieldDef[]> = {
   pc: [
     { key: 'name', label: 'Character name', kind: 'text' },
+    { key: 'portrait', label: 'Portrait', kind: 'portrait', hint: 'Shows on their profile, the cast page, chips, slides and the connections web.' },
     { key: 'player', label: 'Played by', kind: 'text' },
     { key: 'title', label: 'Title', kind: 'text' },
     { key: 'status', label: 'Status', kind: 'select', options: PC_STATUSES.map((s) => ({ value: s.id, label: s.label })) },
@@ -53,6 +56,8 @@ const SCHEMAS: Record<EntityType, FieldDef[]> = {
   ],
   npc: [
     { key: 'name', label: 'Name', kind: 'text' },
+    { key: 'portrait', label: 'Portrait', kind: 'portrait', hint: 'Shows on their profile, the cast page, chips, slides and the connections web.' },
+    { key: 'film', label: 'From (film or show)', kind: 'select' },
     { key: 'aka', label: 'Also known as', kind: 'text' },
     { key: 'status', label: 'Status', kind: 'select', options: NPC_STATUSES.map((s) => ({ value: s.id, label: s.label })) },
     { key: 'side', label: 'Side', kind: 'select', options: opt(SIDE_LABEL) },
@@ -73,6 +78,7 @@ const SCHEMAS: Record<EntityType, FieldDef[]> = {
     { key: 'state', label: 'State', kind: 'select', options: ITEM_STATES.map((s) => ({ value: s.id, label: s.label })) },
     { key: 'holder', label: 'Who has it', kind: 'select' },
     { key: 'kind', label: 'Kind', kind: 'select', options: opt(ITEM_KIND_LABEL) },
+    { key: 'portrait', label: 'Picture', kind: 'portrait', when: (e) => e.kind === 'mask' || e.kind === 'hazard' },
     { key: 'qty', label: 'Count', kind: 'number', min: 0, when: (e) => e.qty != null },
     { key: 'ammo', label: 'Shots left', kind: 'number', min: 0, when: (e) => e.ammoMax != null },
     { key: 'dmg', label: 'Damage dice', kind: 'text', hint: 'e.g. 1d8' },
@@ -130,6 +136,7 @@ const SCHEMAS: Record<EntityType, FieldDef[]> = {
   film: [
     { key: 'title', label: 'Title', kind: 'text' },
     { key: 'favorite', label: "One of Flynn's favorites", kind: 'toggle' },
+    { key: 'kind', label: 'Kind', kind: 'select', options: opt(FILM_KIND_LABEL) },
     { key: 'note', label: 'Note', kind: 'area', rows: 2 },
   ],
   act: [
@@ -249,6 +256,7 @@ export function EntityEditor({ type, id }: { type: EntityType; id: string }) {
             let options = f.options ?? [];
             if (f.key === 'holder') options = holderOptions();
             if (f.key === 'owner') options = all('pc').map((p) => ({ value: p.id, label: (p as { name: string }).name }));
+            if (f.key === 'film' && type === 'npc') options = [{ value: '', label: 'Original to this campaign' }, ...all<Film>('film').map((x) => ({ value: x.id, label: x.title }))];
             return (
               <FieldRow key={f.key} type={type} id={id} f={f}>
                 <select id={uid(f.key)} class="select" value={v ?? ''} onChange={(ev) => set(f.key, f.label, (ev.target as HTMLSelectElement).value)}>
@@ -258,6 +266,24 @@ export function EntityEditor({ type, id }: { type: EntityType; id: string }) {
                     </option>
                   ))}
                 </select>
+              </FieldRow>
+            );
+          }
+          case 'portrait': {
+            const def = DEFAULT_PORTRAIT[`${type}:${id}`];
+            const cur = (v as string | undefined) ?? def ?? 'none';
+            return (
+              <FieldRow key={f.key} type={type} id={id} f={f}>
+                <div class="portpick" role="radiogroup" aria-label={f.label}>
+                  <button type="button" role="radio" aria-checked={cur === 'none'} class={cx('portpick__opt portpick__none', cur === 'none' && 'is-on')} onClick={() => set(f.key, f.label, 'none')} title="No picture: use the icon">
+                    <Icon name={(e.icon as string) ?? 'user'} size={18} />
+                  </button>
+                  {PORTRAITS.map((p) => (
+                    <button key={p.key} type="button" role="radio" aria-checked={cur === p.key} class={cx('portpick__opt', cur === p.key && 'is-on')} onClick={() => set(f.key, f.label, p.key)} title={p.label}>
+                      <img src={p.src} alt={p.label} decoding="async" />
+                    </button>
+                  ))}
+                </div>
               </FieldRow>
             );
           }
