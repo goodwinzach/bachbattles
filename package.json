@@ -1,0 +1,22 @@
+{
+  "name": "bachbattles",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One Ring to Rule Flynn: a DM console for the bachelor-party one-shot.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && node tests/validate-data.mjs && node scripts/build.mjs && node tests/smoke.mjs"
+  },
+  "dependencies": {
+    "lucide-preact": "1.52.0",
+    "preact": "10.29.8"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright-core": "1.56.1",
+    "typescript": "5.9.3"
+  }
+}

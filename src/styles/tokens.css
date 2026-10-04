@@ -1,0 +1,208 @@
+/* Layout concept: an editing-bay console. A transport bar runs across the top (views, the wedding
+   timecode, the edit switch); each view is a monitor with a clapperboard slate as its masthead.
+   Dark-first: the screening-room palette is the default, with a paper-light twin. */
+
+:root {
+  /* color: screening room */
+  --bg: #0e0d12;
+  --bg-2: #131218;
+  --surface: #1a1920;
+  --surface-2: #211f28;
+  --surface-3: #2a2733;
+  --line: #2c2936;
+  --line-2: #3c3848;
+  --fg: #efebe4;
+  --fg-2: #cec8d2;
+  --muted: #9b94a7;
+  --faint: #716a82;
+  --gold: #e5b862;
+  --gold-2: #f2d18f;
+  --on-gold: #1c1406;
+  --gold-wash: rgb(229 184 98 / 0.13);
+  --rec: #ff5b4f;
+  --good: #5dca92;
+  --warn: #ebb24f;
+  --bad: #f2675c;
+  --info: #82aaff;
+  --ghost: #bcaaff;
+  --stone: #9ea4ab;
+  --scrim: rgb(6 5 9 / 0.66);
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.45);
+  --shadow-2: 0 22px 48px -20px rgb(0 0 0 / 0.8), 0 2px 8px rgb(0 0 0 / 0.35);
+  --stripe-a: #efebe4;
+  --stripe-b: #121117;
+  --grain: 0.055;
+  /* act + player identity: validated categorical slots (dark steps) */
+  --c-blue: #3987e5;
+  --c-orange: #d95926;
+  --c-aqua: #199e70;
+  --c-yellow: #c98500;
+  --c-magenta: #d55181;
+  --c-green: #008300;
+  --c-violet: #9085e9;
+  --c-red: #e66767;
+  --ink-target: #ffffff;
+  --ink-mix: 74%;
+
+  /* type */
+  --f-display: 'Big Shoulders Display', 'Oswald', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --f-body: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --f-script: 'Courier Prime', 'Courier New', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --f-mark: 'Cinzel', 'Trajan Pro', 'Cormorant Garamond', Georgia, serif;
+  --fs-2xs: 0.66rem;
+  --fs-xs: 0.74rem;
+  --fs-sm: 0.84rem;
+  --fs-base: 0.95rem;
+  --fs-md: 1.06rem;
+  --fs-lg: 1.26rem;
+  --fs-xl: 1.62rem;
+  --fs-2xl: 2.2rem;
+  --fs-3xl: 3rem;
+
+  /* shape */
+  --r-xs: 4px;
+  --r-sm: 7px;
+  --r: 10px;
+  --r-lg: 15px;
+  --r-pill: 999px;
+  --gutter: 16px;
+  --topbar: 56px;
+  --bottombar: 0px;
+  --ease: cubic-bezier(0.2, 0.75, 0.2, 1);
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --bg: #f0eff3;
+    --bg-2: #e7e6ec;
+    --surface: #ffffff;
+    --surface-2: #f6f5f9;
+    --surface-3: #ebeaf1;
+    --line: #dddbe4;
+    --line-2: #c8c5d2;
+    --fg: #16141c;
+    --fg-2: #36333f;
+    --muted: #645f6e;
+    --faint: #8e8998;
+    --gold: #93650e;
+    --gold-2: #b27d15;
+    --on-gold: #fffaf0;
+    --gold-wash: rgb(178 125 21 / 0.12);
+    --rec: #d8392d;
+    --good: #1b8752;
+    --warn: #a56900;
+    --bad: #c8382d;
+    --info: #2c60d2;
+    --ghost: #6a52d6;
+    --stone: #6a7077;
+    --scrim: rgb(22 20 28 / 0.4);
+    --shadow-1: 0 1px 2px rgb(22 20 28 / 0.08);
+    --shadow-2: 0 22px 48px -22px rgb(22 20 28 / 0.32), 0 2px 8px rgb(22 20 28 / 0.08);
+    --stripe-a: #16141c;
+    --stripe-b: #ffffff;
+    --grain: 0;
+    --c-blue: #2a78d6;
+    --c-orange: #eb6834;
+    --c-aqua: #1baf7a;
+    --c-yellow: #eda100;
+    --c-magenta: #e87ba4;
+    --c-green: #008300;
+    --c-violet: #4a3aa7;
+    --c-red: #e34948;
+    --ink-target: #000000;
+    --ink-mix: 68%;
+    color-scheme: light;
+  }
+}
+
+:root[data-theme='light'] {
+  --bg: #f0eff3;
+  --bg-2: #e7e6ec;
+  --surface: #ffffff;
+  --surface-2: #f6f5f9;
+  --surface-3: #ebeaf1;
+  --line: #dddbe4;
+  --line-2: #c8c5d2;
+  --fg: #16141c;
+  --fg-2: #36333f;
+  --muted: #645f6e;
+  --faint: #8e8998;
+  --gold: #93650e;
+  --gold-2: #b27d15;
+  --on-gold: #fffaf0;
+  --gold-wash: rgb(178 125 21 / 0.12);
+  --rec: #d8392d;
+  --good: #1b8752;
+  --warn: #a56900;
+  --bad: #c8382d;
+  --info: #2c60d2;
+  --ghost: #6a52d6;
+  --stone: #6a7077;
+  --scrim: rgb(22 20 28 / 0.4);
+  --shadow-1: 0 1px 2px rgb(22 20 28 / 0.08);
+  --shadow-2: 0 22px 48px -22px rgb(22 20 28 / 0.32), 0 2px 8px rgb(22 20 28 / 0.08);
+  --stripe-a: #16141c;
+  --stripe-b: #ffffff;
+  --grain: 0;
+  --c-blue: #2a78d6;
+  --c-orange: #eb6834;
+  --c-aqua: #1baf7a;
+  --c-yellow: #eda100;
+  --c-magenta: #e87ba4;
+  --c-green: #008300;
+  --c-violet: #4a3aa7;
+  --c-red: #e34948;
+  --ink-target: #000000;
+  --ink-mix: 68%;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0e0d12;
+  --bg-2: #131218;
+  --surface: #1a1920;
+  --surface-2: #211f28;
+  --surface-3: #2a2733;
+  --line: #2c2936;
+  --line-2: #3c3848;
+  --fg: #efebe4;
+  --fg-2: #cec8d2;
+  --muted: #9b94a7;
+  --faint: #716a82;
+  --gold: #e5b862;
+  --gold-2: #f2d18f;
+  --on-gold: #1c1406;
+  --gold-wash: rgb(229 184 98 / 0.13);
+  --rec: #ff5b4f;
+  --good: #5dca92;
+  --warn: #ebb24f;
+  --bad: #f2675c;
+  --info: #82aaff;
+  --ghost: #bcaaff;
+  --stone: #9ea4ab;
+  --scrim: rgb(6 5 9 / 0.66);
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.45);
+  --shadow-2: 0 22px 48px -20px rgb(0 0 0 / 0.8), 0 2px 8px rgb(0 0 0 / 0.35);
+  --stripe-a: #efebe4;
+  --stripe-b: #121117;
+  --grain: 0.055;
+  --c-blue: #3987e5;
+  --c-orange: #d95926;
+  --c-aqua: #199e70;
+  --c-yellow: #c98500;
+  --c-magenta: #d55181;
+  --c-green: #008300;
+  --c-violet: #9085e9;
+  --c-red: #e66767;
+  --ink-target: #ffffff;
+  --ink-mix: 74%;
+  color-scheme: dark;
+}
+
+@media (min-width: 900px) {
+  :root {
+    --gutter: 24px;
+  }
+}

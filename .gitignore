@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+*.log
+tests/screens/
+.build/
+tests/.fonts/
