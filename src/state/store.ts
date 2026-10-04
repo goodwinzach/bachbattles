@@ -27,6 +27,8 @@ export interface Combatant {
 
 export interface Combat {
   scene: string;
+  /** which of the scene's encounters this is (for its round budget and how it ends) */
+  enc?: number;
   label: string;
   round: number;
   turn: number;

@@ -138,6 +138,16 @@ export function isSecretHidden(type: EntityType, id: string): boolean {
   return false;
 }
 
+/** Who has a missing item is a spoiler (the ring is with Lou): the shield hides it. */
+export function holderHidden(item: Item): boolean {
+  return shielded() && item.state === 'missing' && !!item.holder && !!ent('npc', item.holder);
+}
+
+/** The holder to show for an item, honoring the shield. */
+export function itemHolderName(item: Item): string {
+  return holderHidden(item) ? 'Missing' : holderName(item.holder);
+}
+
 export function holderName(holder: string): string {
   if (!holder) return 'Nobody';
   if (holder === 'party') return 'The party';
@@ -292,16 +302,22 @@ export function neighbors(id: string): { prev?: Scene; next?: Scene } {
   const list = spine();
   const i = list.findIndex((s) => s.id === id);
   if (i < 0) return { next: list[0] };
-  // next: the next scene after this one that is not done or skipped
+  // next: the next scene after this one that is not done or skipped, staying on this scene's route
+  const here = list[i];
+  const ROOMS = ['pride', 'lust', 'greed', 'envy', 'wrath', 'sloth'];
   let next: Scene | undefined;
-  for (let j = i + 1; j < list.length; j++) {
-    const st = list[j].status;
-    if (st !== 'done' && st !== 'skipped') {
+  if (ROOMS.includes(here.id)) {
+    // the sin rooms are chosen at the table (the buildings widget); the default way on is Gluttony
+    next = list.find((s) => s.id === 'gluttony');
+  } else {
+    for (let j = i + 1; j < list.length; j++) {
+      const st = list[j].status;
+      if (st === 'done' || st === 'skipped') continue;
+      if (here.branch && list[j].branch && list[j].branch !== here.branch) continue;
       next = list[j];
       break;
     }
   }
-  if (!next && list[i].id === 'pride') next = list.find((s) => s.id === 'gluttony');
   return { prev: list[i - 1], next };
 }
 

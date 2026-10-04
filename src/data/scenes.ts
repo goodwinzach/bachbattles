@@ -29,7 +29,7 @@ export const ACTS: Act[] = [
     id: 'route',
     num: 'Act III',
     title: 'No Way Out',
-    tagline: 'Plane or boat, Tyler is waiting',
+    tagline: 'Plane or boat. Someone is waiting.',
     hue: 'orange',
     summary: 'Whichever way they choose, Tyler blows something up and the only way out is Odysseus.',
   },
@@ -45,7 +45,7 @@ export const ACTS: Act[] = [
     id: 'hollywood',
     num: 'Act V',
     title: 'Hollywood',
-    tagline: 'You were on camera the whole time',
+    tagline: 'Welcome to Hollywood.',
     hue: 'yellow',
     summary: 'Nathan Fielder reveals the documentary. Needles. A studio.',
   },
@@ -89,7 +89,7 @@ export const SCENES: Scene[] = [
       'A stoner, a retard, a radish, a turtle, and a masked man walk into a bar.',
       "Five friends gathered together, celebrating one of them getting married. It's the night of [[pc:flynn]]'s bachelor party. The men and distinguished creatures drink the night away at New Zealand's most infamous bar, The Green Dragon Inn.",
       "Flynn shows off his collection of masks, at least the four he brought out to the bar. The stoner, [[pc:alex]], tries talking up one of the elven fairies but can't stop staring at her wings, weirding her out. The ground shakes as a big white sumo-wrestler-like figure with two tendrils on his face, [[pc:jamie]], attempts the dance from Deadpool & Wolverine. It's not going well.",
-      "The turtle, [[pc:haydn]], a nearly 1,000-year-old kung fu master, desperately tries to flag the bartender so he can order a vodka Red Bull and keep up with the other groomsmen. Sitting in a booster seat at one of the tables is an autistic boy who goes by the name of [[pc:goodwin]]; unlike Master Oogwaydn, he doesn't look his age and has a growth stunt.",
+      "The turtle, [[pc:haydn]], a nearly 1,000-year-old kung fu master, desperately tries to flag the bartender so he can order a vodka Red Bull and keep up with the other groomsmen. Sitting in a booster seat at one of the tables is an autistic boy who goes by the name of [[pc:goodwin]]; unlike Master Oogwaydn, he doesn't look his age: his growth is stunted.",
       'This is the extent the five can remember.',
     ],
     notes: [
@@ -146,12 +146,17 @@ export const SCENES: Scene[] = [
     notes: ['Nothing here should cause death.'],
     failsafes: [
       {
+        when: "Flynn finds the redhead's number and calls it from the field",
+        then: 'It rings out. She only picks up once they have been back to the bar and remember who she is.',
+      },
+      {
         when: 'They refuse to go back to the bar',
         then: 'Their phones, receipts, memories, or a shouted complaint from a local point them there. Do not turn this into a second mystery.',
       },
     ],
     effects: [
       { kind: 'condition', id: 'hangover', active: true, label: 'Everyone is hungover (−2 CHA, −2 PER)' },
+      { kind: 'items', ids: ['staff'], patch: { state: 'held', holder: 'haydn' }, label: 'Haydn picks up a branch (his first staff)' },
     ],
     cast: ['sheep'],
     source:
@@ -187,7 +192,14 @@ export const SCENES: Scene[] = [
       'Do not let the players waste an hour interrogating people who do not know.',
     ],
     cast: ['bartender', 'norton', 'antinous', 'suitor-bow', 'suitor-shield', 'nerissa'],
-    encounters: [{ label: 'Bar fight: Antinous & the Suitors', foes: ['antinous', 'suitor-bow', 'suitor-shield'] }],
+    encounters: [
+      {
+        label: 'Bar fight: Antinous & the Suitors',
+        foes: ['antinous', 'suitor-bow', 'suitor-shield'],
+        rounds: [1, 2],
+        ends: 'The suitors fold the moment Antinous takes a solid hit. If nobody lands one by round 2, Antinous decides the number is not worth his face and sulks off.',
+      },
+    ],
     rolls: [
       { stat: 'cha', dc: 10, label: 'Get the bartender talking about last night' },
       { stat: 'cha', dc: 13, label: 'Get the bartender to mention the redhead without hostility' },
@@ -212,6 +224,18 @@ export const SCENES: Scene[] = [
         when: 'Nobody thinks to check the phone',
         then: 'A notification, an accidental call, or Antinous demanding the number. Keep it moving.',
       },
+      {
+        when: 'Flynn just gives Antinous the number',
+        then: 'He calls it on the spot. She hangs up on him within a second. He leaves, smug and confused, and Flynn still has the number.',
+      },
+      {
+        when: 'Someone punches the bartender or the guy who looks like Edward Norton',
+        then: 'Bystanders: AC 10, 6 HP, +0 to hit, {{1d4}}. They stagger away and nobody here fights back seriously. The bartender calls the owner again.',
+      },
+      {
+        when: 'The questioning drags past 25 minutes',
+        then: '[[npc:michael-pearson]] walks in ([[scene:gentlemen]]).',
+      },
       { when: 'They kill a clue NPC', then: 'Put the clue on their phone, in the environment, or in another NPC\'s mouth.' },
     ],
     notes: [
@@ -223,9 +247,16 @@ export const SCENES: Scene[] = [
     loot: ['antinous-sword', 'suitor-bow', 'suitor-dagger', 'suitor-shield'],
     effects: [
       { kind: 'clues', ids: ['redhead'], label: "Reveal the clue: Flynn has the redhead's number" },
+      {
+        kind: 'items',
+        ids: ['antinous-sword', 'suitor-dagger', 'suitor-shield', 'suitor-bow'],
+        patch: { state: 'held', holder: 'party' },
+        label: "Take the suitors' weapons (if they won or the suitors folded)",
+      },
+      { kind: 'items', ids: ['staff'], patch: { state: 'held', holder: 'haydn' }, label: 'Haydn grabs a pool cue as his staff' },
       { kind: 'npcs', ids: ['bartender', 'norton', 'antinous', 'suitor-bow', 'suitor-shield', 'nerissa'], patch: { status: 'present' }, label: 'Mark the bar patrons as met' },
     ],
-    films: ['the-odyssey', 'fight-club', 'lotr'],
+    films: ['the-odyssey', 'lotr'],
     source:
       "All players have a charisma and perception negative modifier because they're hungover.\n\nCharacters in the bar:\n* Bartender (Can look like anything) — As soon as the group walks into the bar, the bartender calls his boss on the phone to inform him that the rambunctious group from last night is back. After hanging up, all he says to the group is that they shouldn't stay long.\n* Doesn't remember his name (Looks exactly like Edward Norton) — Looks a little beat up and tired. Has no recollection of who anyone is. Gets more and more irritated the more questions he asks. Doesn't know anything.\n* Antinous (Robert Pattinson in the Odyssey) — Has a sword. Doesn't know where Flynn's ring went. Bullies Flynn to try to get the number of the woman that was hitting on Flynn last night (the red head).\n* Suitor 1 (With Robert Pattinson, can look like anything) — Has a bow and arrow. Also teases Flynn about the woman being out of his league.\n* Suitor 2 (With Robert Pattinson, can look like anything) — Has a shield and dagger.\n* Nerissa (The elven fairy that turned down Dude Bro) — Doesn't know anything. Revolted by Dude Bro.\n\nPlayers must ask the bar patrons about what happened last night to gather clues about where Flynn's ring went. No one knows anything specially about the ring, the only clue from this scene is that Flynn is the number of a red headed woman.",
     next: ['gentlemen', 'louise-call'],
@@ -258,7 +289,14 @@ export const SCENES: Scene[] = [
     objective: 'Settle a 500 gold bill with [[item:gold]].',
     mustHappen: ['There is no single correct solution: negotiate, offer the 350, lie, intimidate, propose restitution, or fight.'],
     cast: ['michael-pearson', 'ray', 'coach'],
-    encounters: [{ label: 'The Gentlemen', foes: ['michael-pearson', 'ray', 'coach'] }],
+    encounters: [
+      {
+        label: 'The Gentlemen',
+        foes: ['michael-pearson', 'ray', 'coach'],
+        rounds: [2, 4],
+        ends: 'Michael calls it off as soon as any of the three drops ("Enough. This floor has suffered enough."), takes whatever gold is on the table and leaves. Nobody has to die.',
+      },
+    ],
     rolls: [
       { stat: 'cha', dc: 12, label: 'Michael accepts 350 plus an insultingly worded promise that they leave immediately' },
       { stat: 'cha', dc: 15, label: 'Michael reduces the bill to 350 and considers the matter closed' },
@@ -266,12 +304,12 @@ export const SCENES: Scene[] = [
     ],
     lines: [
       { by: 'michael-pearson', text: 'You owe me five hundred. I am giving you the rare opportunity to decide whether the payment is financial.' },
-      { by: 'michael-pearson', text: 'That answer cost you the remaining fifty. Try again.', note: 'After a bad negotiation roll' },
+      { by: 'michael-pearson', text: 'That answer just cost you another fifty. Try again.', note: 'After a bad negotiation roll' },
     ],
     failsafes: [
       {
         when: 'A negotiation roll goes badly',
-        then: 'Not instant murder. "That answer cost you the remaining fifty. Try again." Raise the demand or let Ray and Coach step closer.',
+        then: 'Not instant murder. "That answer just cost you another fifty. Try again." Raise the demand or let Ray and Coach step closer.',
       },
       { when: 'Natural 20', then: 'Michael finds the audacity entertaining and lets them leave for 350, or another funny price you invent.' },
     ],
@@ -379,6 +417,7 @@ export const SCENES: Scene[] = [
     notes: [
       'Costello is truthful but strange. He experiences time nonlinearly. Keep answers short.',
       'If Flynn asks what the riddle means, Costello does not explain. The question still counts.',
+      'Only Flynn\'s questions count. If someone else asks, Abbott hums and nothing happens. A question with two parts gets the first part answered.',
       'Do not over-explain how any of this works. Do not explain the riddle.',
     ],
     effects: [
@@ -432,7 +471,7 @@ export const SCENES: Scene[] = [
     logline: 'Tyler, five goons, a duel, and planes that explode no matter what.',
     readAloud: [
       'Edward Norton is standing at the entrance of the airfield. He speaks a lot differently than he did at the bar: more confident, and cocky.',
-      'He reveals that he and Lou are in a club together. He recently lost a fight to Lou, so he owes him a favor, and he has agreed to help Lou by stopping you. Every aircraft is rigged with explosives.',
+      'He reveals that he and Lou are in a club together. He recently lost a fight to Lou, so he owes him a favor, and he has agreed to help Lou by stopping you.',
       'Five goons step out of an airplane hangar with a crowbar, a sledgehammer, a machete, a chainsaw and a taser.',
     ],
     beats: [
@@ -447,10 +486,21 @@ export const SCENES: Scene[] = [
     mustHappen: ['Win or lose, Tyler blows up the planes. The party has to go to the boats.'],
     cast: ['tyler', ...GOONS],
     encounters: [
-      { label: 'Five goons', foes: GOONS },
-      { label: 'Duel: Flynn vs. Tyler', foes: ['tyler'], fighters: ['flynn'] },
+      {
+        label: 'Five goons',
+        foes: GOONS,
+        rounds: [2, 3],
+        ends: 'Any solid hit drops a goon. Once three are down, the other two run for the hangar.',
+      },
+      {
+        label: 'Duel: Flynn vs. Tyler',
+        foes: ['tyler'],
+        fighters: ['flynn'],
+        rounds: [3, 4],
+        ends: 'First to three clean hits wins; do not grind through his HP. Win or lose, Tyler blows up the planes.',
+      },
     ],
-    rolls: [{ stat: 'per', dc: 12, label: 'Spot the explosives' }],
+    rolls: [{ stat: 'per', dc: 12, label: 'Spot the explosives on the planes' }],
     lines: [
       { by: 'tyler', text: "Lou beat me. I owe him one. You're the one." },
       { by: 'tyler', text: 'You keep thinking winning means I have to keep my word.' },
@@ -462,6 +512,16 @@ export const SCENES: Scene[] = [
       '[[pc:alex]] can use [[ability:bong-flight]].',
       '[[pc:jamie]] can request a [[ability:spiritual-moment]].',
       '[[pc:flynn]] can switch masks based on the threat.',
+    ],
+    failsafes: [
+      {
+        when: 'They try to take off or disarm a plane before the fight',
+        then: 'The goons step out of the hangar the moment anyone touches a plane. Disarming waits until the goons are down.',
+      },
+      {
+        when: 'Friends join the duel',
+        then: 'Tyler stops fighting and waits, smiling: "One on one, or I press it now." The goons that are left move to the planes.',
+      },
     ],
     notes: [
       'Keep the goon fight fast. They exist so everyone gets to use combat toys.',
@@ -525,7 +585,7 @@ export const SCENES: Scene[] = [
     readAloud: [
       "[[npc:odysseus]] and his men are getting ready to disembark on a voyage. They plan on going to California to see the premiere of Anne Hathaway's new movie. Odysseus welcomes the group to come along.",
       'Before anyone gets onto the boats, Edward Norton steps onto the docks. He speaks a lot differently than he did at the bar: more confident and cocky. He reveals that he and Lou are in a club together, that he recently lost a fight to Lou, and that he owes him a favor.',
-      'Every boat is rigged with explosives. Tyler makes Flynn a deal: beat him in a fist fight, one on one, and he will disarm them.',
+      'He says every boat is rigged to blow. He makes Flynn a deal: beat him in a fist fight, one on one, and he will disarm them.',
     ],
     beats: [
       { label: 'Odysseus', text: 'Odysseus offers the group a ride to California.' },
@@ -537,10 +597,18 @@ export const SCENES: Scene[] = [
     ],
     objective: 'Flynn duels Tyler for the boats.',
     mustHappen: ['The party departs with Odysseus.'],
-    cast: ['odysseus', 'odysseus-crew', 'tyler'],
-    encounters: [{ label: 'Duel: Flynn vs. Tyler', foes: ['tyler'], fighters: ['flynn'] }],
+    cast: ['odysseus', 'odysseus-crew', 'tyler', 'norton'],
+    encounters: [
+      {
+        label: 'Duel: Flynn vs. Tyler',
+        foes: ['tyler'],
+        fighters: ['flynn'],
+        rounds: [3, 4],
+        ends: "First to three clean hits wins; do not grind through his HP. If Flynn is clearly losing, Odysseus's arrow ends it.",
+      },
+    ],
     rolls: [
-      { stat: 'per', dc: 12, label: 'Spot the explosives' },
+      { stat: 'per', dc: 12, label: 'Spot where the charges are hidden (helps the disarm)' },
       { stat: 'int', dc: 10, label: 'Disarm the bombs with the help of the [[npc:norton|guy from the bar]]' },
     ],
     lines: [
@@ -549,13 +617,18 @@ export const SCENES: Scene[] = [
       { by: 'odysseus', text: "I've been lost longer than you've been married, which apparently is not at all. Get on the boat." },
     ],
     failsafes: [
-      { when: 'Flynn wins', then: 'Tyler stalls, lies, or reaches for the detonator. Odysseus and his men help secure the boat.' },
+      { when: 'Flynn wins', then: 'Tyler stalls, lies, or reaches for the detonator. Odysseus and his men pin him down, and the charges the others found come off with {{int:10}}.' },
+      {
+        when: 'The other four are standing around during the duel',
+        then: 'They search the other boats: {{per:12}} finds a charge, {{int:10}} disarms it. Every charge they clear is one less boat Tyler can blow.',
+      },
       { when: 'Flynn has a bad roll and is clearly losing', then: 'Odysseus shoots Tyler in the head with an arrow. The [[npc:norton|guy from the bar]] is back, horrified and confused, and helps disarm the explosives.' },
     ],
     notes: ['Do not spend long on bomb-disarming rules. One successful roll with his help is enough.'],
     effects: [
       { kind: 'clues', ids: ['tyler-club'], label: 'Revealed: Tyler owes Lou a favor' },
       { kind: 'npcs', ids: ['tyler'], patch: { status: 'defeated' }, label: 'Tyler is down (arrow or fists)' },
+      { kind: 'npcs', ids: ['norton'], patch: { status: 'friendly' }, label: 'After the arrow: the guy from the bar is back and helps' },
       { kind: 'npcs', ids: ['odysseus', 'odysseus-crew'], patch: { status: 'friendly' }, label: 'Odysseus and his men take them aboard' },
     ],
     films: ['fight-club', 'the-odyssey'],
@@ -587,7 +660,7 @@ export const SCENES: Scene[] = [
       { label: 'Voyage', text: 'Odysseus, his men and the group have set sail.' },
       {
         label: 'Equipment',
-        text: 'Weapons from the bar ([[item:antinous-sword]], [[item:suitor-dagger]], [[item:suitor-shield]], [[item:suitor-bow]]), the Gentlemen\'s pistols (limited bullets), goon weapons from the airfield, and [[item:odysseus-swords]].',
+        text: 'Whatever they actually took: weapons from the bar ([[item:antinous-sword]], [[item:suitor-dagger]], [[item:suitor-shield]], [[item:suitor-bow]]), the Gentlemen\'s pistols (limited bullets), goon weapons (plane route only), plus [[item:odysseus-swords]] and the [[item:oars]].',
       },
       { label: 'Status effect', text: 'After a few hours: [[cond:hunger]] on top of [[cond:hangover]].' },
       { label: 'Food stop', text: 'Odysseus points out an island ahead.' },
@@ -596,6 +669,12 @@ export const SCENES: Scene[] = [
     ],
     objective: 'Let players redistribute equipment, then make the food stop feel important.',
     rolls: [{ stat: 'any', dc: 10, label: 'Improvised boat task (DC 8 to 12)' }],
+    failsafes: [
+      {
+        when: 'They try fishing or raiding the rations to beat the hunger',
+        then: 'The fish do not bite, and the rations belong to Odysseus\'s men, who say no. Point them at the island.',
+      },
+    ],
     notes: [
       'They are now operating at −2 Charisma, −2 Perception and −2 Agility. This should feel awful.',
       'Boat oars and poles count as staffs for [[pc:haydn]].',
@@ -605,6 +684,7 @@ export const SCENES: Scene[] = [
     effects: [
       { kind: 'condition', id: 'hunger', active: true, label: 'Hunger sets in (−2 AGI)' },
       { kind: 'items', ids: ['odysseus-swords'], patch: { state: 'held', holder: 'party' }, label: "Hand out Odysseus's spare swords" },
+      { kind: 'items', ids: ['oars'], patch: { state: 'held', holder: 'haydn' }, label: 'Haydn takes an oar (it counts as a staff)' },
     ],
     films: ['the-odyssey'],
     source:
@@ -645,7 +725,14 @@ export const SCENES: Scene[] = [
       'When John Doe is defeated and the head is covered, neutralized or destroyed, everyone turned to stone returns to normal.',
     ],
     cast: ['john-doe', 'medusa', 'odysseus', 'odysseus-crew'],
-    encounters: [{ label: 'John Doe', foes: ['john-doe'] }],
+    encounters: [
+      {
+        label: 'John Doe',
+        foes: ['john-doe'],
+        rounds: [1, 2],
+        ends: "One or two solid hits from Flynn end him. The danger is getting close, not beating him.",
+      },
+    ],
     rolls: [
       {
         stat: 'per',
@@ -668,13 +755,28 @@ export const SCENES: Scene[] = [
       '[[pc:alex]] flies for a turn with his eyes covered.',
       '[[pc:goodwin]] uses [[ability:gump-luck]] for an absurd coincidence.',
     ],
+    failsafes: [
+      {
+        when: 'Nobody will open the box',
+        then: 'John Doe waits. Nobody eats. Odysseus\'s men get restless and one of them reaches for it: let a player stop him, or open it themselves.',
+      },
+      {
+        when: 'They attack John Doe before the box is opened',
+        then: 'He flips the lid open himself and holds the head up. Everyone looking at him rolls the gaze check.',
+      },
+      {
+        when: 'The opener goes in blindfolded or with eyes shut',
+        then: 'Clever: no stone for them. The snakes lunge instead ({{1d4}}), and the next person who looks over still rolls.',
+      },
+    ],
     notes: [
       'Only Flynn can safely approach while Medusa is exposed. John Doe is deliberately fragile; the danger is getting to him.',
       'Do not require Flynn to solo every hit if the party invents a smart indirect approach.',
-      'Odysseus and his men roll as one group. A bad result can turn some or all of them to stone.',
+      'Odysseus and his men roll as one group: one d20, and on 11 or higher {{1d4}} of the men turn to stone (Odysseus himself only on a natural 20).',
     ],
     secrets: ['**From here on, stop protecting players from death.** Bad choices and bad rolls may kill them. Ghosts keep playing, and bagels are waiting in [[scene:gluttony]].'],
     effects: [
+      { kind: 'npcs', ids: ['medusa'], patch: { status: 'present' }, label: 'The box is open: Medusa is out' },
       { kind: 'clues', ids: ['lou-island'], label: 'Revealed: Lou passed through the island' },
       { kind: 'npcs', ids: ['john-doe'], patch: { status: 'defeated' }, label: 'John Doe is defeated' },
       { kind: 'items', ids: ['medusa-head'], patch: { state: 'destroyed', holder: '' }, label: "Medusa's head is neutralized" },
@@ -710,7 +812,14 @@ export const SCENES: Scene[] = [
       'After David is defeated, they pick or roll for the next building. The sequence ends with [[scene:gluttony|GLUTTONY]].',
     ],
     cast: ['david-frame'],
-    encounters: [{ label: 'David Frame', foes: ['david-frame'] }],
+    encounters: [
+      {
+        label: 'David Frame',
+        foes: ['david-frame'],
+        rounds: [2, 3],
+        ends: 'He goes down after a couple of good hits, or the moment someone flips the knife table onto him.',
+      },
+    ],
     lines: [
       {
         by: 'david-frame',
@@ -727,6 +836,8 @@ export const SCENES: Scene[] = [
       'Personal and creepy rather than epic.',
       'David focuses Flynn first but attacks anybody who interferes.',
       'Pacing: Pride, then 1 to 3 more rooms, then Gluttony. Play more if the table is loving it.',
+      'Odysseus and his men wait outside, guarding the boat and the way back. They do not join the rooms, so the fights stay the players\' own.',
+      'Once Gluttony is cleared, the remaining doors are sealed and the boat is leaving. No going back for the rooms they skipped.',
     ],
     loot: ['knives'],
     effects: [
@@ -756,7 +867,14 @@ export const SCENES: Scene[] = [
     ],
     objective: 'Get out. Charm, trick, run, or fight.',
     cast: ['gladiator-1', 'gladiator-2', 'gladiator-3'],
-    encounters: [{ label: 'Lust Gladiators', foes: ['gladiator-1', 'gladiator-2', 'gladiator-3'] }],
+    encounters: [
+      {
+        label: 'Lust Gladiators',
+        foes: ['gladiator-1', 'gladiator-2', 'gladiator-3'],
+        rounds: [1, 2],
+        ends: 'This is a shove toward the door, not a war. As soon as one player gets out, the rest can follow.',
+      },
+    ],
     rolls: [
       { stat: 'cha', dc: 10, label: 'Politely redirect them' },
       { stat: 'cha', dc: 12, label: 'Convince them someone else is coming' },
@@ -788,7 +906,14 @@ export const SCENES: Scene[] = [
     readAloud: ['Stacks of counterfeit money. Cases of alcohol. And [[npc:ted-terger]], guarding both. He picks up a beer bottle.'],
     objective: 'Get past Ted, by force or by deal.',
     cast: ['ted-terger'],
-    encounters: [{ label: 'Ted Terger', foes: ['ted-terger'] }],
+    encounters: [
+      {
+        label: 'Ted Terger',
+        foes: ['ted-terger'],
+        rounds: [2, 3],
+        ends: 'He gives up the moment his money is in danger: threaten the stacks and he bargains.',
+      },
+    ],
     rolls: [
       { stat: 'cha', dc: 12, label: 'Distract him with a fake deal' },
       { stat: 'agi', dc: 12, label: 'Steal something while he talks' },
@@ -827,7 +952,7 @@ export const SCENES: Scene[] = [
     ],
     objective: 'Decide what to do with Truman.',
     cast: ['truman'],
-    encounters: [{ label: 'Truman (only if they attack him)', foes: ['truman'] }],
+    encounters: [{ label: 'Truman (only if they attack him)', foes: ['truman'], rounds: [1, 1], ends: 'He does not fight back. One hit and it is over.' }],
     lines: [{ by: 'truman', text: 'Hollywood is real, right? Like actually real?' }],
     notes: [
       'They can let him follow, lie to him, lock him in, threaten him, or kill him for no reason.',
@@ -858,7 +983,14 @@ export const SCENES: Scene[] = [
     readAloud: ['A huge man fills most of the room. [[npc:kingpin]]. He turns, slowly, and looks at Flynn\'s face.'],
     objective: 'Survive Kingpin, or make him not care.',
     cast: ['kingpin'],
-    encounters: [{ label: 'Kingpin', foes: ['kingpin'] }],
+    encounters: [
+      {
+        label: 'Kingpin',
+        foes: ['kingpin'],
+        rounds: [2, 3],
+        ends: 'Taking off or switching the Spider-Man mask takes the fight out of him. Otherwise he goes down after round 3 at the latest.',
+      },
+    ],
     lines: [{ by: 'kingpin', text: 'Spider-Man.', note: 'Only if Flynn is wearing the Spider-Man mask. That is enough.' }],
     notes: [
       'If Flynn enters wearing the Batman cowl or the inkblot mask, Kingpin stares, grunts, and does not care.',
@@ -887,7 +1019,14 @@ export const SCENES: Scene[] = [
     readAloud: ['Cypher is lounging on a couch with a lightning rifle across his lap. He tells the group he doesn\'t want to take any pills, and immediately opens fire.'],
     objective: 'Get to Cypher, or get the rifle away from him.',
     cast: ['cypher'],
-    encounters: [{ label: 'Cypher', foes: ['cypher'] }],
+    encounters: [
+      {
+        label: 'Cypher',
+        foes: ['cypher'],
+        rounds: [2, 3],
+        ends: 'Unplug or knock away the rifle and he gives up: "Fine. I did not want to do this anyway."',
+      },
+    ],
     rolls: [
       { stat: 'int', dc: 12, label: 'Unplug whatever is powering the rifle' },
       { stat: 'agi', dc: 12, label: 'Knock the rifle away (or STR)' },
@@ -922,7 +1061,14 @@ export const SCENES: Scene[] = [
     objective: 'Defeat the three Harkonnens, then eat.',
     mustHappen: ['The island sequence ends when they clear Gluttony and get the food and **five bagels**.'],
     cast: ['baron', 'feyd', 'rabban'],
-    encounters: [{ label: 'The Harkonnens', foes: ['baron', 'feyd', 'rabban'] }],
+    encounters: [
+      {
+        label: 'The Harkonnens',
+        foes: ['baron', 'feyd', 'rabban'],
+        rounds: [3, 5],
+        ends: 'When Feyd and Rabban are both down, the Baron sinks into his oil and surrenders the food. Past round 5, he gives it up anyway to save himself.',
+      },
+    ],
     tips: [
       'Overturn tables for cover.',
       'Throw food.',
@@ -970,7 +1116,7 @@ export const SCENES: Scene[] = [
       'When they arrive, [[npc:nathan-fielder]] and a camera crew are waiting. Nathan wears his laptop holder, but the screen faces away from him. He plays a video.',
       "It's Lou. He reveals that they have been on camera the entire time; Nathan and his team have been secretly recording everything. Lou has partnered with Nathan to make the greatest and most tragic documentary about five friends who die heroically.",
       'The video stops. Nathan explains that Lou tricked him, and that he is being held hostage. He is scared for his life.',
-      'Then the cameramen raise their camcorders and fire a seductive needle shot directly at the group.',
+      'Then the cameramen raise their camcorders. The lenses are pointed straight at you.',
     ],
     beats: [
       { label: 'Set sail', text: 'The group and the last of Odysseus\'s men sail for Hollywood.' },
@@ -998,6 +1144,9 @@ export const SCENES: Scene[] = [
         then: 'It does not escape the scene. They dodge one needle and get hit by another, knock one operator down before collapsing, or stay conscious long enough to see where they are taken.',
       },
       { when: 'A player fails', then: 'Immediate knockout.' },
+      { when: 'Someone asks where Odysseus is', then: 'He already left for the premiere. He waves from the end of the dock as the needles fly.' },
+      { when: 'A ghost is in the group', then: 'Needles pass straight through. Ghosts follow the van to the studio and arrive with everyone else.' },
+      { when: 'Truman came along', then: 'He gets a needle too, and wakes up in the Volume delighted: "Is this... the real world?" Use him for one joke, then he wanders off set.' },
     ],
     notes: [
       'This is the first time the players fully understand the scale of Lou\'s plan.',
@@ -1071,6 +1220,7 @@ export const SCENES: Scene[] = [
     variantMust: {
       outline: [
         'Oh Dae-su should be strong enough to kill **at least 2 players**.',
+        '**How:** whatever the dice say, he takes one groomsman out in round 1 and another in round 2 (hammer, chokehold, the corridor fight). After that he can be killed or knocked out.',
         'Flynn has plot armor. The other players do not.',
       ],
       expanded: [
@@ -1079,11 +1229,18 @@ export const SCENES: Scene[] = [
       ],
     },
     cast: ['oh-dae-su', 'lou'],
-    encounters: [{ label: 'Oh Dae-su', foes: ['oh-dae-su'] }],
+    encounters: [
+      {
+        label: 'Oh Dae-su',
+        foes: ['oh-dae-su'],
+        rounds: [2, 4],
+        ends: 'Outline version: he takes one groomsman out in round 1 and another in round 2, whatever the dice say; after that he can be killed or knocked out. Expanded build: he keeps coming until he is physically stopped.',
+      },
+    ],
     notes: [
       'He does not negotiate. He advances relentlessly toward whoever hurt him last.',
       'If somebody reaches 0 HP, they die and become a ghost ([[rule:ghosts]]).',
-      'Fight length: 2 to 4 rounds.',
+      'Bagels do not work inside the Volume: the studio is fake, and an improbable act needs the real world. Revivals wait for the bagel shop.',
     ],
     loot: ['dae-su-hammer'],
     effects: [{ kind: 'npcs', ids: ['oh-dae-su'], patch: { status: 'defeated' }, label: 'Oh Dae-su is down' }],
@@ -1111,20 +1268,36 @@ export const SCENES: Scene[] = [
     ],
     objective: 'Survive Toothless.',
     variantMust: {
-      outline: ['Toothless needs to take out **every character except Flynn**.'],
+      outline: [
+        'Toothless needs to take out **every character except Flynn**.',
+        '**How:** one living groomsman falls each round, whatever the dice say (plasma blast, dive, tail). When only Flynn is standing, he lands the last blow on the wounded dragon, or Lou yells "Cut!" and calls Toothless off.',
+      ],
       expanded: [
         'Scarier than Oh Dae-su but still beatable: more damage and chaos, not the mandatory wipe.',
         'At 0 HP he crashes and is incapacitated. Give the party half a breath, then introduce the Cat.',
       ],
     },
     cast: ['toothless', 'lou'],
-    encounters: [{ label: 'Toothless', foes: ['toothless'] }],
+    encounters: [
+      {
+        label: 'Toothless',
+        foes: ['toothless'],
+        rounds: [3, 5],
+        ends: "Outline version: one groomsman falls each round, whatever the dice say. When only Flynn is standing, he lands the last blow on the wounded dragon, or Lou yells \"Cut!\" and calls him off. Expanded build: he crashes at 0 HP.",
+      },
+    ],
     tips: ['Studio rigging, cables and lights.', 'Pistols and the bow.', "Oogwaydn's improvised camera or mic stand.", 'Ghosts as distractions.'],
+    failsafes: [
+      {
+        when: 'Someone tries to tame or calm him',
+        then: '{{cha:18}}: he hesitates for one round (ears down, a confused purr), then Lou\'s voice booms and he goes back to work. He never switches sides.',
+      },
+    ],
     notes: [
       'Tactics: stays Nearby or Far Away, plasma-blasts exposed targets, dives Close to bite, flies away after striking.',
-      'Fight length: 3 to 5 rounds.',
     ],
     effects: [
+      { kind: 'items', ids: ['dae-su-hammer'], patch: { state: 'held', holder: 'party' }, label: "Take Oh Dae-su's hammer" },
       { kind: 'npcs', ids: ['toothless'], patch: { status: 'defeated' }, label: 'Toothless crashes' },
       { kind: 'pcs', filter: 'notFlynn', patch: { status: 'ghost', hp: 0 }, label: 'Everyone except Flynn is taken out', only: 'outline' },
     ],
@@ -1155,7 +1328,7 @@ export const SCENES: Scene[] = [
     objective: 'Wipe everyone except Flynn, playfully, in 2 to 4 rounds.',
     mustHappen: ['Every living non-Flynn player becomes a ghost.', 'The Cat cannot kill Flynn. A lethal hit leaves him at 1 HP.'],
     cast: ['cat', 'things', 'lou'],
-    encounters: [{ label: 'The Cat in the Hat', foes: ['cat'] }],
+    encounters: [{ label: 'The Cat in the Hat', foes: ['cat'], rounds: [2, 4], ends: 'He cannot be hurt. Follow the wipe pacing below; he bows out when only Flynn is left.' }],
     lines: [
       { by: 'cat', text: 'Well. This set is a mess.' },
       { by: 'cat', text: 'Much better. One groom. Cleaner composition.', note: 'Exit line, then he bows and leaves.' },
@@ -1209,11 +1382,34 @@ export const SCENES: Scene[] = [
       'The phrase is not solved with a skill check. It nudges Flynn to show his face and confront Lou socially, rather than in another masked fight.',
     ],
     cast: ['lou'],
-    encounters: [{ label: 'Lou (masked)', foes: ['lou'], fighters: ['flynn'], phase: 0 }],
+    encounters: [
+      {
+        label: 'Lou (masked)',
+        foes: ['lou'],
+        fighters: ['flynn'],
+        phase: 0,
+        rounds: [1, 2],
+        ends: "This fight cannot be won with damage. After a round or two of struggling, send Louise's text and let Flynn try something else.",
+      },
+    ],
     lines: [
       { by: 'lou', text: "You'll never guess where I got this from." },
       { by: 'lou', text: "I didn't steal the night from you. I preserved it." },
       { by: 'lou', text: 'Five friends crossing the world for a wedding ring is already a story. Five friends dying for it is a market.' },
+    ],
+    failsafes: [
+      {
+        when: 'Flynn already knows about the +100 (he unmasked earlier)',
+        then: 'Skip the discovery. The challenge becomes getting Lou to take his mask off: Flynn talks, Lou wavers. Any roll works with +100; play what Flynn says.',
+      },
+      {
+        when: 'Flynn tries to talk Lou down with his mask still on',
+        then: '{{cha:20}}: Lou pauses and lowers the camera, but he never unmasks first.',
+      },
+      {
+        when: 'Flynn never thinks of unmasking',
+        then: 'Step by step: a round of struggle; Lou says "Take the mask off if you want me to believe you"; Louise\'s text; a ghost shouts a hint. If he still keeps it on, the mask slips off in the scuffle.',
+      },
     ],
     notes: [
       'Do not send Louise\'s text instantly. Give Flynn a moment to struggle with Lou first.',
@@ -1258,7 +1454,16 @@ export const SCENES: Scene[] = [
       'Flynn gets the final victory. Do not steal it with a ghost finishing blow or another NPC.',
     ],
     cast: ['lou'],
-    encounters: [{ label: 'Lou (unmasked)', foes: ['lou'], fighters: ['flynn'], phase: 1 }],
+    encounters: [
+      {
+        label: 'Lou (unmasked)',
+        foes: ['lou'],
+        fighters: ['flynn'],
+        phase: 1,
+        rounds: [2, 3],
+        ends: "Flynn's second clean hit ends it. Flynn wins; make it cinematic, not long.",
+      },
+    ],
     notes: [
       'Let Flynn and Lou exchange a few rolls. Make it cinematic.',
       'Do not accidentally kill Flynn or let Lou escape with the ring.',
@@ -1300,7 +1505,8 @@ export const SCENES: Scene[] = [
     objective: 'Let the table decide who comes back.',
     cast: ['caley'],
     notes: [
-      'For every resurrection, Flynn or another living player performs a statistically improbable action **in real life** ([[rule:bagel-rule]]).',
+      'One random, stupid act from Flynn, **in real life**, brings everyone back ([[rule:bagel-rule]] at its most generous). He can choose to bring back only some of them, or nobody.',
+      'The bagels are free: the shop is closing, and the guy behind the counter has seen weirder nights.',
       'Use the stupidest things that happened during the session as inspiration. Do not prewrite the challenges; the table will create better material.',
       'If friends are revived, they return with him. If Flynn leaves them dead, their ghosts can still complain about it.',
       'Use or omit the final dark joke depending on the room\'s mood.',

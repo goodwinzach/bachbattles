@@ -6,7 +6,7 @@ import { RELATIONS } from '../../data/campaign';
 import { PACING } from '../../data/scenes';
 import type { Act, EntityType, Film, Item, NPC, PC, Scene } from '../../data/types';
 import { addMapNote, goScene, moveScene, resetMapLayout, updateMapNote } from '../../state/actions';
-import { fmtDuration, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneStatus, shielded, strip, timeSpent, totalSpent } from '../../state/derive';
+import { fmtDuration, holderHidden, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneStatus, shielded, strip, timeSpent, totalSpent } from '../../state/derive';
 import { all, ent, game, getDataVersion, getUi, openDrawer, setUi, type MapNote } from '../../state/store';
 import { isTyping, useMedia, useTick } from '../hooks';
 import { Icon } from '../icons';
@@ -682,7 +682,7 @@ function buildGraph(types: string[]) {
   for (const p of all<PC>('pc')) for (const f of p.films ?? []) link(`pc:${p.id}`, `film:${f}`, 'film', 'inspired by');
   for (const i of keyItems) {
     for (const f of i.films ?? []) link(`item:${i.id}`, `film:${f}`, 'film', 'from');
-    if (i.holder && i.holder !== 'party') link(`item:${i.id}`, `${ent('pc', i.holder) ? 'pc' : 'npc'}:${i.holder}`, 'holds', i.state === 'missing' ? 'secretly has' : 'held by');
+    if (i.holder && i.holder !== 'party' && !holderHidden(i)) link(`item:${i.id}`, `${ent('pc', i.holder) ? 'pc' : 'npc'}:${i.holder}`, 'holds', i.state === 'missing' ? 'secretly has' : 'held by');
   }
   for (const s of all<Scene>('scene')) {
     for (const c of s.cast ?? []) link(`scene:${s.id}`, `npc:${c}`, 'cast', 'appears in');

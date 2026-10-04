@@ -241,7 +241,7 @@ function SceneSlide({ scene, dm, text, page, of }: { scene: Scene; dm: boolean; 
 function CharacterSlide({ npc, dm }: { npc: NPC; dm: boolean }) {
   const film = sourcesOf('npc', npc.id, !dm || shielded())[0];
   const stat = npcStat(npc);
-  const line = npc.lines?.find((l) => !l.trim().startsWith('('));
+  const line = npc.entrance ?? npc.lines?.find((l) => !l.trim().startsWith('('));
   const src = portraitOf('npc', npc.id);
   const boss = npc.side === 'boss';
   return (
@@ -405,6 +405,8 @@ function buildDeck(dm: boolean): Slide[] {
           title: npc.name,
           scene: s.id,
           act: a.id,
+          // a reveal (Medusa) stays off the TV until the DM marks them met
+          dmOnly: npc.surprise && npc.status === 'unmet',
           render: (d) => <CharacterSlide npc={npc} dm={d} />,
           notes: (d) => (d ? <Rich text={npc.play ?? npc.role} /> : null),
         });

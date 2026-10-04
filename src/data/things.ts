@@ -82,8 +82,8 @@ export const ITEMS: Item[] = [
     icon: 'gem',
     state: 'missing',
     holder: 'lou',
-    effect: 'The ring Flynn needs for the wedding tomorrow. [[npc:lou]] stole it.',
-    notes: ['Flynn takes it back during or right after the final hand-to-hand fight with Lou.'],
+    effect: 'The ring Flynn needs for the wedding tomorrow. Gone since last night.',
+    notes: ['Who has it is in its holder (hidden by the spoiler shield). Flynn takes it back during or right after the final hand-to-hand fight.'],
   }),
   item({
     id: 'flynn-phone',
@@ -245,7 +245,7 @@ export const ITEMS: Item[] = [
     dmg: '1d8',
     range: 'Close',
     state: 'unclaimed',
-    holder: 'haydn',
+    holder: '',
     effect:
       'Whatever long object [[pc:haydn]] has scavenged: broom, branch, spear, pool cue, pipe, mic stand, camera stand, boat oar, broken sign. With it: +4 to hit, {{1d8}}, may use Agility.',
     notes: ['Rename this item whenever he finds something new (a pool cue in the bar, an oar at sea, a mic stand in the studio).'],

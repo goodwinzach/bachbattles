@@ -542,6 +542,86 @@ try {
     check(errors.length === 0, 'no console errors using the tools', errors.join(' | '));
     await ctx.close();
   }
+
+  // ── 6. the table rules the app enforces ────────────────────────────────
+  console.log('\nTable rules');
+  {
+    const { ctx, page, errors } = await open(browser, { hash: 'run' });
+    const jump = async (id) => {
+      await page.selectOption('.slate__pick', id);
+      await page.waitForTimeout(250);
+    };
+    const title = () => page.textContent('.slate__h');
+    const member = (name) => page.locator(`.member:has(.member__name:text-is("${name}"))`);
+    const statusOf = (name) => member(name).evaluate((el) => [...el.classList].find((c) => c.startsWith('member--')));
+
+    // nobody dies before the island: 0 HP knocks them out, and they are back when the scene ends
+    for (let i = 0; i < 10 && (await member('Dude Bro').locator('.member__hpnum').textContent())?.trim().split('/')[0] !== '0'; i++) {
+      await page.click('[aria-label="Dude Bro minus 5 HP"]');
+    }
+    check((await statusOf('Dude Bro')) === 'member--down', 'before the island, 0 HP knocks a groomsman out instead of killing him', await statusOf('Dude Bro'));
+    await page.keyboard.press(']');
+    await page.waitForTimeout(250);
+    const back = (await member('Dude Bro').locator('.member__hpnum').textContent())?.trim();
+    check((await statusOf('Dude Bro')) === 'member--alive' && /^1\//.test(back ?? ''), 'he is back at 1 HP once the scene ends', `${await statusOf('Dude Bro')} ${back}`);
+
+    // Costello: each fact shows the question that pulls it and his answer; three questions and he is gone
+    await jump('costello');
+    const qa = await page.$$eval('.fact', (els) => els.map((e) => [e.querySelector('.fact__q')?.textContent, e.querySelector('.fact__a')?.textContent]));
+    check(qa.length === 4 && qa.every(([q]) => q) && qa.filter(([, a]) => a).length === 3, 'each Costello fact shows its question and his answer (the riddle is its own answer)', JSON.stringify(qa[0]));
+    for (const n of [0, 1, 2]) await page.click(`.qpip >> nth=${n}`);
+    check(/That was three/.test((await page.textContent('.widget:has(.qpip)')) ?? ''), 'after the third question the widget says Abbott and Costello are gone');
+
+    // the route has to be picked before moving on
+    await jump('route-choice');
+    await page.keyboard.press(']');
+    await page.waitForTimeout(250);
+    const toastText = await page.$$eval('.toast', (els) => els.map((e) => e.textContent).join(' | '));
+    check((await title()) === 'Plane or Boat?' && /Pick the route first/.test(toastText), '"Done, next" at the crossroads asks for the route first', `${await title()} / ${toastText}`);
+
+    // a fight shows its round plan and how it ends, and says so once it runs long
+    await jump('gentlemen');
+    await page.click('.encounter >> nth=0 >> button:has-text("Start fight")');
+    await page.click('.modal button:has-text("Roll initiative")');
+    await page.waitForSelector('.combat');
+    const round = await page.textContent('.combat__round');
+    check(/Round 1/.test(round ?? '') && /of 2–4/.test(round ?? '') && (await page.$('.combat__ends')), 'the combat tracker shows the planned rounds and how the fight ends', round);
+    const turns = await page.$$eval('.combat__list > li', (els) => els.length);
+    for (let i = 0; i < turns * 4; i++) await page.click('.combat button:has-text("Next turn")');
+    check(/Past the plan/.test((await page.textContent('.combat__ends')) ?? ''), 'a fight past its planned rounds says to wrap it up', await page.textContent('.combat__round'));
+    await page.click('.combat button:has-text("End fight")');
+
+    // sin rooms lead back to Gluttony
+    await jump('pride');
+    await page.keyboard.press(']');
+    await page.waitForTimeout(250);
+    check((await title()) === 'Gluttony', 'finishing a sin room goes next to Gluttony', await title());
+
+    // the studio: the wipe tracker takes people out, and no bagels inside the Volume
+    await jump('oh-dae-su');
+    check(/Two have to fall/.test((await page.textContent('.view')) ?? ''), 'Oh Dae-su shows the wipe tracker (outline version)');
+    await page.click('.widget:has-text("Two have to fall") button:has-text("Takes them out") >> nth=0');
+    await page.click('.widget:has-text("Two have to fall") button:has-text("Takes them out") >> nth=0');
+    await page.waitForTimeout(200);
+    const ghosts = await page.$$eval('.member--ghost', (els) => els.length);
+    check(ghosts === 2, '"Takes them out" turns groomsmen into ghosts after the island', `ghosts=${ghosts}`);
+    check(/No bagel revivals/.test((await page.textContent('.view')) ?? ''), 'inside the Volume the bagels stay in the bag');
+    await jump('epilogue');
+    await page.click('button:has-text("Flynn did it")');
+    await page.waitForTimeout(200);
+    check((await page.$$eval('.member--ghost', (els) => els.length)) === 0, 'at the bagel shop, one stupid act from Flynn brings everyone back');
+
+    // Medusa's entrance stays off the table deck until she is met
+    await page.evaluate(() => (location.hash = 'slides'));
+    await page.waitForSelector('.frame');
+    const tableMedusa = await page.$$eval('.frame[title="Medusa"]', (els) => els.length);
+    await page.click('.slides__bar button:has-text("DM deck")');
+    await page.waitForTimeout(200);
+    const dmMedusa = await page.$$eval('.frame.is-secret[title="Medusa"]', (els) => els.length);
+    check(tableMedusa === 0 && dmMedusa === 1, "Medusa's entrance slide is DM-only until she is met", `table=${tableMedusa} dm=${dmMedusa}`);
+    check(errors.length === 0, 'no console errors running the table rules', errors.join(' | '));
+    await ctx.close();
+  }
 } finally {
   await browser.close();
 }

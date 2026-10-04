@@ -41,6 +41,12 @@ const flagPatch = (d: SaveData, type: Parameters<typeof writePatch>[1], id: stri
 
 // ─── players ──────────────────────────────────────────────────────────────
 
+/** True until the party reaches John Doe's island: 0 HP knocks players out instead of killing them. */
+export function beforeIsland(sceneId = game().scene): boolean {
+  const order = all<Scene>('scene').map((s) => s.id);
+  return order.indexOf(sceneId) < order.indexOf('john-doe');
+}
+
 /** Apply HP change with the death and plot-armor rules. Returns the label. */
 function hpChange(d: SaveData, pc: PC, next: number): string {
   const max = pc.hpMax;
@@ -52,11 +58,16 @@ function hpChange(d: SaveData, pc: PC, next: number): string {
     if (pc.id === 'flynn' && armor?.enabled) {
       hp = 1;
       label = `${pc.name} would die. Plot armor: survives at 1 HP`;
+    } else if (beforeIsland(d.game.scene)) {
+      status = 'down';
+      label = `${pc.name} is knocked out cold`;
     } else {
       status = 'ghost';
       label = `${pc.name} dies and becomes a ghost`;
     }
   } else if (hp > 0 && pc.status === 'ghost') {
+    status = 'alive';
+  } else if (hp > 0 && pc.status === 'down' && pc.hp === 0) {
     status = 'alive';
   }
   flagPatch(d, 'pc', pc.id, { hp, status });
@@ -82,6 +93,8 @@ export function adjustHp(pcId: string, delta: number) {
   const after = ent<PC>('pc', pcId)!;
   if (after.status === 'ghost' && pc.status !== 'ghost') {
     toast(`${label}. Ghost rules apply; a bagel can bring them back.`, { tone: 'bad', undoId: latestUndoId(), big: true });
+  } else if (after.status === 'down' && pc.status !== 'down') {
+    toast(`${label}. Nobody dies before the island: back at 1 HP when the scene ends.`, { tone: 'info', undoId: latestUndoId() });
   } else if (lethal && pc.id === 'flynn') {
     toast(label, { tone: 'gold', undoId: latestUndoId() });
   }
@@ -92,6 +105,14 @@ export function setHp(pcId: string, hp: number) {
   if (!pc) return;
   let label = '';
   mutate(() => label, (d) => (label = hpChange(d, pc, hp)), { coalesce: `hp:${pcId}` });
+}
+
+/** A scripted fall: they go down whatever the dice said (a ghost from the island on). */
+export function takeOut(pcId: string) {
+  const pc = ent<PC>('pc', pcId);
+  if (!pc || pc.status === 'ghost') return;
+  if (pc.hp > 0) adjustHp(pcId, -pc.hp);
+  else setPcStatus(pcId, beforeIsland() ? 'down' : 'ghost');
 }
 
 export function setPcStatus(pcId: string, status: PcStatus) {
@@ -167,6 +188,19 @@ export function revive(pcId: string, useBagel: boolean) {
         const qty = Math.max(0, (bagels.qty ?? 0) - 1);
         flagPatch(d, 'item', 'bagels', qty === 0 ? { qty, state: 'spent' } : { qty });
       }
+    },
+    { toast: 'good', log: true },
+  );
+}
+
+/** The bagel shop: one stupid act from Flynn brings every ghost back. */
+export function reviveEveryone() {
+  const ghosts = all<PC>('pc').filter((p) => p.status === 'ghost');
+  if (!ghosts.length) return;
+  mutate(
+    `Everyone is back: ${ghosts.map((p) => p.name).join(', ')}`,
+    (d) => {
+      for (const p of ghosts) flagPatch(d, 'pc', p.id, { status: 'alive', hp: p.hpMax });
     },
     { toast: 'good', log: true },
   );
@@ -386,10 +420,23 @@ export function goScene(id: string, opts: { complete?: boolean } = {}) {
     opts.complete && from ? `${from.title} done → ${target.title}` : `Now playing: ${target.title}`,
     (d) => {
       moveTimer(d, g.scene);
-      if (opts.complete && from) flagPatch(d, 'scene', from.id, { status: 'done' });
+      if (opts.complete && from) {
+        flagPatch(d, 'scene', from.id, { status: 'done' });
+        // knocked out before the island: back on their feet at 1 HP once the scene is over
+        for (const pc of all<PC>('pc')) if (pc.status === 'down' && pc.hp === 0) flagPatch(d, 'pc', pc.id, { status: 'alive', hp: 1 });
+      }
       if (target.status === 'skipped' || target.status === 'done') flagPatch(d, 'scene', id, { status: 'upcoming' });
+      // playing one route's scene settles the route, so "Done, next" never wanders onto the other one
+      const route = target.branch && !d.game.route ? target.branch : d.game.route;
+      // reaching Gluttony closes the island: the rooms nobody chose are skipped
+      if (id === 'gluttony') {
+        for (const r of SIN_IDS) {
+          const room = ent<Scene>('scene', r);
+          if (room && r !== 'pride' && r !== 'gluttony' && room.status === 'upcoming') flagPatch(d, 'scene', r, { status: 'skipped' });
+        }
+      }
       const sinOrder = SIN_IDS.includes(id) && !d.game.sinOrder.includes(id) ? [...d.game.sinOrder, id] : d.game.sinOrder;
-      d.game = { ...d.game, scene: id, sinOrder };
+      d.game = { ...d.game, scene: id, sinOrder, route };
       rechargeIn(d, 'scene');
       if (d.game.combat) d.game.combat = null;
     },
@@ -402,6 +449,10 @@ const SIN_IDS = ['pride', 'lust', 'greed', 'envy', 'wrath', 'sloth', 'gluttony']
 
 export function completeAndNext() {
   const g = game();
+  if (g.scene === 'route-choice' && !g.route) {
+    toast('Pick the route first: plane or boat (the buttons in this scene).', { tone: 'info' });
+    return;
+  }
   const { next } = neighbors(g.scene);
   if (next) goScene(next.id, { complete: true });
   else {
@@ -562,7 +613,7 @@ export function startCombat(sceneId: string, encIndex: number, fighters: string[
         }
         flagPatch(d, 'npc', id, fields);
       }
-      d.game = { ...d.game, combat: { scene: sceneId, label: enc.label, round: 1, turn: 0, list } };
+      d.game = { ...d.game, combat: { scene: sceneId, enc: encIndex, label: enc.label, round: 1, turn: 0, list } };
       if (d.game.scene !== sceneId) d.game.scene = sceneId;
     },
     { toast: 'gold', log: true },

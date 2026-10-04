@@ -12,7 +12,7 @@ Your progress saves automatically in that browser. Use **⋯ → Export save** b
 
 | View | What it is for |
 | --- | --- |
-| **Run** | The live DM screen: the current scene's slate, location, read-aloud text, beats, rolls, failsafes and DM notes, a session timer, a spotlight tracker (who has waited longest for a moment), a "Previously on…" recap for after a break, the party with HP, stats, masks and abilities, and a combat tracker with initiative, attacks and damage. Scene widgets handle the special moments: Costello's three questions, the bill, the route, sharing out the gear on the voyage, Medusa's box, the sin rooms, the unmasking and the bagel shop. |
+| **Run** | The live DM screen: the current scene's slate, location, read-aloud text, beats, rolls, failsafes and DM notes, a session timer, a spotlight tracker (who has waited longest for a moment), a "Previously on…" recap for after a break, the party with HP, stats, masks and abilities, and a combat tracker with initiative, attacks, damage and each fight's planned length. Scene widgets handle the special moments: Costello's three questions, the bill, the route, sharing out the gear on the voyage, Medusa's box, the sin rooms, the studio deaths, the unmasking and the bagel shop. |
 | **Script** | The whole campaign as an organized script, act by act, with a table of contents, search, a read-aloud-only mode and expand/collapse for every section. Each scene keeps its original outline text. |
 | **Map** | Three charts: the story flow (every scene and branch, pan and zoom), the connections web (who is tied to whom, which films they come from), and pacing (time spent against the 4 to 6 hour plan). On the story flow, click a scene to open it: a card with its location, Play, Script and Details, and a column of branches (location, objective, characters, fights, rolls, read-aloud, beats, if-they, loot, clues, notes). Click a branch to open its own branches off to the side, down to a character's dialogue lines or stat line. Every open node has a close button; Esc closes the last one, and several scenes can be open at once. Drag scenes (or their open cards) to rearrange the map; the layout is saved and "Put every scene back in place" resets it. Add sticky notes by double-clicking empty space, with the note button, or from an open scene: a note belongs to the nearest scene, moves with it, and also shows with that scene on the Run screen. |
 | **Slides** | A presentation deck. The *Table* deck is safe to show players; the *DM* deck adds stats, secrets and notes. Player cast slides and character entrances use the portraits. Long read-alouds split across slides. Arrow keys to move, F for fullscreen, speaker notes optional. |
@@ -33,6 +33,18 @@ Some sources are spoilers. The guy who looks like Edward Norton is introduced as
 ## Locations
 
 Ten places, each with its picture: the Green Dragon Inn, the field, Abbott and Costello's craft, the airfield, the harbor, Odysseus's ship, the island, Hollywood Harbor, the Volume and the bagel shop. Every scene opens with its location as an establishing shot; click it for the location's page: what the party sees and hears when they get there, the scenes that happen there, who they meet and what they can find. The slides cut to a full-screen shot of the place whenever the story moves, the Codex has a Locations tab, and each character's profile shows where to find them. The phone call and the plane-or-boat decision have no fixed place, so they have no picture.
+
+## At the table
+
+The console keeps track of the house rules so the DM does not have to:
+
+- **Fights have a plan.** Every fight lists how many rounds it should take and what ends it (Michael calls it off as soon as one of the three drops; first to three clean hits against Tyler). The combat tracker shows "Round 2 of 2–4", keeps the end condition in view and says when a fight has run past its plan.
+- **Nobody dies before the island.** Until John Doe, 0 HP knocks a groomsman out cold; they are back at 1 HP when the scene ends. From the island on, 0 HP makes a ghost, and ghosts keep playing.
+- **Bagels.** At Gluttony a living player eats a bagel and does something improbable in real life to bring one ghost back. Inside the Volume nobody comes back. At the bagel shop the bagels are free, and one random, stupid act from Flynn, in real life, brings everyone back in one tap.
+- **The studio deaths.** Oh Dae-su, Toothless (outline version) and the Cat (expanded build) show who is still standing, a round-by-round guide, and a "Takes them out" button that turns a groomsman into a ghost whatever the dice said, with Undo.
+- **Costello.** Each fact shows the question that usually pulls it out and his answer. The widget warns when two questions are gone without the riddle, and says when the third one ends the visit. Only Flynn's questions count.
+- **The road.** "Done, next" at the crossroads waits for plane or boat. The sin rooms go Pride first, then one to three more at random, then Gluttony; finishing any sin room heads to Gluttony. On the voyage, a widget shares out the gear picked up so far.
+- **A spoiler-safe deck.** Surprise entrances (Medusa), the riddle and the +100 Charisma reveal stay on the DM deck until they happen in play.
 
 ## Editing
 

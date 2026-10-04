@@ -19,7 +19,9 @@ import {
   abilityStatus,
   allStats,
   backlinks,
+  holderHidden,
   holderName,
+  itemHolderName,
   holderType,
   isUnmasked,
   ITEM_KIND_LABEL,
@@ -217,7 +219,7 @@ export function ItemRow({ item, showHolder = true }: { item: Item; showHolder?: 
           {item.dmg && <span class="num"> · {item.dmg}</span>}
           {item.range && item.kind === 'weapon' && <span> · {item.range}</span>}
           {item.acBonus ? <span> · +{item.acBonus} AC</span> : null}
-          {showHolder && item.holder && <span> · {holderName(item.holder)}</span>}
+          {showHolder && item.holder && <span> · {itemHolderName(item)}</span>}
         </div>
       </div>
       {item.qty != null && (
@@ -409,7 +411,7 @@ export function ItemDetail({ item }: { item: Item }) {
         <div class="kv__row">
           <span class="kv__k">Who has it</span>
           <span class="kv__v">
-            {item.holder ? ht ? <Ref type={ht} id={item.holder} /> : holderName(item.holder) : 'Nobody'}
+            {item.holder ? holderHidden(item) ? 'Missing' : ht ? <Ref type={ht} id={item.holder} /> : holderName(item.holder) : 'Nobody'}
             <HolderControl item={item} />
           </span>
         </div>
@@ -876,7 +878,7 @@ export function PeekCard({ type, id }: { type: EntityType; id: string }) {
     body = (
       <>
         {!hidden && <Rich text={it.effect} class="peek__text" />}
-        <div class="peek__stats">{holderName(it.holder)}</div>
+        <div class="peek__stats">{itemHolderName(it)}</div>
       </>
     );
   } else if (type === 'ability') {

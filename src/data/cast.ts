@@ -356,7 +356,7 @@ export const NPCS: NPC[] = [
       'The floor did not damage itself.',
       'I am offering you the civilized version of this conversation first.',
       "You have three hundred and fifty. So I assume you're about to become creative.",
-      'That answer cost you the remaining fifty. Try again.',
+      'That answer just cost you another fifty. Try again.',
     ],
     stat: {
       ac: 13,
@@ -509,6 +509,7 @@ export const NPCS: NPC[] = [
   }),
   npc({
     id: 'costello',
+    entrance: 'You have already asked. Ask anyway.',
     name: 'Costello',
     film: 'arrival',
     side: 'oracle',
@@ -545,6 +546,7 @@ export const NPCS: NPC[] = [
   // ── The Road ────────────────────────────────────────────
   npc({
     id: 'tyler',
+    entrance: "Lou beat me. I owe him one. You're the one.",
     name: 'Tyler Durden',
     aka: 'Edward Norton, again',
     film: 'fight-club',
@@ -724,7 +726,7 @@ export const NPCS: NPC[] = [
     ],
     stat: {
       ac: 12,
-      hp: 16,
+      hp: 8,
       attacks: [{ name: 'Knife', bonus: 3, dmg: '1d6', range: 'Close' }],
       specials: [{ name: "Medusa's Head", text: 'A hazard, not a normal attack. See [[item:medusa-head]].' }],
       behavior: 'Deliberately easy. Medusa is the encounter. Only Flynn can safely approach.',
@@ -744,6 +746,7 @@ export const NPCS: NPC[] = [
   }),
   npc({
     id: 'medusa',
+    surprise: true,
     name: 'Medusa',
     film: 'greek-myth',
     side: 'foe',
@@ -925,6 +928,7 @@ export const NPCS: NPC[] = [
     look: 'Massive and physically overwhelming: a wall of violence.',
     ifs: [
       "**If Flynn removes or switches the mask before violence:** Kingpin's rage loses focus. Let it de-escalate, or just get awkward.",
+      "**If Flynn takes his mask off completely:** that is the secret +100 Charisma ([[ability:unmasked]]), and it applies here too. Play it, but don't explain it: Kingpin simply calms down. Better if the reveal waits for the finale, so don't push for it.",
     ],
     fight: 'Only if Flynn is wearing the Spider-Man mask. The room rewards noticing the trigger instead of fighting.',
   }),
@@ -1179,7 +1183,7 @@ export const NPCS: NPC[] = [
       '**Studio introduction:** his face appears huge on the Volume screen. He complains that they took too long to wake up, says he let them keep their gear for continuity, and introduces [[npc:oh-dae-su]] as an "old boyfriend."',
     ],
     secrets: [
-      'Final entrance: after the Cat wipes everyone but Flynn, Lou walks in wearing [[item:v-mask]], with the ring.',
+      'Final entrance: once everyone but Flynn is down (Toothless does it in the outline version, the Cat in the expanded build), Lou walks in wearing [[item:v-mask]], with the ring.',
       'Intended final beat: Flynn removes his own mask ([[ability:unmasked]]) and convinces or seduces Lou into taking off his mask and coming Close. Unmasked, Lou is physically vulnerable and Flynn wins.',
     ],
     fight: 'Masked, damage alone never resolves it: the real solution is social. Unmasked, he is physically vulnerable and Flynn wins.',
@@ -1215,7 +1219,8 @@ export const NPCS: NPC[] = [
     location: 'The Volume soundstage',
     traits: ['feral', 'relentless', 'traumatized', 'violent', 'quiet'],
     important: [
-      'His job is to wear the party down. He may kill someone if they are already hurt or roll badly, but he no longer has a required kill count.',
+      '**Outline version:** he kills at least two groomsmen. Take one out in round 1 and another in round 2, whatever the dice say; after that he can be killed or knocked out.',
+      '**Expanded build:** his job is to wear the party down. He may kill someone who is already hurt or rolls badly, but he has no required kill count.',
     ],
     fight: "Yes. Lou's first studio combatant.",
   }),
@@ -1256,7 +1261,7 @@ export const NPCS: NPC[] = [
     ifs: [
       "**Things the players can use:** lights, cables, rigging, the bow, pistols, Oogwaydn's improvised staff, and ghosts as distractions.",
     ],
-    fight: 'Yes, and he is beatable. No longer the mandatory wipe.',
+    fight: 'Yes. In the outline version he takes out every groomsman but Flynn (one a round). In the expanded build he is beatable and the Cat does the wipe.',
   }),
   npc({
     id: 'cat',
@@ -1392,7 +1397,6 @@ export const RELATIONS: { a: string; b: string; label: string; secret?: boolean 
   { a: 'npc:goon-taser', b: 'npc:tyler', label: 'goon' },
   { a: 'npc:john-doe', b: 'npc:lou', label: 'gave him protection, for a price' },
   { a: 'npc:nathan-fielder', b: 'npc:lou', label: 'tricked into it; now a hostage' },
-  { a: 'npc:camera-crew', b: 'npc:nathan-fielder', label: 'his crew' },
   { a: 'npc:oh-dae-su', b: 'npc:lou', label: '"an old boyfriend"' },
   { a: 'npc:toothless', b: 'npc:lou', label: 'unleashed by' },
   { a: 'npc:feyd', b: 'npc:baron', label: 'nephew and blade' },

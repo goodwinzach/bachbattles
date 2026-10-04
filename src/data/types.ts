@@ -63,6 +63,10 @@ export interface Encounter {
   fighters?: string[];
   /** stat-block phase to use for foes with phases (Lou) */
   phase?: number;
+  /** how many rounds it should take: the tracker warns when a fight runs past it */
+  rounds?: [number, number];
+  /** how it ends: the yield or knockout trigger that keeps it short */
+  ends?: Rich;
 }
 
 export interface Line {
@@ -235,6 +239,10 @@ export interface NPC extends NpcRuntime {
   lines?: string[];
   /** dialogue options by situation (src/data/dialogue.ts) */
   dialogue?: DialogueCue[];
+  /** the quote on their entrance slide, when their first line would give something away */
+  entrance?: string;
+  /** a reveal: their entrance slide stays out of the Table deck until they are met */
+  surprise?: boolean;
   stat?: StatBlock;
   /** alternate stat blocks (Lou masked / unmasked) */
   phases?: { label: string; stat: StatBlock }[];

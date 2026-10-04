@@ -8,7 +8,7 @@ import {
   acCalc,
   backlinks,
   entityText,
-  holderName,
+  itemHolderName,
   ITEM_KIND_LABEL,
   itemsHeldBy,
   npcStat,
@@ -233,7 +233,7 @@ function ItemCard({ item }: { item: Item }) {
       </header>
       <div class="card__holder">
         <Icon name="user" size={13} />
-        {getUi().edit ? <HolderControl item={item} /> : <span class="grow">{item.holder ? holderName(item.holder) : 'Nobody'}</span>}
+        {getUi().edit ? <HolderControl item={item} /> : <span class="grow">{item.holder ? itemHolderName(item) : 'Nobody'}</span>}
       </div>
       {!hidden && <Rich text={item.effect} class="card__lead" />}
       {(item.qty != null || item.ammoMax != null) && (
@@ -436,7 +436,7 @@ export function CodexView() {
     const items = all<Item>('item').filter((i) => search('item', i) && (!f.states || f.states.includes(i.state)));
     const groups = new Map<string, Item[]>();
     for (const i of items) {
-      const k = group === 'holder' ? holderName(i.holder) : group === 'kind' ? ITEM_KIND_LABEL[i.kind] : 'All items';
+      const k = group === 'holder' ? itemHolderName(i) : group === 'kind' ? ITEM_KIND_LABEL[i.kind] : 'All items';
       groups.set(k, [...(groups.get(k) ?? []), i]);
     }
     const order = (k: string) => (k === 'The party' ? 0 : all<PC>('pc').some((p) => p.name === k) ? 1 : k === 'Nobody' ? 3 : 2);

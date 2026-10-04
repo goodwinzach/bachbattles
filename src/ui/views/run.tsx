@@ -307,13 +307,19 @@ function CombatTracker() {
   ];
   const actor = c.list[c.turn];
   const actorName = actor ? (actor.type === 'pc' ? ent<PC>('pc', actor.id)?.name : ent<NPC>('npc', actor.id)?.name) : '';
+  const enc = c.enc != null ? ent<Scene>('scene', c.scene)?.encounters?.[c.enc] : undefined;
+  const plan = enc?.rounds;
+  const over = !!plan && c.round > plan[1];
   return (
     <section class="combat" aria-label="Combat tracker">
       <div class="combat__head">
         <div class="combat__title">
           <Icon name="swords" size={18} />
           <span class="display combat__label">{c.label}</span>
-          <span class="combat__round num">Round {c.round}</span>
+          <span class={cx('combat__round num', over && 'is-over')} title={plan ? `Planned: ${plan[0]}–${plan[1]} rounds` : undefined}>
+            Round {c.round}
+            {plan && <span class="combat__plan"> of {plan[0] === plan[1] ? plan[0] : `${plan[0]}–${plan[1]}`}</span>}
+          </span>
         </div>
         <div class="combat__now">
           <span class="eyebrow">Acting</span> <strong>{actorName}</strong>
@@ -330,6 +336,15 @@ function CombatTracker() {
           </button>
         </div>
       </div>
+      {enc?.ends && (
+        <div class={cx('combat__ends', over && 'is-over')}>
+          <Icon name={over ? 'triangle-alert' : 'flag'} size={14} />
+          <span>
+            {over && <strong>Past the plan: wrap it up. </strong>}
+            <Rich text={enc.ends} />
+          </span>
+        </div>
+      )}
       <ol class="combat__list">
         {c.list.map((x, i) => (
           <CombatRow key={x.key} c={x} active={i === c.turn} index={i} />

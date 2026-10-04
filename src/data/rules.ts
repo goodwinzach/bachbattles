@@ -221,18 +221,31 @@ export const RULES: Rule[] = [
     films: ['stitched'],
   }),
   rule({
+    id: 'out-cold',
+    group: 'death',
+    title: 'Before the Island: Out Cold',
+    summary: 'Until the party reaches John Doe\'s island, 0 HP knocks a player out instead of killing them.',
+    list: [
+      'A player at 0 HP before [[scene:john-doe]] is out cold, not dead.',
+      'They come back at 1 HP when the scene ends (the console does this when you press "Done, next").',
+      'From the island on, 0 HP means death and the ghost rules apply.',
+    ],
+    body: ['Bagels only turn up in [[scene:gluttony]], so an early death would leave a player as a ghost for two hours. Knock them out instead and keep the stakes for the island.'],
+  }),
+  rule({
     id: 'bagel-rule',
     group: 'death',
     title: 'The Bagel Rule',
     summary: 'A bagel plus a statistically improbable real-life action brings a ghost back at full HP.',
     list: [
-      'A living player has a bagel.',
+      'A living player eats a bagel.',
       'That player performs a **statistically improbable action in real life**: genuinely stupid, unlikely, absurd or socially ridiculous. It must be done in person.',
       'The DM decides whether it qualifies.',
       'If it does, the bagel works and the ghost returns physically at full HP.',
     ],
     body: [
       'The bagel alone does nothing. It is an everything bagel, as in *Everything Everywhere All at Once*: the improbable act is what makes it work, like a verse jump.',
+      'Bagels do not work inside the Volume: the studio is fake, and the improbable act needs the real world. Revivals wait for the bagel shop, where one stupid act from Flynn can bring everyone back.',
       'No dice roll is required for the real-world action. The point is committing to the bit.',
       'Examples should come from the room and the people playing, not a prewritten checklist.',
     ],

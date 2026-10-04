@@ -9,9 +9,11 @@ import {
   effectKey,
   goScene,
   revive,
+  reviveEveryone,
   rollMedusa,
   setClue,
   setCostello,
+  takeOut,
   setItemHolder,
   setItemState,
   setCatVariant,
@@ -221,6 +223,20 @@ function Effects({ scene }: { scene: Scene }) {
 
 // ─── scene widgets ────────────────────────────────────────────────────────
 
+/** The question that usually pulls each fact out of Costello, and his answer to it. */
+const COSTELLO_ASKS: Record<string, string> = {
+  'fact-thief': 'Who took the ring?',
+  'fact-hollywood': 'Where is it?',
+  'fact-death': 'Are we safe?',
+  'fact-riddle': 'How do we get it back?',
+};
+
+function costelloAnswer(factId: string): string | undefined {
+  const npc = ent<NPC>('npc', 'costello');
+  const q = COSTELLO_ASKS[factId];
+  return npc && q ? dialogueOf(npc).find((c) => c.cue === q)?.options[0] : undefined;
+}
+
 function CostelloWidget() {
   const g = game();
   const facts = all<Clue>('clue').filter((c) => c.group === 'costello');
@@ -247,15 +263,31 @@ function CostelloWidget() {
           </span>
         </div>
       )}
+      {g.costelloAsked >= 3 && (
+        <div class="callout">
+          <Icon name="flag" size={16} />
+          <span>That was three. Abbott and Costello are gone, and the party is standing in an empty field. Let them talk about plane or boat.</span>
+        </div>
+      )}
       <div class="facts4">
-        {facts.map((f, i) => (
-          <button key={f.id} type="button" class={cx('fact', f.revealed && 'is-on')} aria-pressed={f.revealed} onClick={() => setClue(f.id, !f.revealed)}>
-            <span class="fact__n num">{i + 1}</span>
-            <Rich text={f.text} />
-            <Icon name={f.revealed ? 'eye' : 'eye-off'} size={14} />
-          </button>
-        ))}
+        {facts.map((f, i) => {
+          const said = costelloAnswer(f.id);
+          // the riddle is its own answer: no need to print it twice
+          const answer = said && !f.text.toLowerCase().includes(said.toLowerCase().replace(/[.“”"]/g, '').trim()) ? said : undefined;
+          return (
+            <button key={f.id} type="button" class={cx('fact', f.revealed && 'is-on')} aria-pressed={f.revealed} onClick={() => setClue(f.id, !f.revealed)}>
+              <span class="fact__n num">{i + 1}</span>
+              <span class="fact__body">
+                <Rich text={f.text} />
+                {COSTELLO_ASKS[f.id] && <span class="fact__q">Asked “{COSTELLO_ASKS[f.id]}”</span>}
+                {answer && <span class="fact__a">“{answer}”</span>}
+              </span>
+              <Icon name={f.revealed ? 'eye' : 'eye-off'} size={14} />
+            </button>
+          );
+        })}
       </div>
+      <p class="widget__foot">Only Flynn's questions count. More answers to pick from are under Talk.</p>
     </div>
   );
 }
@@ -352,19 +384,22 @@ function SinsWidget({ scene }: { scene: Scene }) {
   const g = game();
   const rooms = SIN_ROOMS.map((id) => ent<Scene>('scene', id)!);
   const prideDone = rooms[0].status === 'done' || g.sinOrder.includes('pride');
-  const unvisited = rooms.filter((r) => r.id !== 'pride' && r.id !== 'gluttony' && r.status !== 'done' && r.status !== 'skipped' && r.id !== g.scene);
+  const optional = rooms.filter((r) => r.id !== 'pride' && r.id !== 'gluttony');
+  const unvisited = optional.filter((r) => r.status !== 'done' && r.status !== 'skipped' && r.id !== g.scene);
+  const played = optional.length - unvisited.length - optional.filter((r) => r.status === 'skipped').length;
   const pickRandom = () => {
     if (!prideDone && g.scene !== 'pride') return goScene('pride');
-    const pool = [...unvisited, rooms[6]];
-    const pick = pool[Math.floor(Math.random() * pool.length)];
-    goScene(pick.id);
+    // Pride, then one to three more rooms, then Gluttony: the more rooms played, the likelier Gluttony comes up
+    const gluttonyChance = played === 0 ? 0 : played === 1 ? 1 / 3 : played === 2 ? 2 / 3 : 1;
+    if (!unvisited.length || Math.random() < gluttonyChance) return goScene('gluttony');
+    goScene(unvisited[Math.floor(Math.random() * unvisited.length)].id);
   };
   return (
     <div class="widget">
       <div class="widget__head">
         <Icon name="door-open" size={16} />
         <span class="widget__title">The seven buildings</span>
-        <span class="muted">Pride first. Gluttony ends it.</span>
+        <span class="muted">Pride first, then one to three more, then Gluttony.</span>
       </div>
       <div class="sins" role="group" aria-label="Sin buildings">
         {rooms.map((r, i) => {
@@ -543,25 +578,96 @@ function BagelWidget({ shop }: { shop?: boolean }) {
       <div class="widget__head">
         <Icon name="bagel" size={16} />
         <span class="widget__title">{shop ? 'The bagel shop' : 'Bagels'}</span>
-        <span class="muted">{shop ? 'Unlimited bagels. One improbable act per friend.' : `${have} bagel${have === 1 ? '' : 's'} on hand`}</span>
+        <span class="muted">
+          {shop ? 'Free everything bagels. One random, stupid act from Flynn, in real life, brings everyone back.' : `${have} bagel${have === 1 ? '' : 's'} on hand`}
+        </span>
       </div>
       {ghosts.length === 0 ? (
         <div class="muted">Nobody is a ghost right now.</div>
       ) : (
         <div class="stack" style={{ '--gap': '8px' } as never}>
+          {shop && ghosts.length > 1 && (
+            <button type="button" class="btn btn--good" onClick={reviveEveryone} title="After Flynn does something random and stupid in real life">
+              <Icon name="sparkles" /> Flynn did it: everyone is back
+            </button>
+          )}
           {ghosts.map((p) => (
             <div key={p.id} class="ghostrow">
               <Face type="pc" id={p.id} size={30} />
               <span class="grow">
                 <Ref type="pc" id={p.id} noDot /> <span class="muted">is a ghost</span>
               </span>
-              <button type="button" class="btn btn--sm btn--good" disabled={!shop && have < 1} onClick={() => revive(p.id, !shop)} title="Only after a living player does something statistically improbable in real life">
-                <Icon name="sparkles" /> Improbable act done: revive
+              <button
+                type="button"
+                class="btn btn--sm btn--good"
+                disabled={!shop && have < 1}
+                onClick={() => revive(p.id, !shop)}
+                title={shop ? 'After Flynn does something random and stupid in real life' : 'Only after a living player eats a bagel and does something statistically improbable in real life'}
+              >
+                <Icon name="sparkles" /> {!shop ? 'Improbable act done: revive' : ghosts.length > 1 ? 'Just this one' : 'Flynn did it: back to life'}
               </button>
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/** The scripted deaths in the studio: who is still standing, and a one-tap way to take them out. */
+function WipeWidget({ scene }: { scene: Scene }) {
+  const g = game();
+  const standing = all<PC>('pc').filter((p) => p.id !== 'flynn' && p.status !== 'ghost');
+  const round = g.combat?.scene === scene.id ? g.combat.round : null;
+  const guide =
+    scene.id === 'oh-dae-su'
+      ? 'Outline version: whatever the dice say, he takes one groomsman out in round 1 and another in round 2. After that he can be stopped.'
+      : scene.id === 'toothless'
+        ? 'Outline version: one groomsman falls each round until only Flynn is standing.'
+        : 'Round 1: show he cannot be hurt, and take one out. Round 2: one or two more. Round 3: the rest. Round 4 only for comedy.';
+  return (
+    <div class="widget">
+      <div class="widget__head">
+        <Icon name="skull" size={16} />
+        <span class="widget__title">{scene.id === 'oh-dae-su' ? 'Two have to fall' : 'The wipe'}</span>
+        <span class="muted">{round ? `Round ${round}` : 'Start the fight to count rounds'}</span>
+      </div>
+      <p class="wipe__guide">{guide}</p>
+      {standing.length ? (
+        <div class="stack" style={{ '--gap': '8px' } as never}>
+          {standing.map((p) => (
+            <div key={p.id} class="ghostrow">
+              <Face type="pc" id={p.id} size={30} />
+              <span class="grow">
+                <Ref type="pc" id={p.id} noDot /> <span class="muted">{p.status === 'down' ? 'knocked out' : `${p.hp}/${p.hpMax} HP`}</span>
+              </span>
+              <button type="button" class="btn btn--sm btn--danger" onClick={() => takeOut(p.id)} title="They fall, whatever the dice said, and keep playing as a ghost">
+                <Icon name="skull" /> Takes them out
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="callout callout--gold">
+          <Icon name="flag" size={16} />
+          <span>
+            Only Flynn is standing.{' '}
+            {scene.id === 'toothless' ? 'He lands the last blow on the wounded dragon, or Lou yells "Cut!" and calls him off.' : scene.id === 'cat' ? 'The Cat bows, tidies his hat and leaves.' : ''}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Inside the Volume nobody comes back: the studio is fake, and the improbable act needs the real world. */
+function NoBagelsWidget() {
+  return (
+    <div class="widget widget--slim">
+      <Icon name="bagel" size={16} />
+      <span class="grow">
+        No bagel revivals inside the Volume. Ghosts keep playing; the <Ref type="location" id="bagel-shop" noDot /> comes after the finale.
+      </span>
     </div>
   );
 }
@@ -577,9 +683,11 @@ export function SceneWidget({ scene }: { scene: Scene }) {
   if (scene.id === 'wrath') parts.push(<KingpinWidget key="k" />);
   if (scene.variantMust || scene.id === 'cat') parts.push(<VariantWidget key="v" />);
   if (scene.id === 'fourth-mask') parts.push(<UnmaskWidget key="u" />);
-  if (scene.id === 'gluttony' || scene.id === 'cat' || scene.id === 'toothless' || scene.id === 'oh-dae-su') {
-    if (all<PC>('pc').some((p) => p.status === 'ghost')) parts.push(<BagelWidget key="d" />);
-  }
+  const ghosts = all<PC>('pc').some((p) => p.status === 'ghost');
+  if ((scene.id === 'oh-dae-su' || scene.id === 'toothless') && !game().catVariant) parts.push(<WipeWidget key="w" scene={scene} />);
+  if (scene.id === 'cat') parts.push(<WipeWidget key="w" scene={scene} />);
+  if (scene.id === 'gluttony' && ghosts) parts.push(<BagelWidget key="d" />);
+  if (scene.location === 'volume' && ghosts) parts.push(<NoBagelsWidget key="nb" />);
   if (scene.id === 'epilogue') parts.push(<BagelWidget key="ds" shop />);
   if (!parts.length) return null;
   return <div class="widgets">{parts}</div>;
@@ -750,8 +858,14 @@ export function EncounterList({ scene }: { scene: Scene }) {
               <div class="encounter__meta muted">
                 {foes.length} {foes.length === 1 ? 'enemy' : 'enemies'}
                 {enc.fighters && ` · ${enc.fighters.map((p) => ent<PC>('pc', p)?.name).join(', ')} only`}
+                {enc.rounds && ` · ${enc.rounds[0] === enc.rounds[1] ? enc.rounds[0] : `${enc.rounds[0]}–${enc.rounds[1]}`} round${enc.rounds[1] === 1 ? '' : 's'}`}
                 {down > 0 && ` · ${down} down`}
               </div>
+              {enc.ends && (
+                <div class="encounter__ends">
+                  <Icon name="flag" size={12} /> <Rich text={enc.ends} />
+                </div>
+              )}
             </div>
             <button type="button" class="btn btn--primary btn--sm" disabled={!!g.combat} onClick={() => openModal({ kind: 'encounter', scene: scene.id, index: i })}>
               <Icon name="swords" /> Start fight
