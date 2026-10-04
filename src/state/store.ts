@@ -110,7 +110,6 @@ export interface UiState extends Prefs {
   slide: number;
   lastRoll: RollResult | null;
   focusScene: string | null;
-  mapSelected: string | null;
   /** an entity key ('npc:lou') the connections web should select when it next renders */
   webFocus: string | null;
   /** the profile page open in the Cast view ('npc:lou'), or null for the gallery */
@@ -162,7 +161,6 @@ let ui: UiState = {
   slide: 0,
   lastRoll: null,
   focusScene: null,
-  mapSelected: null,
   webFocus: null,
   castFocus: null,
   said: {},

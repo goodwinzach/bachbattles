@@ -1,17 +1,18 @@
 // MAP: the campaign as a storyboard flowchart, a connections web, and a pacing chart.
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
-import type { JSX } from 'preact';
+import { Fragment, type JSX } from 'preact';
 import { RELATIONS } from '../../data/campaign';
 import { PACING } from '../../data/scenes';
 import type { Act, EntityType, Film, Item, NPC, PC, Scene } from '../../data/types';
 import { goScene } from '../../state/actions';
-import { fmtDuration, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneMust, sceneStatus, shielded, timeSpent, totalSpent } from '../../state/derive';
+import { fmtDuration, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneStatus, shielded, strip, timeSpent, totalSpent } from '../../state/derive';
 import { all, ent, game, getDataVersion, getUi, openDrawer, setUi } from '../../state/store';
 import { useMedia, useTick } from '../hooks';
 import { Icon } from '../icons';
-import { Badge, cx, hueVar } from '../kit';
-import { Ref, Rich, RichList, iconOf } from '../rich';
+import { cx, hueVar } from '../kit';
+import { Ref, iconOf } from '../rich';
+import { connector, isRootKey, layoutScene, NodeView, rootKey, SceneCard, type Placed } from './flowtree';
 
 // ─── pan & zoom ───────────────────────────────────────────────────────────
 
@@ -180,6 +181,9 @@ function edgePath(a: { x: number; y: number }, b: { x: number; y: number }, vert
   return `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
 }
 
+/** Which flow nodes are open, oldest first. Kept while the page is open, so leaving the map and coming back keeps them. */
+let flowOpen: string[] = [];
+
 function FlowMap() {
   const ui = getUi();
   const narrow = useMedia('(max-width: 760px)');
@@ -187,7 +191,35 @@ function FlowMap() {
   const g = game();
   const geo = useMemo(() => flowGeometry(vertical), [vertical, getDataVersion()]);
   const acts = all<Act>('act');
-  const selected = ui.mapSelected ? ent<Scene>('scene', ui.mapSelected) : undefined;
+
+  // ── open nodes ──
+  const [open, setOpenState] = useState<string[]>(flowOpen);
+  const setOpen = (next: string[]) => {
+    flowOpen = next;
+    setOpenState(next);
+  };
+  const openSet = new Set(open);
+  const [heights, setHeights] = useState<Record<string, number>>({});
+  const [glide, setGlide] = useState(false);
+  const reveal = useRef<string | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  /** Open a node, or close it and everything under it. */
+  const toggle = (key: string) => {
+    const cur = flowOpen;
+    if (cur.includes(key)) setOpen(cur.filter((k) => k !== key && !k.startsWith(key + '/')));
+    else {
+      setOpen([...cur, key]);
+      reveal.current = key;
+    }
+  };
+  const trees = open
+    .filter(isRootKey)
+    .map((rk) => {
+      const scene = ent<Scene>('scene', rk.slice(2));
+      const at = scene && geo.pos.get(scene.id);
+      return scene && at ? { scene, placed: layoutScene(scene, at, openSet, heights) } : null;
+    })
+    .filter((t): t is { scene: Scene; placed: Placed[] } => !!t);
 
   const centerOn = (id: string, k = narrow ? 0.8 : 0.9): View => {
     const p = geo.pos.get(id);
@@ -236,12 +268,76 @@ function FlowMap() {
     }
   }
 
-  const select = (id: string | null) => setUi({ mapSelected: id });
+  /** Pan just enough to show a node that was opened and its new children, keeping their top left corner in view. */
+  const revealNode = (key: string) => {
+    const placed = trees.flatMap((t) => t.placed);
+    const kids = placed.filter((p) => p.parent === key);
+    let box = placed.filter((p) => p.key === key || p.parent === key);
+    const vp = pz.ref.current;
+    if (!box.length || !vp) return;
+    const v = pz.view;
+    const m = 28;
+    // when the node and its new children cannot both fit (phones), show the children
+    const span = (list: Placed[]) => (Math.max(...list.map((p) => p.x + p.w)) - Math.min(...list.map((p) => p.x))) * v.k;
+    if (kids.length && span(box) > vp.clientWidth - 2 * m) box = kids;
+    const minX = Math.min(...box.map((p) => p.x)) * v.k + v.x;
+    const maxX = Math.max(...box.map((p) => p.x + p.w)) * v.k + v.x;
+    const minY = Math.min(...box.map((p) => p.y)) * v.k + v.y;
+    const maxY = Math.max(...box.map((p) => p.y + p.h)) * v.k + v.y;
+    let dx = 0;
+    let dy = 0;
+    if (maxX > vp.clientWidth - m) dx = vp.clientWidth - m - maxX;
+    if (minX + dx < m) dx = m - minX;
+    if (maxY > vp.clientHeight - m) dy = vp.clientHeight - m - maxY;
+    if (minY + dy < m + 40) dy = m + 40 - minY;
+    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
+    setGlide(true);
+    pz.setView({ ...v, x: v.x + dx, y: v.y + dy });
+    setTimeout(() => setGlide(false), 450);
+  };
+
+  // measure the open nodes' real heights, then lay out again; once settled, reveal what just opened
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const next: Record<string, number> = {};
+    let changed = false;
+    stage.querySelectorAll<HTMLElement>('[data-xkey]').forEach((el) => {
+      const k = el.dataset.xkey!;
+      next[k] = el.offsetHeight;
+      if (Math.abs((heights[k] ?? -9) - next[k]) > 1) changed = true;
+    });
+    if (changed) setHeights({ ...heights, ...next });
+    else if (reveal.current) {
+      const key = reveal.current;
+      reveal.current = null;
+      revealNode(key);
+    }
+  });
+
+  // Esc closes whatever was opened last
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !flowOpen.length) return;
+      const u = getUi();
+      if (u.drawer || u.modal || u.palette) return;
+      const last = flowOpen[flowOpen.length - 1];
+      setOpen(flowOpen.filter((k) => k !== last && !k.startsWith(last + '/')));
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const byKey = new Map(trees.flatMap((t) => t.placed).map((p) => [p.key, p]));
 
   return (
-    <div class="flow">
-      <div class="mapvp" ref={pz.ref} onClick={(e) => (e.target as HTMLElement).classList.contains('mapvp') && select(null)}>
-        <div class="flow__stage" style={{ width: `${geo.width}px`, height: `${geo.height}px`, transform: `translate(${pz.view.x}px, ${pz.view.y}px) scale(${pz.view.k})` }}>
+    <div class={cx('flow', trees.length > 0 && 'flow--open')}>
+      <div class="mapvp" ref={pz.ref}>
+        <div
+          ref={stageRef}
+          class={cx('flow__stage', glide && 'flow__stage--glide')}
+          style={{ width: `${geo.width}px`, height: `${geo.height}px`, transform: `translate(${pz.view.x}px, ${pz.view.y}px) scale(${pz.view.k})` }}
+        >
           {bands.map(({ a, minX, maxX, minY, maxY }) => (
             <div
               key={a.id}
@@ -287,11 +383,12 @@ function FlowMap() {
               <button
                 key={s.id}
                 type="button"
-                class={cx('fnode hue', `fnode--${st}`, out && 'is-out', s.optional && 'is-opt', ui.mapSelected === s.id && 'is-sel')}
+                class={cx('fnode hue', `fnode--${st}`, out && 'is-out', s.optional && 'is-opt', openSet.has(rootKey(s.id)) && 'is-open')}
                 style={{ left: `${p.x}px`, top: `${p.y}px`, width: `${NODE_W}px`, height: `${NODE_H}px`, '--c': hueVar(act?.hue) } as never}
-                onClick={() => select(s.id)}
+                onClick={() => toggle(rootKey(s.id))}
                 onDblClick={() => goScene(s.id)}
-                title={`${s.slate} ${s.title}: ${s.logline}`}
+                aria-expanded={openSet.has(rootKey(s.id))}
+                title={`${s.slate} ${s.title}: ${strip(s.logline)}`}
               >
                 <span class="fnode__top">
                   <span class="fnode__slate num">{s.slate}</span>
@@ -306,12 +403,37 @@ function FlowMap() {
               </button>
             );
           })}
+          {trees.length > 0 && (
+            <svg class="xedges" width="1" height="1" aria-hidden="true">
+              {[...byKey.values()]
+                .filter((p) => p.parent && byKey.has(p.parent))
+                .map((p) => (
+                  <path key={p.key} d={connector(byKey.get(p.parent!)!, p)} class={cx('xedge', p.depth === 1 && 'xedge--trunk')} />
+                ))}
+            </svg>
+          )}
+          {trees.map((t) => (
+            <Fragment key={t.scene.id}>
+              {t.placed.map((p) =>
+                p.depth === 0 ? (
+                  <SceneCard key={p.key} scene={t.scene} p={p} onClose={() => toggle(p.key)} />
+                ) : (
+                  <NodeView key={p.key} p={p} open={openSet.has(p.key)} onToggle={toggle} />
+                ),
+              )}
+            </Fragment>
+          ))}
         </div>
         <ZoomControls
           zoomBy={pz.zoomBy}
           onFit={fit}
           extra={
             <>
+              {open.length > 0 && (
+                <button type="button" class="btn btn--icon btn--sm" onClick={() => setOpen([])} aria-label="Close every open node" title="Close every open node">
+                  <Icon name="chevrons-down-up" />
+                </button>
+              )}
               <button type="button" class="btn btn--icon btn--sm" onClick={() => pz.setView(centerOn(g.scene))} aria-label="Center on the current scene" title="Center on the current scene">
                 <Icon name="crosshair" />
               </button>
@@ -332,65 +454,10 @@ function FlowMap() {
           <span><i class="lg lg--active" /> now playing</span>
           <span><i class="lg lg--up" /> upcoming</span>
           <span><i class="lg lg--out" /> optional or skipped</span>
-          <span class="muted">Drag to pan, scroll to zoom, double-click to play</span>
+          <span class="muted">Click a scene to open it, then its branches · drag to pan · scroll to zoom · double-click to play</span>
         </div>
-        {selected && <FlowCard scene={selected} onClose={() => select(null)} />}
       </div>
     </div>
-  );
-}
-
-function FlowCard({ scene, onClose }: { scene: Scene; onClose: () => void }) {
-  const act = ent<Act>('act', scene.act);
-  const isCurrent = game().scene === scene.id;
-  const must = sceneMust(scene);
-  return (
-    <aside class="mapcard hue nopan" style={{ '--c': hueVar(act?.hue) } as never} aria-label={scene.title}>
-      <div class="mapcard__head">
-        <span class="mapcard__slate num">{scene.slate}</span>
-        <div class="grow">
-          <div class="eyebrow">
-            {act?.num}: {act?.title}
-          </div>
-          <h3 class="mapcard__title">{scene.title}</h3>
-        </div>
-        <button type="button" class="btn btn--ghost btn--icon btn--sm" onClick={onClose} aria-label="Close">
-          <Icon name="x" />
-        </button>
-      </div>
-      <div class="slug">{scene.slug}</div>
-      <Rich text={scene.logline} class="mapcard__log" />
-      {must.length > 0 && (
-        <div class="must">
-          <div class="must__label">
-            <Icon name="flag-triangle-right" size={13} /> Must happen
-          </div>
-          <RichList items={must.slice(0, 3)} />
-        </div>
-      )}
-      {scene.cast?.length ? (
-        <div class="chips">
-          {scene.cast.slice(0, 8).map((c) => (
-            <Ref key={c} type="npc" id={c} chip />
-          ))}
-        </div>
-      ) : null}
-      <div class="row">
-        {isCurrent ? (
-          <Badge tone="rec">Now playing</Badge>
-        ) : (
-          <button type="button" class="btn btn--sm btn--primary" onClick={() => goScene(scene.id)}>
-            <Icon name="play" /> Play
-          </button>
-        )}
-        <button type="button" class="btn btn--sm" onClick={() => setUi({ view: 'story', focusScene: scene.id })}>
-          <Icon name="scroll-text" /> Script
-        </button>
-        <button type="button" class="btn btn--sm btn--ghost" onClick={() => openDrawer('scene', scene.id)}>
-          <Icon name="info" /> Details
-        </button>
-      </div>
-    </aside>
   );
 }
 
@@ -1010,7 +1077,7 @@ export function MapView() {
           ))}
         </div>
         <p class="map__hint muted">
-          {ui.mapMode === 'flow' && 'Every scene and branch in story order. Optional rooms and the other route stay visible, dimmed.'}
+          {ui.mapMode === 'flow' && 'Every scene in story order. Click a scene to open it up, then click its branches for more. Optional rooms and the other route stay dimmed.'}
           {ui.mapMode === 'web' && 'Who is connected to whom: characters, the films they come from, key items and scenes.'}
           {ui.mapMode === 'timeline' && 'Where the night stands against the 4 to 6 hour plan, from the session timer.'}
         </p>

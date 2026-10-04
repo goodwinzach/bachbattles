@@ -66,6 +66,40 @@ try {
       const marks = await page.$$eval('.view svg *', (els) => els.length);
       check(marks > 20 && errors.length === 0, `map "${mode}" draws`, `svg nodes=${marks} errors=${errors.join(' | ')}`);
     }
+    // the story flow opens scenes into branches, and branches into more branches
+    await page.click('.map__bar [role=tab]:has-text("Story flow")');
+    await page.waitForTimeout(300);
+    await page.click('.fnode:has-text("The Green Dragon") >> nth=0');
+    await page.waitForSelector('.xroot');
+    const branches = await page.$$eval('.xnode', (els) => els.map((e) => e.textContent ?? ''));
+    check(
+      (await page.textContent('.xroot__title')) === 'The Green Dragon' && branches.length >= 8 && branches.some((t) => /Green Dragon Inn/.test(t)),
+      'clicking a scene opens it with its branches, starting with the location',
+      `branches=${branches.length}`,
+    );
+    await page.click('.xnode__main:has-text("Characters")');
+    await page.click('.xnode__main:has-text("Edward Norton")');
+    await page.click('.xnode__main:has-text("Dialogue options")');
+    await page.click('.xnode__main:has-text("Asked his name")');
+    await page.waitForTimeout(400);
+    const lines = await page.$$eval('.xnode--line', (els) => els.map((e) => e.textContent ?? ''));
+    check(lines.length === 3 && lines.some((t) => /Pick one/.test(t)), 'branches open level by level, down to single lines of dialogue', lines.join(' / '));
+    await page.click('.xnode:has(.xnode__main:has-text("Characters")) .xnode__toggle');
+    await page.waitForTimeout(300);
+    check((await page.$$('.xnode--line')).length === 0 && !!(await page.$('.xroot')), 'closing a branch closes everything under it');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+    check(!(await page.$('.xroot')), 'Esc closes what was opened last');
+    // the view may have panned away from these; dispatch the clicks directly
+    await page.locator('.fnode:has-text("Abbott & Costello")').first().dispatchEvent('click');
+    await page.locator('.fnode:has-text("The Gentlemen")').first().dispatchEvent('click');
+    await page.waitForTimeout(300);
+    const roots = (await page.$$('.xroot')).length;
+    await page.click('.mapctl button[title="Close every open node"]');
+    await page.waitForTimeout(200);
+    check(roots === 2 && (await page.$$('.xroot, .xnode')).length === 0, 'several scenes can be open at once; one button closes them all', `open=${roots}`);
+    check(errors.length === 0, 'no console errors on the story flow', errors.join(' | '));
+
     await page.evaluate(() => (location.hash = 'slides'));
     await page.waitForTimeout(400);
     const first = await page.getAttribute('.stage', 'aria-label');

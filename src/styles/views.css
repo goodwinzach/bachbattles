@@ -836,6 +836,353 @@
   outline-offset: 3px;
 }
 
+/* ─── open scenes on the story flow ─────────────────────── */
+
+.flow__stage--glide {
+  transition: transform 0.42s var(--ease);
+}
+
+.flow--open .fnode:not(.is-open) {
+  opacity: 0.4;
+}
+
+.flow--open .flow__edges {
+  opacity: 0.45;
+}
+
+.xedges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.xedge {
+  fill: none;
+  stroke: color-mix(in oklab, var(--gold) 60%, var(--line-2));
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.xedge--trunk {
+  stroke: var(--line-2);
+}
+
+.xroot {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-bottom: 12px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--hue);
+  background: var(--surface);
+  box-shadow: var(--shadow-2), 0 0 0 4px color-mix(in oklab, var(--hue) 18%, transparent);
+  cursor: default;
+  animation: xpop 0.22s var(--ease);
+}
+
+.xroot__pic {
+  height: 104px;
+  overflow: hidden;
+}
+
+.xroot__pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.xroot__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 12px 0;
+}
+
+.xroot__slate {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: 1.8rem;
+  line-height: 0.9;
+  color: var(--hue-fg);
+}
+
+.xroot__titles {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.xroot__eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.xroot__title {
+  margin-top: 3px;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.xroot__log {
+  display: block;
+  padding: 0 12px;
+  color: var(--fg-2);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.xroot__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+}
+
+.xroot__now {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rec);
+}
+
+.xbtn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--fg-2);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.xbtn:hover {
+  border-color: var(--line-2);
+  color: var(--fg);
+}
+
+.xbtn--sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+}
+
+.xnode {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px;
+  border-radius: 11px;
+  border: 1px solid var(--line-2);
+  background: var(--surface);
+  color: var(--fg);
+  box-shadow: var(--shadow-1);
+  cursor: default;
+  animation: xpop 0.22s var(--ease);
+  transition: top 0.25s var(--ease), left 0.25s var(--ease), border-color 0.15s, background 0.15s;
+}
+
+.xnode.is-open {
+  border-color: var(--gold);
+  background: color-mix(in oklab, var(--gold) 7%, var(--surface));
+}
+
+.xnode__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.xnode__main:disabled {
+  cursor: default;
+}
+
+.xnode__main:not(:disabled):hover .xnode__title {
+  color: var(--gold);
+}
+
+.xnode__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  color: var(--gold);
+}
+
+.xnode__pic {
+  flex: none;
+  width: 58px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.xnode__pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.xnode__txt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.xnode__title {
+  font-weight: 800;
+  font-size: 0.86rem;
+  line-height: 1.2;
+  transition: color 0.15s;
+}
+
+.xnode__sub {
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.xnode__count {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  color: var(--fg-2);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.xnode__toggle.is-close {
+  border-color: color-mix(in oklab, var(--gold) 50%, var(--line));
+  color: var(--fg);
+}
+
+.xnode--text,
+.xnode--line {
+  display: block;
+  padding: 9px 12px;
+}
+
+.xnode--roll {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 9px 12px;
+}
+
+.xnode__label {
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.xnode__body {
+  display: block;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.xnode__note {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.xnode--line {
+  border-left: 3px solid var(--gold);
+}
+
+.xnode--line .xnode__body,
+.xnode--read .xnode__body {
+  font-family: var(--f-script);
+  font-size: 0.86rem;
+}
+
+.xnode--cue {
+  border-style: dashed;
+  border-left: 3px solid var(--line-2);
+  box-shadow: none;
+}
+
+.xnode--cue .xnode__body {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--fg-2);
+}
+
+.xnode--must {
+  border-left: 3px solid var(--rec);
+}
+
+.xnode--secret {
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--gold) 55%, transparent);
+}
+
+.xnode--note .xnode__body {
+  color: var(--fg-2);
+}
+
+@keyframes xpop {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xroot,
+  .xnode {
+    animation: none;
+    transition: none;
+  }
+
+  .flow__stage--glide {
+    transition: none;
+  }
+}
+
 .mapctl {
   position: absolute;
   top: 12px;

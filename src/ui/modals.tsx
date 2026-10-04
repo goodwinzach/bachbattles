@@ -323,7 +323,7 @@ function ShortcutsModal() {
     ['← → Space', 'Previous / next slide'],
     ['← →', 'Previous / next character (Cast profile page)'],
     ['F', 'Fullscreen slides'],
-    ['Esc', 'Close the drawer or dialog'],
+    ['Esc', 'Close the drawer or dialog (on the story flow: the last opened node)'],
   ];
   return (
     <Dialog title="Keyboard shortcuts" onClose={closeModal}>

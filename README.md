@@ -14,7 +14,7 @@ Your progress saves automatically in that browser. Use **⋯ → Export save** b
 | --- | --- |
 | **Run** | The live DM screen: the current scene's slate, read-aloud text, beats, rolls, failsafes and DM notes, a session timer, the party with HP, stats, masks and abilities, and a combat tracker with initiative, attacks and damage. |
 | **Script** | The whole campaign as an organized script, act by act, with a table of contents, search, a read-aloud-only mode and expand/collapse for every section. Each scene keeps its original outline text. |
-| **Map** | Three charts: the story flow (every scene and branch, pan and zoom), the connections web (who is tied to whom, which films they come from), and pacing (time spent against the 4 to 6 hour plan). |
+| **Map** | Three charts: the story flow (every scene and branch, pan and zoom), the connections web (who is tied to whom, which films they come from), and pacing (time spent against the 4 to 6 hour plan). On the story flow, click a scene to open it: a card with its location, Play, Script and Details, and a column of branches (location, objective, characters, fights, rolls, read-aloud, beats, if-they, loot, clues, notes). Click a branch to open its own branches off to the side, down to a character's dialogue lines or stat line. Every open node has a close button; Esc closes the last one, and several scenes can be open at once. |
 | **Slides** | A presentation deck. The *Table* deck is safe to show players; the *DM* deck adds stats, secrets and notes. Player cast slides and character entrances use the portraits. Long read-alouds split across slides. Arrow keys to move, F for fullscreen, speaker notes optional. |
 | **Cast** | A portrait gallery of every player and character, grouped by when the story introduces them, and a full profile page for each: portrait, the film or show they come from, personality and how to play them, lines to use, stats, the scenes they appear in, connections and what they carry. ← → page through the cast. |
 | **Codex** | Cards for everything: party, characters, bestiary (stat blocks), locations, items grouped by owner or kind, abilities, clues, conditions and films. Search and filters on every tab. |
@@ -52,7 +52,7 @@ Each character's editor also has a **Portrait** picker, a **From** field and **D
 
 ## Keyboard
 
-`Ctrl/⌘ K` or `/` search everything · `1`–`7` switch views · `E` edit mode · `H` spoiler shield · `D` dice tray · `]` / `[` next or previous scene (Run) · `←` `→` slides · `F` fullscreen slides · `Esc` close · `?` all shortcuts
+`Ctrl/⌘ K` or `/` search everything · `1`–`7` switch views · `E` edit mode · `H` spoiler shield · `D` dice tray · `]` / `[` next or previous scene (Run) · `←` `→` slides · `F` fullscreen slides · `Esc` close (on the story flow: the last opened node) · `?` all shortcuts
 
 Every DC in the text is clickable and opens the dice tray preset to it; every dice expression (like `1d8`) rolls when clicked.
 
