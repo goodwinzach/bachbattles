@@ -37,7 +37,6 @@ export interface Game {
   scene: string;
   route: 'plane' | 'boat' | null;
   catVariant: boolean;
-  clock: number;
   costelloAsked: number;
   combat: Combat | null;
   timer: { running: boolean; since: number | null; spent: Record<string, number> };
@@ -124,7 +123,6 @@ export const defaultGame = (): Game => ({
   scene: 'prologue',
   route: null,
   catVariant: false,
-  clock: 36,
   costelloAsked: 0,
   combat: null,
   timer: { running: false, since: null, spent: {} },

@@ -1345,38 +1345,6 @@
   background: var(--bad);
 }
 
-.key--band {
-  height: 10px;
-  background: color-mix(in oklab, var(--info) 18%, transparent);
-  border-top: 2px solid var(--info);
-}
-
-.key--now {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 0 2px var(--surface);
-}
-
-.clock__band {
-  fill: color-mix(in oklab, var(--info) 14%, transparent);
-}
-
-.clock__line {
-  fill: none;
-  stroke: var(--info);
-  stroke-width: 2;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-
-.clock__now {
-  fill: var(--gold);
-  stroke: var(--surface);
-  stroke-width: 2;
-}
-
 .charttip {
   position: absolute;
   z-index: 3;

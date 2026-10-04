@@ -1338,7 +1338,7 @@ export const NPCS: NPC[] = [
     name: 'Caley',
     side: 'ally',
     icon: 'heart-handshake',
-    role: "Flynn's bride. The emotional and practical deadline behind the whole story, and the reason for the 36-hour clock.",
+    role: "Flynn's bride. The emotional and practical deadline behind the whole story, and the reason the ring has to be back by tomorrow.",
     minor: true,
     category: 'Story-context character',
     location: 'Not required to appear',

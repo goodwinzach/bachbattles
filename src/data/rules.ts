@@ -6,7 +6,7 @@ const rule = (d: RuleDef): Rule => ({ dmNote: '', ...d });
 export const RULE_GROUPS: { id: Rule['group']; title: string; blurb: string }[] = [
   { id: 'core', title: 'Core Rules', blurb: 'What gets rolled and how hard it is.' },
   { id: 'combat', title: 'Combat', blurb: 'Initiative, turns, range bands, weapons.' },
-  { id: 'conditions', title: 'Conditions, Healing & the Clock', blurb: 'Hangover, hunger, the feast, 36 hours.' },
+  { id: 'conditions', title: 'Conditions & Healing', blurb: 'Hangover, hunger and the feast.' },
   { id: 'death', title: 'Death & Donuts', blurb: 'Ghosts keep playing. Donuts bring them back.' },
   { id: 'secrets', title: 'DM Secrets', blurb: 'Never read these out loud.' },
   { id: 'craft', title: 'Running the Night', blurb: 'Improvising, pacing, and keeping the spine intact.' },
@@ -198,27 +198,6 @@ export const RULES: Rule[] = [
       'The party obtains five [[item:donuts]].',
       'Other healing should be rare and small, only when an improvised story moment strongly justifies it.',
     ],
-  }),
-  rule({
-    id: 'wedding-clock',
-    group: 'conditions',
-    title: 'The Wedding Clock',
-    summary: 'The wedding is in **36 hours**. Keep it visible. It is pacing pressure, not a physics simulator.',
-    body: [
-      'Remove chunks when the party travels, wastes a lot of time, takes a major detour, gets knocked out, or spends hours at sea.',
-      'Do not punish players minute by minute.',
-    ],
-    table: {
-      head: ['Moment', 'Hours left'],
-      rows: [
-        ['Wake-up', '36'],
-        ['After Green Dragon / Louise', '31 to 33'],
-        ['After the route fight and departure', '26 to 29'],
-        ['Island arrival', '18 to 22'],
-        ['Hollywood arrival', '8 to 12'],
-        ['Studio ending', 'Very late night, early morning before the wedding'],
-      ],
-    },
   }),
 
   // ── Death ──────────────────────────────────────────────

@@ -1309,54 +1309,20 @@
 
 /* ─── side panels ─────────────────────────────────────── */
 
-.clockpanel {
+.sessionpanel {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 10px;
 }
 
-.clockpanel__big {
+.sessionpanel__time {
   font-family: var(--f-script);
   font-weight: 700;
-  font-size: 2.15rem;
+  font-size: 1.35rem;
   letter-spacing: 0.02em;
   color: var(--gold);
-  line-height: 1.1;
-}
-
-.clockpanel__bar {
-  height: 4px;
-  margin-top: 6px;
-  border-radius: var(--r-pill);
-  background: var(--surface-3);
-  overflow: hidden;
-}
-
-.clockpanel__bar > div {
-  height: 100%;
-  background: linear-gradient(90deg, var(--rec), var(--gold));
-  border-radius: inherit;
-  transition: width 0.5s var(--ease);
-}
-
-.clockpanel__btns {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-.clockpanel__session {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-  font-size: var(--fs-sm);
-}
-
-.clockpanel__session .num {
-  font-family: var(--f-script);
-  font-weight: 700;
+  line-height: 1.15;
 }
 
 .clues {

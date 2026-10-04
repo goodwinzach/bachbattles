@@ -90,8 +90,6 @@ interface EffectBase {
 export type Effect = EffectBase &
   (
     | { kind: 'condition'; id: string; active: boolean }
-    | { kind: 'clock'; set: number }
-    | { kind: 'clockDelta'; delta: number }
     | { kind: 'items'; ids: string[]; patch: Partial<ItemRuntime> }
     | { kind: 'healAll' }
     | { kind: 'clues'; ids: string[] }
@@ -119,8 +117,6 @@ export interface Scene {
   /** only part of the expanded build (The Cat in the Hat) */
   expandedOnly?: boolean;
   minutes?: [number, number];
-  clock?: string;
-  clockTarget?: number;
   logline: Rich;
   readAloud?: Rich[];
   beats?: Beat[];

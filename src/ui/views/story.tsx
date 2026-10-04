@@ -21,8 +21,8 @@ function TitleBlock() {
       <div class="doc__eyebrow">Campaign outline · DM handoff</div>
       <h1 class="doc__mark">One Ring to Rule Flynn</h1>
       <p class="doc__lede">
-        A cinematic, stupid, affectionate bachelor-party one-shot. Five friends wake up hungover in a field with the groom's wedding ring gone and 36
-        hours until the wedding.
+        A cinematic, stupid, affectionate bachelor-party one-shot. Five friends wake up hungover in a field with the groom's wedding ring gone and the
+        wedding tomorrow.
       </p>
       <dl class="doc__facts">
         <div>

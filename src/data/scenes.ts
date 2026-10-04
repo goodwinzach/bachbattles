@@ -113,9 +113,7 @@ export const SCENES: Scene[] = [
     slug: 'EXT. A FIELD, SOMEWHERE IN NEW ZEALAND — MORNING',
     kind: 'explore',
     minutes: [10, 15],
-    clock: '36h',
-    clockTarget: 36,
-    logline: 'Wake up in a field. The ring and a mask are missing. Start the 36-hour clock.',
+    logline: 'Wake up in a field. The ring and a mask are missing, and the wedding is tomorrow.',
     readAloud: [
       'Flynn, wearing a Spider-Man mask stained with vomit, is woken up by a sheep. The enlightened spidey-senses from the mask combined with the hangover make waking up excruciatingly painful.',
       'The other four men are passed out around a makeshift bonfire. Empty boxes, cans and bottles of beer are scattered around. As Flynn\'s eyes and spider-goggles adjust, he realizes the five of them passed out in the middle of a field.',
@@ -151,7 +149,6 @@ export const SCENES: Scene[] = [
       },
     ],
     effects: [
-      { kind: 'clock', set: 36, label: 'Start the wedding clock at 36 hours' },
       { kind: 'condition', id: 'hangover', active: true, label: 'Everyone is hungover (−2 CHA, −2 PER)' },
     ],
     cast: ['sheep'],
@@ -171,8 +168,6 @@ export const SCENES: Scene[] = [
     slug: 'INT. THE GREEN DRAGON INN — LATE MORNING',
     kind: 'social',
     minutes: [35, 50],
-    clock: '33–35h',
-    clockTarget: 34,
     logline: 'Question the patrons. Nobody knows about the ring. The only clue is the redhead.',
     readAloud: [
       'The Green Dragon looks worse in daylight. The moment the five of you walk in, the bartender recognizes you. He picks up the phone, turns his back, tells someone that the rambunctious group from last night is back, and hangs up.',
@@ -243,7 +238,6 @@ export const SCENES: Scene[] = [
     slug: 'INT. THE GREEN DRAGON INN — CONTINUOUS',
     kind: 'boss',
     minutes: [10, 20],
-    clock: '32–34h',
     logline: 'The owners want 500 gold for the damage. The party has 350. Negotiate or fight.',
     readAloud: [
       'The front doors open. [[npc:michael-pearson]], [[npc:ray]] and [[npc:coach]] walk in like they own the place, because one of them does.',
@@ -309,7 +303,6 @@ export const SCENES: Scene[] = [
     slug: 'INT. WHEREVER FLYNN IS — ON THE PHONE',
     kind: 'social',
     minutes: [5, 10],
-    clock: '32–34h',
     logline: 'The redhead only answers calls. She flirts, is disappointed, and sends an address.',
     readAloud: [
       'Flynn scrolls to the newest contact in his phone: **Louise Banks**, saved with a picture of Amy Adams. His texts go unanswered. He has to call.',
@@ -353,8 +346,6 @@ export const SCENES: Scene[] = [
     slug: 'EXT. THE MIDDLE OF NOWHERE / INT. THE SHELL',
     kind: 'oracle',
     minutes: [15, 20],
-    clock: '31–33h',
-    clockTarget: 32,
     logline: 'A bean-shaped craft above an empty field. Flynn gets exactly three questions.',
     readAloud: [
       'The group meets Louise in the middle of nowhere. She greets them and says they need to walk a bit to see her friend.',
@@ -390,7 +381,6 @@ export const SCENES: Scene[] = [
       { kind: 'clues', ids: ['fact-hollywood'], label: 'Revealed: the ring and Lou are in Hollywood' },
       { kind: 'clues', ids: ['fact-death'], label: 'Revealed: the group will die in Hollywood' },
       { kind: 'clues', ids: ['fact-riddle'], label: 'Revealed: "Out of the closet without a face."' },
-      { kind: 'clock', set: 32, label: 'Set the clock to about 32 hours' },
     ],
     films: ['arrival'],
     source:
@@ -433,8 +423,6 @@ export const SCENES: Scene[] = [
     slug: 'EXT. AIRFIELD — DAY',
     kind: 'boss',
     minutes: [25, 40],
-    clock: '28–30h',
-    clockTarget: 29,
     logline: 'Tyler, five goons, a duel, and planes that explode no matter what.',
     readAloud: [
       'Edward Norton is standing at the entrance of the airfield. He speaks a lot differently than he did at the bar: more confident, and cocky.',
@@ -480,7 +468,6 @@ export const SCENES: Scene[] = [
       { kind: 'npcs', ids: GOONS, patch: { status: 'defeated' }, label: 'The goons are down' },
       { kind: 'items', ids: ['crowbar', 'sledgehammer', 'machete', 'chainsaw', 'taser'], patch: { state: 'held', holder: 'party' }, label: 'Loot the goon weapons' },
       { kind: 'npcs', ids: ['tyler'], patch: { status: 'fled' }, label: 'Tyler blows the planes and walks away' },
-      { kind: 'clock', set: 29, label: 'Set the clock to about 29 hours' },
     ],
     films: ['fight-club'],
     source:
@@ -526,8 +513,6 @@ export const SCENES: Scene[] = [
     slug: 'EXT. THE DOCKS — DAY',
     kind: 'boss',
     minutes: [25, 40],
-    clock: '28–30h',
-    clockTarget: 29,
     logline: 'Odysseus offers a ride, Tyler rigs the boats, and Flynn fights for them.',
     readAloud: [
       "[[npc:odysseus]] and his men are getting ready to disembark on a voyage. They plan on going to California to see the premiere of Anne Hathaway's new movie. Odysseus welcomes the group to come along.",
@@ -564,7 +549,6 @@ export const SCENES: Scene[] = [
       { kind: 'clues', ids: ['tyler-club'], label: 'Revealed: Tyler owes Lou a favor' },
       { kind: 'npcs', ids: ['tyler'], patch: { status: 'defeated' }, label: 'Tyler is down (arrow or fists)' },
       { kind: 'npcs', ids: ['odysseus', 'odysseus-crew'], patch: { status: 'friendly' }, label: 'Odysseus and his men take them aboard' },
-      { kind: 'clock', set: 29, label: 'Set the clock to about 29 hours' },
     ],
     films: ['fight-club', 'the-odyssey'],
     source:
@@ -583,8 +567,6 @@ export const SCENES: Scene[] = [
     slug: 'EXT. OPEN SEA — DAY',
     kind: 'travel',
     minutes: [10, 15],
-    clock: '18–22h',
-    clockTarget: 20,
     logline: 'Redistribute gear, get hungry, spot an island.',
     readAloud: [
       'Odysseus, his men, and the group have set sail.',
@@ -614,7 +596,6 @@ export const SCENES: Scene[] = [
     effects: [
       { kind: 'condition', id: 'hunger', active: true, label: 'Hunger sets in (−2 AGI)' },
       { kind: 'items', ids: ['odysseus-swords'], patch: { state: 'held', holder: 'party' }, label: "Hand out Odysseus's spare swords" },
-      { kind: 'clock', set: 20, label: 'Set the clock to about 20 hours' },
     ],
     films: ['the-odyssey'],
     source:
@@ -965,8 +946,6 @@ export const SCENES: Scene[] = [
     slug: 'EXT. HOLLYWOOD HARBOR — DUSK',
     kind: 'social',
     minutes: [15, 20],
-    clock: '8–12h',
-    clockTarget: 10,
     logline: 'You have been on camera the whole time. Then the camcorders fire needles.',
     readAloud: [
       'The group and the last of Odysseus\'s men get back on the boats and set sail for Hollywood, California.',
@@ -1010,7 +989,6 @@ export const SCENES: Scene[] = [
     effects: [
       { kind: 'clues', ids: ['documentary'], label: 'Revealed: the documentary' },
       { kind: 'pcs', filter: 'all', patch: { status: 'down' }, label: 'Everyone is knocked out' },
-      { kind: 'clock', set: 10, label: 'Set the clock to about 10 hours' },
     ],
     films: ['the-rehearsal', 'nightcrawler'],
     source:
@@ -1028,7 +1006,6 @@ export const SCENES: Scene[] = [
     slug: 'INT. MOVIE STUDIO, THE VOLUME — NIGHT',
     kind: 'narration',
     minutes: [5, 8],
-    clock: '−2h',
     logline: 'Wake up in a studio ringed by cameras. Lou is on the LED wall.',
     readAloud: [
       'They wake up in a massive movie studio built around a Volume LED screen. Lights and cameras are all positioned toward the group.',
@@ -1050,7 +1027,6 @@ export const SCENES: Scene[] = [
     ],
     effects: [
       { kind: 'pcs', filter: 'down', patch: { status: 'alive' }, label: 'Everyone wakes up' },
-      { kind: 'clockDelta', delta: -2, label: 'Lose two hours on the clock' },
     ],
     films: ['nightcrawler'],
     source:
@@ -1285,7 +1261,6 @@ export const SCENES: Scene[] = [
     slug: 'EXT. HOLLYWOOD, A DONUT SHOP — DAWN',
     kind: 'epilogue',
     minutes: [10, 15],
-    clock: 'Wedding day',
     logline: "Revive the ghosts, or don't. Sail home. Marry Caley.",
     readAloud: [
       "There's a donut shop outside the studio. It's open, because Hollywood has no normal rules.",
@@ -1327,11 +1302,3 @@ export const PACING: { id: string; label: string; scenes: string[]; min: [number
   { id: 'p-finale', label: 'Lou + epilogue', scenes: ['fourth-mask', 'showdown', 'epilogue'], min: [20, 30] },
 ];
 
-export const CLOCK_RHYTHM: { label: string; at: string; hours: [number, number] }[] = [
-  { label: 'Wake-up', at: 'morning', hours: [36, 36] },
-  { label: 'After Green Dragon / Louise', at: 'costello', hours: [31, 33] },
-  { label: 'After the route fight', at: 'voyage', hours: [26, 29] },
-  { label: 'Island arrival', at: 'john-doe', hours: [18, 22] },
-  { label: 'Hollywood arrival', at: 'fielder', hours: [8, 12] },
-  { label: 'Studio ending', at: 'showdown', hours: [2, 6] },
-];

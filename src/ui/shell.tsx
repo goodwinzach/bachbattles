@@ -1,14 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { TYPE_LABEL } from '../data/campaign';
-import type { EntityType, Scene } from '../data/types';
-import { setClock, toggleTimer, resetTimer } from '../state/actions';
-import { backlinks, fmtDuration, isSecretHidden, nameOf, timecode, totalSpent } from '../state/derive';
+import type { EntityType } from '../data/types';
+import { backlinks, isSecretHidden, nameOf } from '../state/derive';
 import { getSyncState, onSync, type SyncState } from '../state/persist';
 import {
   closeDrawer,
   dismissToast,
-  ent,
-  game,
   getUi,
   go,
   latestUndoId,
@@ -22,7 +19,6 @@ import {
 } from '../state/store';
 import { EntityDetail, PeekCard } from './detail';
 import { EntityEditor } from './editor';
-import { useTick } from './hooks';
 import { Icon } from './icons';
 import { cx } from './kit';
 import { getPeek, onPeek, peekHold, peekOut, Ref } from './rich';
@@ -48,79 +44,6 @@ export function Wordmark({ compact }: { compact?: boolean }) {
         {!compact && <span class="wordmark__sub">to rule Flynn</span>}
       </span>
     </button>
-  );
-}
-
-// ─── clock ────────────────────────────────────────────────────────────────
-
-function ClockMenu({ onClose }: { onClose: () => void }) {
-  const g = game();
-  const cur = ent<Scene>('scene', g.scene);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const onDown = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node) && !(e.target as HTMLElement).closest('.clock')) onClose();
-    };
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('pointerdown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('pointerdown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, []);
-  return (
-    <div class="pop clockmenu" ref={ref} role="dialog" aria-label="Wedding clock">
-      <div class="eyebrow">Wedding clock</div>
-      <div class="clockmenu__big num">{timecode(g.clock)}</div>
-      <div class="clockmenu__row">
-        {[-4, -2, -1, -0.25].map((d) => (
-          <button key={d} type="button" class="btn btn--sm" onClick={() => setClock(g.clock + d)}>
-            {d === -0.25 ? '−15m' : `−${Math.abs(d)}h`}
-          </button>
-        ))}
-        <button type="button" class="btn btn--sm btn--ghost" onClick={() => setClock(g.clock + 1)}>
-          +1h
-        </button>
-      </div>
-      {cur?.clockTarget != null && (
-        <button type="button" class="btn btn--sm btn--outline" onClick={() => setClock(cur.clockTarget!, `Clock set to ${cur.clockTarget}h for ${cur.title}`)}>
-          <Icon name="alarm-clock" /> Suggested for this scene: {cur.clockTarget}h
-        </button>
-      )}
-      <div class="clockmenu__hint">Pacing pressure, not a physics simulator. Take chunks off for travel, detours, knockouts and hours at sea.</div>
-      <hr class="rule" />
-      <div class="eyebrow">Session timer</div>
-      <div class="row" style={{ justifyContent: 'space-between' }}>
-        <span class="num clockmenu__elapsed">{fmtDuration(totalSpent())}</span>
-        <span class="row">
-          <button type="button" class="btn btn--sm" onClick={toggleTimer}>
-            <Icon name={g.timer.running ? 'pause' : 'play'} /> {g.timer.running ? 'Pause' : 'Start'}
-          </button>
-          <button type="button" class="btn btn--sm btn--ghost" onClick={resetTimer} title="Reset the session timer">
-            <Icon name="timer-reset" />
-          </button>
-        </span>
-      </div>
-      <div class="clockmenu__hint">Tracks real time spent in each scene for the pacing chart on the Map.</div>
-    </div>
-  );
-}
-
-function ClockWidget() {
-  const g = game();
-  const [open, setOpen] = useState(false);
-  useTick(1000, g.timer.running);
-  const low = g.clock <= 8;
-  return (
-    <div class="clockwrap">
-      <button type="button" class={cx('clock', low && 'clock--low')} onClick={() => setOpen(!open)} aria-expanded={open} title="Wedding clock and session timer">
-        {g.timer.running && <span class="rec" title="Session timer running" />}
-        <span class="clock__tc num">{timecode(g.clock)}</span>
-        <span class="clock__label">to the wedding</span>
-      </button>
-      {open && <ClockMenu onClose={() => setOpen(false)} />}
-    </div>
   );
 }
 
@@ -207,7 +130,6 @@ export function TopBar() {
             <span class="searchbtn__label">Search</span>
             <kbd class="searchbtn__kbd">⌘K</kbd>
           </button>
-          <ClockWidget />
           <div class="topbar__undo">
             <button type="button" class="btn btn--ghost btn--icon" disabled={!u.canUndo} onClick={() => undo()} title={u.undoLabel ? `Undo: ${u.undoLabel}` : 'Nothing to undo'} aria-label="Undo">
               <Icon name="undo-2" />

@@ -70,7 +70,7 @@ function ExportModal() {
   return (
     <Dialog title="Export your save" onClose={closeModal} wide>
       <p class="prose muted">
-        Everything you changed (states, HP, edits, the clock, notes and the roll log) in one JSON file. Keep a copy before the game, or move your prep to
+        Everything you changed (states, HP, edits, the session timer, notes and the roll log) in one JSON file. Keep a copy before the game, or move your prep to
         another device with Import.
       </p>
       <textarea ref={areaRef} class="textarea mono exportarea" readOnly value={text} aria-label="Save data" onFocus={(e) => (e.target as HTMLTextAreaElement).select()} />

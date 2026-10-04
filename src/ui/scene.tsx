@@ -654,11 +654,6 @@ export function SceneMeta({ scene, act }: { scene: Scene; act?: Act }) {
           </span>
         </Badge>
       )}
-      {scene.clock && (
-        <Badge tone="muted" dot={false}>
-          <Icon name="alarm-clock" size={11} /> {scene.clock}
-        </Badge>
-      )}
       {scene.optional && (
         <Badge tone="muted" dot={false}>
           Optional

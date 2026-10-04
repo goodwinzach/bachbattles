@@ -482,21 +482,6 @@ export function abilitiesOf(pcId: string): Ability[] {
 
 // ─── formatting ───────────────────────────────────────────────────────────
 
-export function fmtClock(hours: number): string {
-  const h = Math.max(0, hours);
-  const whole = Math.floor(h + 1e-9);
-  const mins = Math.round((h - whole) * 60);
-  return `${whole}h ${String(mins).padStart(2, '0')}m`;
-}
-
-/** Wedding countdown as SMPTE-style timecode HH:MM:SS:FF (frames are decorative and always 00). */
-export function timecode(hours: number): string {
-  const totalMin = Math.round(Math.max(0, hours) * 60);
-  const hh = Math.floor(totalMin / 60);
-  const mm = totalMin % 60;
-  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00:00`;
-}
-
 export function fmtDuration(ms: number): string {
   const s = Math.floor(ms / 1000);
   const h = Math.floor(s / 3600);

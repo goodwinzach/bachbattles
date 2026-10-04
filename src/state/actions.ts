@@ -348,12 +348,7 @@ export function setCondition(condId: string, active: boolean) {
   mutate(`${c.name} ${active ? 'begins' : 'ends'}`, (d) => flagPatch(d, 'condition', condId, { active }), { toast: true, log: true });
 }
 
-// ─── clock & timer ────────────────────────────────────────────────────────
-
-export function setClock(hours: number, label?: string) {
-  const h = Math.max(0, Math.round(hours * 4) / 4);
-  mutate(label ?? `Wedding clock: ${h}h left`, (d) => (d.game = { ...d.game, clock: h }), { coalesce: 'clock' });
-}
+// ─── session timer ────────────────────────────────────────────────────────
 
 export function toggleTimer() {
   const g = game();
@@ -452,12 +447,6 @@ function applyOne(d: SaveData, ef: Effect) {
   switch (ef.kind) {
     case 'condition':
       flagPatch(d, 'condition', ef.id, { active: ef.active });
-      break;
-    case 'clock':
-      d.game = { ...d.game, clock: ef.set };
-      break;
-    case 'clockDelta':
-      d.game = { ...d.game, clock: Math.max(0, d.game.clock + ef.delta) };
       break;
     case 'items':
       for (const id of ef.ids) flagPatch(d, 'item', id, ef.patch as Record<string, unknown>);

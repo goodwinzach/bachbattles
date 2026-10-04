@@ -188,52 +188,11 @@
   margin-left: 4px;
 }
 
-.clockwrap,
 .morewrap {
   position: relative;
 }
 
-.clock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  height: 40px;
-  padding: 0 11px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--line);
-  background: var(--bg-2);
-  color: var(--fg);
-  line-height: 1;
-  position: relative;
-}
-
-.clock:hover {
-  border-color: var(--line-2);
-}
-
-.clock__tc {
-  font-family: var(--f-script);
-  font-weight: 700;
-  font-size: 0.98rem;
-  letter-spacing: 0.04em;
-  color: var(--gold);
-}
-
-.clock__label {
-  margin-top: 3px;
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--faint);
-}
-
-.clock--low .clock__tc {
-  color: var(--rec);
-}
-
-.clock .rec {
+.rec {
   position: absolute;
   left: 8px;
   top: 8px;
@@ -400,40 +359,6 @@
   color: var(--muted);
 }
 
-.clockmenu {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 300px;
-  padding: 14px;
-}
-
-.clockmenu__big {
-  font-family: var(--f-script);
-  font-weight: 700;
-  font-size: 1.9rem;
-  color: var(--gold);
-  letter-spacing: 0.03em;
-}
-
-.clockmenu__row {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-.clockmenu__hint {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  line-height: 1.45;
-}
-
-.clockmenu__elapsed {
-  font-family: var(--f-script);
-  font-weight: 700;
-  font-size: var(--fs-lg);
-}
-
 /* bottom nav (phones) */
 .bottomnav {
   display: none;
@@ -448,8 +373,7 @@
   .searchbtn__label,
   .searchbtn__kbd,
   .topbar__undo,
-  .wordmark__sub,
-  .clock__label {
+  .wordmark__sub {
     display: none;
   }
 
@@ -466,15 +390,6 @@
     padding: 0;
     border: 0;
     background: transparent;
-  }
-
-  .clock {
-    height: 34px;
-    padding: 0 9px;
-  }
-
-  .clock__tc {
-    font-size: 0.86rem;
   }
 
   .editbtn {
@@ -1203,8 +1118,7 @@
 }
 
 @media (min-width: 900px) and (max-width: 1220px) {
-  .wordmark__sub,
-  .clock__label {
+  .wordmark__sub {
     display: none;
   }
 }

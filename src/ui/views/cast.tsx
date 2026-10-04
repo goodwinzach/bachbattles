@@ -10,14 +10,13 @@ import { Badge, Empty, cx, hueVar } from '../kit';
 import { Face, faceState, NpcProfile, PcProfile, sourceTitle } from '../profile';
 
 type Who = { type: 'pc' | 'npc'; id: string };
-type Filter = 'all' | 'pc' | 'ally' | 'boss' | 'foe' | 'neutral';
+type Filter = 'all' | 'pc' | 'ally' | 'enemy' | 'neutral';
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'Everyone' },
   { id: 'pc', label: 'Players' },
   { id: 'ally', label: 'Allies' },
-  { id: 'boss', label: 'Bosses' },
-  { id: 'foe', label: 'Foes' },
+  { id: 'enemy', label: 'Bosses & foes' },
   { id: 'neutral', label: 'Neutral' },
 ];
 
@@ -54,6 +53,7 @@ function matchesFilter(w: Who, f: Filter) {
   if (f === 'pc') return w.type === 'pc';
   if (w.type !== 'npc') return false;
   const side = ent<NPC>('npc', w.id)?.side;
+  if (f === 'enemy') return side === 'boss' || side === 'foe';
   return f === 'neutral' ? side === 'neutral' || side === 'oracle' : side === f;
 }
 

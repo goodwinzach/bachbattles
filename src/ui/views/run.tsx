@@ -11,9 +11,9 @@ import {
   endCombat,
   goScene,
   removeCombatant,
+  resetTimer,
   revive,
   rollAttack,
-  setClock,
   setCondition,
   setInit,
   setClue,
@@ -33,7 +33,6 @@ import {
   sceneStatus,
   shielded,
   spine,
-  timecode,
   timeSpent,
   totalSpent,
 } from '../../state/derive';
@@ -495,44 +494,23 @@ function ConditionToggle({ cond }: { cond: Condition }) {
 
 // ─── side panels ──────────────────────────────────────────────────────────
 
-function ClockPanel() {
+function SessionPanel() {
   const g = game();
   useTick(1000, g.timer.running);
-  const scene = ent<Scene>('scene', g.scene)!;
-  const pct = Math.max(0, Math.min(1, g.clock / 36));
   return (
-    <section class="panel clockpanel" aria-label="Wedding clock">
-      <div class="clockpanel__tc">
-        <div class="eyebrow">To the wedding</div>
-        <div class={cx('clockpanel__big num', g.clock <= 8 && 'bad')}>{timecode(g.clock)}</div>
-        <div class="clockpanel__bar" aria-hidden="true">
-          <div style={{ width: `${pct * 100}%` }} />
-        </div>
+    <section class="panel sessionpanel" aria-label="Session timer">
+      <span class={cx('rec', !g.timer.running && 'rec--off')} />
+      <div class="sessionpanel__text">
+        <div class="eyebrow">Session</div>
+        <div class="sessionpanel__time num">{fmtDuration(totalSpent())}</div>
       </div>
-      <div class="clockpanel__btns">
-        {[-4, -2, -1].map((d) => (
-          <button key={d} type="button" class="btn btn--sm" onClick={() => setClock(g.clock + d)}>
-            {d}h
-          </button>
-        ))}
-        <button type="button" class="btn btn--sm btn--ghost" onClick={() => setClock(g.clock + 1)}>
-          +1h
-        </button>
-        {scene.clockTarget != null && Math.abs(scene.clockTarget - g.clock) > 0.01 && (
-          <button type="button" class="btn btn--sm btn--outline" onClick={() => setClock(scene.clockTarget!, `Clock set to ${scene.clockTarget}h for ${scene.title}`)} title="Suggested for this scene">
-            <Icon name="alarm-clock" /> {scene.clockTarget}h
-          </button>
-        )}
-      </div>
-      <div class="clockpanel__session">
-        <span class={cx('rec', !g.timer.running && 'rec--off')} />
-        <span class="muted">Session</span>
-        <span class="num">{fmtDuration(totalSpent())}</span>
-        <span class="spacer" />
-        <button type="button" class="btn btn--xs" onClick={toggleTimer}>
-          <Icon name={g.timer.running ? 'pause' : 'play'} /> {g.timer.running ? 'Pause' : 'Start'}
-        </button>
-      </div>
+      <span class="spacer" />
+      <button type="button" class="btn btn--sm" onClick={toggleTimer} title="Real time spent per scene feeds the pacing chart on the Map">
+        <Icon name={g.timer.running ? 'pause' : 'play'} /> {g.timer.running ? 'Pause' : 'Start'}
+      </button>
+      <button type="button" class="btn btn--sm btn--ghost btn--icon" onClick={resetTimer} title="Reset the session timer" aria-label="Reset the session timer">
+        <Icon name="timer-reset" />
+      </button>
     </section>
   );
 }
@@ -680,7 +658,7 @@ export function RunView() {
         <StoryStrip />
       </div>
       <aside class="run__side">
-        <ClockPanel />
+        <SessionPanel />
         <Party />
         {wide && (
           <section class="panel" aria-label="Dice">

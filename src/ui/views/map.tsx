@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { RELATIONS } from '../../data/campaign';
-import { CLOCK_RHYTHM, PACING } from '../../data/scenes';
+import { PACING } from '../../data/scenes';
 import type { Act, EntityType, Film, Item, NPC, PC, Scene } from '../../data/types';
 import { goScene } from '../../state/actions';
 import { fmtDuration, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneMust, sceneStatus, timeSpent, totalSpent } from '../../state/derive';
@@ -912,88 +912,6 @@ function PacingChart({ table }: { table: boolean }) {
   );
 }
 
-function ClockChart() {
-  const g = game();
-  const [ref, width] = useWidth<HTMLDivElement>();
-  const [hover, setHover] = useState<number | null>(null);
-  const pts = CLOCK_RHYTHM;
-  const order = all<Scene>('scene').map((s) => s.id);
-  const curIdx = order.indexOf(g.scene);
-  // where the current scene sits among the checkpoints
-  let here = 0;
-  pts.forEach((p, i) => {
-    if (order.indexOf(p.at) <= curIdx) here = i;
-  });
-  const H = 220;
-  const L = 40;
-  const R = 20;
-  const T = 16;
-  const B = 44;
-  const plotW = Math.max(200, width - L - R);
-  const x = (i: number) => L + (i / (pts.length - 1)) * plotW;
-  const y = (h: number) => T + (1 - h / 36) * (H - T - B);
-  const band =
-    pts.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.hours[1])}`).join(' ') +
-    ' ' +
-    [...pts].reverse().map((p, j) => `L${x(pts.length - 1 - j)},${y(p.hours[0])}`).join(' ') +
-    ' Z';
-  const mid = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y((p.hours[0] + p.hours[1]) / 2)}`).join(' ');
-  return (
-    <div class="chart" ref={ref}>
-      <svg
-        width={width}
-        height={H}
-        role="img"
-        aria-label="Suggested hours left on the wedding clock at each checkpoint, with the current clock"
-        onMouseMove={(e) => {
-          const r = (e.currentTarget as SVGElement).getBoundingClientRect();
-          const px = e.clientX - r.left;
-          setHover(clamp(Math.round(((px - L) / plotW) * (pts.length - 1)), 0, pts.length - 1));
-        }}
-        onMouseLeave={() => setHover(null)}
-      >
-        {[0, 12, 24, 36].map((h) => (
-          <g key={h}>
-            <line x1={L} x2={L + plotW} y1={y(h)} y2={y(h)} class="chart__grid" />
-            <text x={L - 8} y={y(h) + 4} class="chart__tick" text-anchor="end">
-              {h}h
-            </text>
-          </g>
-        ))}
-        <path d={band} class="clock__band" />
-        <path d={mid} class="clock__line" />
-        {pts.map((p, i) => (
-          <text key={p.label} x={x(i)} y={H - B + 18} class="chart__tick" text-anchor={i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'}>
-            {width < 620 ? `${i + 1}` : p.label}
-          </text>
-        ))}
-        {hover != null && <line x1={x(hover)} x2={x(hover)} y1={T} y2={H - B} class="chart__cross" />}
-        <circle cx={x(here)} cy={y(g.clock)} r={6} class="clock__now" />
-        <text x={x(here) + (here === pts.length - 1 ? -10 : 10)} y={y(g.clock) - 10} class="chart__value is-strong" text-anchor={here === pts.length - 1 ? 'end' : 'start'}>
-          Now {Math.round(g.clock * 10) / 10}h
-        </text>
-      </svg>
-      {hover != null && (
-        <div class="charttip" style={{ top: '20px', left: `${clamp(x(hover) + 12, 0, width - 230)}px` }}>
-          <div class="charttip__v num">
-            {pts[hover].hours[0] === pts[hover].hours[1] ? `${pts[hover].hours[0]}h` : `${pts[hover].hours[0]}–${pts[hover].hours[1]}h`}
-          </div>
-          <div class="charttip__k">{pts[hover].label}</div>
-        </div>
-      )}
-      <div class="chart__legend">
-        <span>
-          <i class="key key--band" /> Suggested hours left
-        </span>
-        <span>
-          <i class="key key--now" /> Wedding clock now
-        </span>
-        {width < 620 && <span class="muted">{pts.map((p, i) => `${i + 1} ${p.label}`).join(' · ')}</span>}
-      </div>
-    </div>
-  );
-}
-
 function Timeline() {
   const g = game();
   useTick(1000, g.timer.running);
@@ -1007,6 +925,7 @@ function Timeline() {
     if (i === 0) return a + Math.max(0, mid - sectionActual(r.scenes));
     return a + mid;
   }, 0);
+  const cur = ent<Scene>('scene', g.scene);
   const done = all<Scene>('scene').filter((s) => sceneInPlay(s) && s.status === 'done').length;
   const total = all<Scene>('scene').filter(sceneInPlay).length;
   return (
@@ -1033,9 +952,9 @@ function Timeline() {
           <div class="tile__sub">On this route and version</div>
         </div>
         <div class="tile">
-          <div class="tile__label">Wedding clock</div>
-          <div class="tile__value">{Math.round(g.clock * 10) / 10}h</div>
-          <div class="tile__sub">In-story hours left</div>
+          <div class="tile__label">This scene</div>
+          <div class="tile__value">{fmtDuration(timeSpent(g.scene))}</div>
+          <div class="tile__sub">{cur?.minutes ? `Target ${cur.minutes[0]}–${cur.minutes[1]} min` : cur?.title ?? ''}</div>
         </div>
       </div>
       <section class="panel">
@@ -1056,17 +975,9 @@ function Timeline() {
         {!g.timer.running && elapsed === 0 && (
           <div class="callout" style={{ marginTop: '10px' }}>
             <Icon name="timer" size={16} />
-            <span>Start the session timer (the clock in the top bar or the Run screen) and time spent fills in per section.</span>
+            <span>Start the session timer on the Run screen and time spent fills in per section.</span>
           </div>
         )}
-      </section>
-      <section class="panel">
-        <div class="panel__head">
-          <span class="panel__title">
-            <Icon name="alarm-clock" size={15} /> Wedding clock: the suggested rhythm
-          </span>
-        </div>
-        <ClockChart />
       </section>
     </div>
   );
@@ -1100,7 +1011,7 @@ export function MapView() {
         <p class="map__hint muted">
           {ui.mapMode === 'flow' && 'Every scene and branch in story order. Optional rooms and the other route stay visible, dimmed.'}
           {ui.mapMode === 'web' && 'Who is connected to whom: characters, the films they come from, key items and scenes.'}
-          {ui.mapMode === 'timeline' && 'Where the night stands against the 4 to 6 hour plan and the wedding clock.'}
+          {ui.mapMode === 'timeline' && 'Where the night stands against the 4 to 6 hour plan, from the session timer.'}
         </p>
       </div>
       {ui.mapMode === 'flow' && <FlowMap />}

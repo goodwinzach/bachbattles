@@ -12,9 +12,9 @@ Your progress saves automatically in that browser. Use **⋯ → Export save** b
 
 | View | What it is for |
 | --- | --- |
-| **Run** | The live DM screen: the current scene's slate, read-aloud text, beats, rolls, failsafes and DM notes, the wedding clock, the party with HP, stats, masks and abilities, and a combat tracker with initiative, attacks and damage. |
+| **Run** | The live DM screen: the current scene's slate, read-aloud text, beats, rolls, failsafes and DM notes, a session timer, the party with HP, stats, masks and abilities, and a combat tracker with initiative, attacks and damage. |
 | **Script** | The whole campaign as an organized script, act by act, with a table of contents, search, a read-aloud-only mode and expand/collapse for every section. Each scene keeps its original outline text. |
-| **Map** | Three charts: the story flow (every scene and branch, pan and zoom), the connections web (who is tied to whom, which films they come from), and pacing (time spent against the 4 to 6 hour plan, plus the wedding clock). |
+| **Map** | Three charts: the story flow (every scene and branch, pan and zoom), the connections web (who is tied to whom, which films they come from), and pacing (time spent against the 4 to 6 hour plan). |
 | **Slides** | A presentation deck. The *Table* deck is safe to show players; the *DM* deck adds stats, secrets and notes. Player cast slides and character entrances use the portraits. Long read-alouds split across slides. Arrow keys to move, F for fullscreen, speaker notes optional. |
 | **Cast** | A portrait gallery of every player and character, grouped by when the story introduces them, and a full profile page for each: portrait, the film or show they come from, personality and how to play them, lines to use, stats, the scenes they appear in, connections and what they carry. ← → page through the cast. |
 | **Codex** | Cards for everything: party, characters, bestiary (stat blocks), items grouped by owner or kind, abilities, clues, conditions and films. Search and filters on every tab. |
