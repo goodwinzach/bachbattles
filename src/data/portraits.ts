@@ -54,7 +54,7 @@ export const PORTRAITS: Portrait[] = [
   { key: 'coach', src: p_coach, label: 'Coach' },
   { key: 'louise', src: p_louise, label: 'Louise Banks' },
   { key: 'costello', src: p_costello, label: 'Costello (heptapod)' },
-  { key: 'tyler', src: p_tyler, label: 'Tyler Durden (Edward Norton)' },
+  { key: 'tyler', src: p_tyler, label: 'Edward Norton' },
   { key: 'odysseus', src: p_odysseus, label: 'Odysseus' },
   { key: 'john-doe', src: p_john_doe, label: 'John Doe' },
   { key: 'medusa', src: p_medusa, label: 'Medusa' },
@@ -94,7 +94,7 @@ export const DEFAULT_PORTRAIT: Record<string, string> = {
   'npc:louise': 'louise',
   'npc:costello': 'costello',
   'npc:tyler': 'tyler',
-  'npc:narrator': 'tyler',  // same body, same face: "Edward Norton, again"
+  'npc:norton': 'tyler',  // same body, same face: "Edward Norton, again"
   'npc:odysseus': 'odysseus',
   'npc:john-doe': 'john-doe',
   'npc:medusa': 'medusa',

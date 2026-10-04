@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { Ability, Act, Clue, Film, NPC, PC, Scene } from '../../data/types';
 import { STAT_ABBR, STATS } from '../../data/types';
 import { goScene } from '../../state/actions';
-import { abilitiesOf, abilityStatus, KIND_LABEL, npcStat, portraitOf, sceneInPlay, sceneMust, sourcesOf, strip } from '../../state/derive';
+import { abilitiesOf, abilityStatus, KIND_LABEL, npcStat, portraitOf, sceneInPlay, sceneMust, shielded, sourcesOf, strip } from '../../state/derive';
 import { signed } from '../../state/dice';
 import { all, ent, game, getDataVersion, getUi, setUi } from '../../state/store';
 import { isTyping } from '../hooks';
@@ -99,10 +99,10 @@ function RulesSlide({ which }: { which: 'roll' | 'death' }) {
         </div>
         <div class="sl__card">
           <div class="sl__cardicon">
-            <Icon name="donut" size={34} />
+            <Icon name="bagel" size={34} />
           </div>
-          <h3>The Donut Rule</h3>
-          <p>A living friend eats a donut and does something statistically improbable, in real life, in person. Then you come back.</p>
+          <h3>The Bagel Rule</h3>
+          <p>A living friend eats a bagel and does something statistically improbable, in real life, in person. Then you come back.</p>
         </div>
       </div>
     </div>
@@ -219,7 +219,7 @@ function SceneSlide({ scene, dm, text, page, of }: { scene: Scene; dm: boolean; 
 
 /** A character's entrance: portrait, where they're from, and one line. Bosses get stats in the DM deck. */
 function CharacterSlide({ npc, dm }: { npc: NPC; dm: boolean }) {
-  const film = sourcesOf('npc', npc.id)[0];
+  const film = sourcesOf('npc', npc.id, !dm || shielded())[0];
   const stat = npcStat(npc);
   const line = npc.lines?.find((l) => !l.trim().startsWith('('));
   const src = portraitOf('npc', npc.id);
@@ -291,7 +291,7 @@ function CreditsSlide() {
 
 /** Who gets an entrance slide after each scene's read-aloud (bosses, plus the characters the table should meet). */
 const ENTRANCES: Record<string, string[]> = {
-  'green-dragon': ['narrator', 'antinous'],
+  'green-dragon': ['norton', 'antinous'],
   gentlemen: ['michael-pearson'],
   'louise-call': ['louise'],
   costello: ['costello'],

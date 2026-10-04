@@ -1,10 +1,11 @@
 import { NPCS, PCS, RELATIONS } from './cast';
+import { DIALOGUE } from './dialogue';
 import { FILMS, RULES } from './rules';
 import { ACTS, SCENES } from './scenes';
 import { ABILITIES, CLUES, CONDITIONS, ITEMS } from './things';
 import type { AnyEntity, Campaign, EntityType } from './types';
 
-export { RELATIONS };
+export { DIALOGUE, RELATIONS };
 
 export const CAMPAIGN: Campaign = {
   acts: ACTS,

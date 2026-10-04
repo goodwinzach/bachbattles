@@ -71,6 +71,14 @@ export interface Line {
   note?: string;
 }
 
+/** A situation that comes up at the table, with a few interchangeable ways the character can say it. */
+export interface DialogueCue {
+  /** when it applies: "Asked about the ring", "Pushed too far" */
+  cue: string;
+  /** pick any one; a line in (parentheses) is a performance cue */
+  options: Rich[];
+}
+
 export interface Beat {
   label: string;
   text: Rich;
@@ -223,6 +231,8 @@ export interface NPC extends NpcRuntime {
   knows?: Rich[];
   important?: Rich[];
   lines?: string[];
+  /** dialogue options by situation (src/data/dialogue.ts) */
+  dialogue?: DialogueCue[];
   stat?: StatBlock;
   /** alternate stat blocks (Lou masked / unmasked) */
   phases?: { label: string; stat: StatBlock }[];
@@ -230,6 +240,8 @@ export interface NPC extends NpcRuntime {
   minor?: boolean;
   /** other films or shows they are tied to, after `film` */
   films?: string[];
+  /** `film` gives away a twist: hidden by the spoiler shield and the Table deck, and never on gallery tiles */
+  filmSecret?: boolean;
   /** portrait key (src/data/portraits.ts); 'none' shows the icon instead */
   portrait?: string;
   // ── DM reference (the character bible) ──

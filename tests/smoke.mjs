@@ -162,11 +162,12 @@ try {
     const lou = await page.evaluate(() => ({
       name: document.querySelector('.phero__name')?.textContent,
       from: document.querySelector('.phero .srcline')?.textContent,
-      quotes: document.querySelectorAll('.quote').length,
+      lines: document.querySelectorAll('.prof__talk .dlg__opt').length,
+      situations: document.querySelectorAll('.prof__talk .dlg__card').length,
       mask: document.querySelector('.phero__mask')?.getAttribute('title'),
       hash: location.hash,
     }));
-    check(lou.name === 'Lou Bloom' && /Nightcrawler/.test(lou.from ?? '') && lou.quotes >= 3, 'profile page: name, source and lines', JSON.stringify(lou));
+    check(lou.name === 'Lou Bloom' && /Nightcrawler/.test(lou.from ?? '') && lou.situations >= 5 && lou.lines >= 15, 'profile page: name, source and dialogue options by situation', JSON.stringify(lou));
     check(lou.mask === 'Wearing the V Mask' && lou.hash === '#cast/npc/lou', 'masked Lou wears the V mask; the page has its own link', JSON.stringify(lou));
     const bible = await page.evaluate(() => ({
       eyebrow: document.querySelector('.phero__eyebrow')?.textContent,
@@ -202,9 +203,10 @@ try {
     const drawer = await page.evaluate(() => ({
       name: document.querySelector('.drawer.is-on .phero__name')?.textContent,
       img: !!document.querySelector('.drawer.is-on .phero .face img'),
-      quotes: document.querySelectorAll('.drawer.is-on .quote').length,
+      tabs: document.querySelectorAll('.drawer.is-on .dlg__tab').length,
+      lines: document.querySelectorAll('.drawer.is-on .dlg__opt').length,
     }));
-    check(drawer.name === 'Louise Banks' && drawer.img && drawer.quotes > 0, 'clicking a name opens their profile with portrait and lines', JSON.stringify(drawer));
+    check(drawer.name === 'Louise Banks' && drawer.img && drawer.tabs >= 4 && drawer.lines >= 2, 'clicking a name opens their profile with portrait and dialogue options', JSON.stringify(drawer));
     await page.click('.drawer.is-on button:has-text("Full profile")');
     await page.waitForSelector('.cast--page .phero__name');
     check((await page.evaluate(() => location.hash)) === '#cast/npc/louise' && !(await page.$('.drawer.is-on')), '"Full profile" opens the page and closes the drawer');
@@ -226,7 +228,7 @@ try {
     check(kp.includes('ctile--out'), 'a defeated character greys out in the gallery', kp);
 
     // the editor's portrait picker changes the picture everywhere; undo brings it back
-    await page.goto(`${URL_BASE}#cast/npc/narrator`);
+    await page.goto(`${URL_BASE}#cast/npc/norton`);
     await page.waitForSelector('.phero--page .phero__face .face img');
     await page.click('.phero__open');
     await page.waitForSelector('.drawer.is-on .portpick');
@@ -247,6 +249,79 @@ try {
     await page.waitForTimeout(200);
     check((await page.evaluate(() => location.hash)).startsWith('#cast'), 'key 5 opens the Cast view');
     check(errors.length === 0, 'no console errors on the profile pages', errors.join(' | '));
+    await ctx.close();
+  }
+
+  // ── 4b. renamed entities, secrets, dialogue options ────────────────────
+  console.log('\nRenames and dialogue');
+  {
+    // a save from before the renames still uses the old ids; its edits must carry over
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
+    await ctx.addInitScript(() => {
+      if (sessionStorage.getItem('seeded')) return;
+      sessionStorage.setItem('seeded', '1');
+      const patches = { 'npc:narrator': { dmNote: 'Old note about the bar guy' }, 'item:donuts': { state: 'held', holder: 'party', qty: 3 } };
+      localStorage.setItem('orf-dm/v1/data', JSON.stringify({ v: 1, patches, created: {}, game: { scene: 'green-dragon' }, log: [], savedAt: 1 }));
+    });
+    const page = await ctx.newPage();
+    const errors = [];
+    await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
+    page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+    page.on('pageerror', (e) => errors.push(String(e)));
+    await page.goto(`${URL_BASE}#cast/npc/norton`);
+    await page.waitForSelector('.phero--page');
+    const norton = await page.evaluate(() => ({
+      name: document.querySelector('.phero__name')?.textContent,
+      src: document.querySelector('.phero .srcline')?.textContent ?? '',
+      note: (document.querySelector('.prof')?.textContent ?? '').includes('Old note about the bar guy'),
+    }));
+    check(norton.name === 'Guy who looks like Edward Norton', 'the bar guy is now "Guy who looks like Edward Norton"', JSON.stringify(norton));
+    check(norton.note, 'edits saved under his old id carry over', JSON.stringify(norton));
+    check(/Fight Club/.test(norton.src) && /secret/i.test(norton.src), 'his Fight Club tie shows only as a DM secret', norton.src);
+    await page.keyboard.press('h');
+    await page.waitForTimeout(200);
+    const hidden = await page.evaluate(() => ({ src: document.querySelector('.phero .srcline')?.textContent ?? '', rels: document.querySelectorAll('.rels__row').length }));
+    check(/Origin unknown/.test(hidden.src) && hidden.rels === 0, 'the spoiler shield hides where he is from and who he really is', JSON.stringify(hidden));
+    await page.keyboard.press('h');
+    await page.click('.castnav button:has-text("All cast"), .castnav a:has-text("All cast")').catch(() => page.evaluate(() => (location.hash = 'cast')));
+    await page.waitForSelector('.ctile');
+    const tile = await page.$eval('.ctile:has-text("Edward Norton")', (el) => el.textContent ?? '');
+    check(!/Fight Club|Tyler|Narrator/i.test(tile), 'his gallery tile gives nothing away', tile);
+
+    await page.evaluate(() => (location.hash = 'run'));
+    await page.waitForSelector('.talk');
+    const run = await page.evaluate(() => ({
+      text: document.querySelector('.monitor')?.innerText ?? '',
+      who: document.querySelectorAll('.talk__pick').length,
+      side: document.querySelector('.run__side')?.textContent ?? '',
+    }));
+    check(!/narrator/i.test(run.text) && /Edward Norton/.test(run.text), 'the Green Dragon never calls him the narrator', '');
+    check(/Everything Bagels/.test(run.side) && !/Donut/i.test(run.side), 'bagels replace donuts, and a saved donut count carries over', run.side.slice(0, 300));
+    check(run.who === 6, "the scene's dialogue panel offers everyone at the bar", `who=${run.who}`);
+    await page.click('.talk__pick:has-text("Edward Norton")');
+    await page.click('.talk .dlg__tab:has-text("Asked his name")');
+    const opts = await page.$$eval('.talk .dlg__opt', (els) => els.length);
+    await page.click('.talk .dlg__opt >> nth=0');
+    await page.click('.talk .dlg__foot button:has-text("Pick one")');
+    const st = await page.evaluate(() => ({
+      said: document.querySelectorAll('.talk .dlg__opt.is-said').length,
+      picked: document.querySelector('.talk .dlg__opt.is-picked')?.classList.contains('is-said'),
+    }));
+    check(opts >= 3 && st.said === 1 && st.picked === false, 'dialogue: several lines per situation; mark one as said; the dice picks an unused one', JSON.stringify({ opts, ...st }));
+
+    // the editor writes dialogue options like any other field, and undo takes them back
+    await page.click('.castcard .ref:has-text("Edward Norton")');
+    await page.waitForSelector('.drawer.is-on .phero');
+    await page.click('.drawer.is-on button:has-text("Edit")');
+    await page.waitForSelector('.drawer.is-on .dlgedit');
+    await page.click('.drawer.is-on .dlgedit > .btn:has-text("Add a situation")');
+    await page.waitForTimeout(150);
+    const added = await page.$$eval('.drawer.is-on .dlgedit__cue', (els) => els.length);
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Control+z');
+    await page.waitForTimeout(150);
+    check(added === 7, 'the editor adds a dialogue situation', `situations=${added}`);
+    check(errors.length === 0, 'no console errors with renames and dialogue', errors.join(' | '));
     await ctx.close();
   }
 

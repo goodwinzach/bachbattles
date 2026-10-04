@@ -2038,3 +2038,15 @@ code {
   color: var(--fg-2);
   font-size: var(--fs-sm);
 }
+
+.rels__secret {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}

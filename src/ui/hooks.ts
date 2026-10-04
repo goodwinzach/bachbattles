@@ -53,10 +53,13 @@ export function isTyping(e: KeyboardEvent): boolean {
 /** Simple persisted open/closed memory for expanders (survives re-mounts in a session). */
 const openMemory = new Map<string, boolean>();
 export function useOpen(id: string | undefined, initial: boolean): [boolean, (v: boolean) => void] {
-  const [open, setOpen] = useState(() => (id && openMemory.has(id) ? openMemory.get(id)! : initial));
+  const read = () => (id && openMemory.has(id) ? openMemory.get(id)! : initial);
+  const [state, setState] = useState(() => ({ id, open: read() }));
+  // the same expander can be reused for another scene (another id): start from that id's own state
+  const open = state.id === id ? state.open : read();
   const set = (v: boolean) => {
     if (id) openMemory.set(id, v);
-    setOpen(v);
+    setState({ id, open: v });
   };
   return [open, set];
 }

@@ -6,7 +6,7 @@ import { RELATIONS } from '../../data/campaign';
 import { PACING } from '../../data/scenes';
 import type { Act, EntityType, Film, Item, NPC, PC, Scene } from '../../data/types';
 import { goScene } from '../../state/actions';
-import { fmtDuration, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneMust, sceneStatus, timeSpent, totalSpent } from '../../state/derive';
+import { fmtDuration, KIND_LABEL, nameOf, portraitOf, sceneInPlay, sceneMust, sceneStatus, shielded, timeSpent, totalSpent } from '../../state/derive';
 import { all, ent, game, getDataVersion, getUi, openDrawer, setUi } from '../../state/store';
 import { useMedia, useTick } from '../hooks';
 import { Icon } from '../icons';
@@ -439,7 +439,7 @@ function buildGraph(types: string[]) {
   for (const p of all<PC>('pc')) add('pc', p.id);
   for (const n of all<NPC>('npc')) add('npc', n.id);
   for (const f of all<Film>('film')) add('film', f.id);
-  const keyItems = all<Item>('item').filter((i) => ['mask', 'key', 'hazard'].includes(i.kind) || i.id === 'donuts' || i.id === 'dr-pepper');
+  const keyItems = all<Item>('item').filter((i) => ['mask', 'key', 'hazard'].includes(i.kind) || i.id === 'bagels' || i.id === 'dr-pepper');
   for (const i of keyItems) add('item', i.id);
   for (const s of all<Scene>('scene')) add('scene', s.id);
 
@@ -449,8 +449,9 @@ function buildGraph(types: string[]) {
     if (edges.some((e) => (e.a === a && e.b === b) || (e.a === b && e.b === a))) return;
     edges.push({ a, b, kind, label });
   };
-  for (const r of RELATIONS) link(r.a, r.b, 'rel', r.label);
-  for (const n of all<NPC>('npc')) if (n.film) link(`npc:${n.id}`, `film:${n.film}`, 'film', 'from');
+  const shield = shielded();
+  for (const r of RELATIONS) if (!(r.secret && shield)) link(r.a, r.b, 'rel', r.label);
+  for (const n of all<NPC>('npc')) if (n.film && !(n.filmSecret && shield)) link(`npc:${n.id}`, `film:${n.film}`, 'film', 'from');
   for (const p of all<PC>('pc')) for (const f of p.films ?? []) link(`pc:${p.id}`, `film:${f}`, 'film', 'inspired by');
   for (const i of keyItems) {
     for (const f of i.films ?? []) link(`item:${i.id}`, `film:${f}`, 'film', 'from');
@@ -535,7 +536,7 @@ function WebGraph() {
     const g = buildGraph(types);
     simulate(g.nodes, g.edges, W, H);
     return g;
-  }, [types.join(','), getDataVersion()]);
+  }, [types.join(','), getDataVersion(), ui.shield]);
   const [hover, setHover] = useState<string | null>(null);
   const [sel, setSel] = useState<string | null>(null);
   const [query, setQuery] = useState('');

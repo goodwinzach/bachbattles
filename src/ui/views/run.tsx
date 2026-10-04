@@ -368,8 +368,8 @@ function PartyMember({ pc }: { pc: PC }) {
   const ac = acCalc(pc);
   const abs = abilitiesOf(pc.id).filter((a) => !(a.secret && !a.revealed && shielded()));
   const items = all<Item>('item').filter((i) => i.holder === pc.id && i.state !== 'spent' && i.state !== 'destroyed' && i.kind !== 'mask');
-  const donuts = ent<Item>('item', 'donuts');
-  const canRevive = pc.status === 'ghost' && donuts && (donuts.state === 'held' || donuts.state === 'equipped') && (donuts.qty ?? 0) > 0;
+  const bagels = ent<Item>('item', 'bagels');
+  const canRevive = pc.status === 'ghost' && bagels && (bagels.state === 'held' || bagels.state === 'equipped') && (bagels.qty ?? 0) > 0;
   return (
     <li class={cx('member hue', `member--${pc.status}`)} style={{ '--c': hueVar(pc.hue) } as never}>
       <div class="member__head">
@@ -437,7 +437,7 @@ function PartyMember({ pc }: { pc: PC }) {
       )}
       {canRevive && (
         <button type="button" class="btn btn--sm btn--good member__revive" onClick={() => revive(pc.id, true)} title="After a living player does something statistically improbable in real life">
-          <Icon name="donut" /> Revive with a donut
+          <Icon name="bagel" /> Revive with a bagel
         </button>
       )}
       {items.length > 0 && (
@@ -517,7 +517,7 @@ function SessionPanel() {
 
 function Resources() {
   const gold = ent<Item>('item', 'gold')!;
-  const donuts = ent<Item>('item', 'donuts')!;
+  const bagels = ent<Item>('item', 'bagels')!;
   const pistols = all<Item>('item').filter((i) => i.ammoMax != null && (i.state === 'held' || i.state === 'equipped'));
   const keyItems = ['wedding-ring', 'v-mask', 'dr-pepper', 'staff'].map((id) => ent<Item>('item', id)!).filter(Boolean);
   return (
@@ -529,7 +529,7 @@ function Resources() {
       </div>
       <div class="stack" style={{ '--gap': '6px' } as never}>
         <ItemRow item={gold} />
-        <ItemRow item={donuts} />
+        <ItemRow item={bagels} />
         {pistols.map((p) => (
           <ItemRow key={p.id} item={p} />
         ))}
@@ -584,7 +584,7 @@ function Notes() {
         multiline
         rows={5}
         value={g.notes}
-        placeholder="Stupid things that happened tonight (great material for the donut shop)."
+        placeholder="Stupid things that happened tonight (great material for the bagel shop)."
         onCommit={(v) => setGame({ notes: v }, 'Session notes updated')}
       />
     </section>

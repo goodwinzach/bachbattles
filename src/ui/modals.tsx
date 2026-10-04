@@ -268,7 +268,7 @@ function SettingsModal() {
         <section class="settings__sec">
           <h3 class="settings__h">Sources</h3>
           <p class="muted">
-            Story spine from your campaign outline and the Latest.docx DM handoff. Stats, abilities, DCs, ghost and donut rules, pacing and NPC
+            Story spine from your campaign outline and the Latest.docx DM handoff. Stats, abilities, DCs, ghost and bagel rules, pacing and NPC
             performance notes from the comprehensive DM build. Every scene keeps its original outline text under "Original outline".
           </p>
         </section>

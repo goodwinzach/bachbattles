@@ -1,5 +1,6 @@
 // The body of a scene, shared by the Run screen and the Script view, plus per-scene widgets.
 
+import { useState } from 'preact/hooks';
 import type { Act, Clue, Effect, Item, NPC, PC, Scene } from '../data/types';
 import { STAT_ABBR, type Stat } from '../data/types';
 import {
@@ -16,11 +17,12 @@ import {
   setPcStatus,
   setRoute,
 } from '../state/actions';
-import { isUnmasked, KIND_LABEL, sceneFoes, sceneMust, shielded } from '../state/derive';
+import { dialogueOf, isUnmasked, KIND_LABEL, nameOf, sceneFoes, sceneMust, shielded } from '../state/derive';
 import { all, ent, game, getUi, openDrawer, openModal } from '../state/store';
 import { SIN_ROOMS } from '../data/scenes';
 import { NpcStatusControl } from './controls';
 import { DmNote, ItemRow, Secret } from './detail';
+import { DialogueOptions } from './dialogue';
 import { Icon } from './icons';
 import { Face } from './profile';
 import { Badge, Expander, cx } from './kit';
@@ -88,6 +90,41 @@ function CastList({ scene }: { scene: Scene }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/** Who can talk in this scene: its characters, then anyone fought here, if they have dialogue options. */
+function talkersOf(scene: Scene): NPC[] {
+  const ids = [...new Set([...(scene.cast ?? []), ...sceneFoes(scene)])];
+  return ids.map((id) => ent<NPC>('npc', id)).filter((n): n is NPC => !!n && dialogueOf(n).length > 0);
+}
+
+/** Dialogue options for everyone in the scene: pick a face, then a situation, then a line. */
+function TalkPanel({ npcs }: { npcs: NPC[] }) {
+  const [sel, setSel] = useState(npcs[0]?.id);
+  const cur = npcs.find((n) => n.id === sel) ?? npcs[0];
+  if (!cur) return null;
+  return (
+    <div class="talk">
+      {npcs.length > 1 && (
+        <div class="talk__who" role="tablist" aria-label="Who is talking">
+          {npcs.map((n) => (
+            <button key={n.id} type="button" role="tab" aria-selected={n.id === cur.id} class="talk__pick" onClick={() => setSel(n.id)}>
+              <Face type="npc" id={n.id} size={28} />
+              <span class="talk__name">{nameOf('npc', n.id)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <div class="talk__head">
+        <Face type="npc" id={cur.id} size={40} />
+        <div class="talk__headtext">
+          <Ref type="npc" id={cur.id} noDot />
+          {cur.traits?.length ? <div class="talk__traits">{cur.traits.slice(0, 4).join(' · ')}</div> : null}
+        </div>
+      </div>
+      <DialogueOptions key={cur.id} npc={cur} layout="tabs" />
     </div>
   );
 }
@@ -442,16 +479,16 @@ function UnmaskWidget() {
   );
 }
 
-function DonutWidget({ shop }: { shop?: boolean }) {
+function BagelWidget({ shop }: { shop?: boolean }) {
   const ghosts = all<PC>('pc').filter((p) => p.status === 'ghost');
-  const donuts = ent<Item>('item', 'donuts');
-  const have = donuts && (donuts.state === 'held' || donuts.state === 'equipped') ? donuts.qty ?? 0 : 0;
+  const bagels = ent<Item>('item', 'bagels');
+  const have = bagels && (bagels.state === 'held' || bagels.state === 'equipped') ? bagels.qty ?? 0 : 0;
   return (
     <div class="widget">
       <div class="widget__head">
-        <Icon name="donut" size={16} />
-        <span class="widget__title">{shop ? 'The donut shop' : 'Donuts'}</span>
-        <span class="muted">{shop ? 'Unlimited donuts. One improbable act per friend.' : `${have} donut${have === 1 ? '' : 's'} on hand`}</span>
+        <Icon name="bagel" size={16} />
+        <span class="widget__title">{shop ? 'The bagel shop' : 'Bagels'}</span>
+        <span class="muted">{shop ? 'Unlimited bagels. One improbable act per friend.' : `${have} bagel${have === 1 ? '' : 's'} on hand`}</span>
       </div>
       {ghosts.length === 0 ? (
         <div class="muted">Nobody is a ghost right now.</div>
@@ -485,9 +522,9 @@ export function SceneWidget({ scene }: { scene: Scene }) {
   if (scene.variantMust || scene.id === 'cat') parts.push(<VariantWidget key="v" />);
   if (scene.id === 'fourth-mask') parts.push(<UnmaskWidget key="u" />);
   if (scene.id === 'gluttony' || scene.id === 'cat' || scene.id === 'toothless' || scene.id === 'oh-dae-su') {
-    if (all<PC>('pc').some((p) => p.status === 'ghost')) parts.push(<DonutWidget key="d" />);
+    if (all<PC>('pc').some((p) => p.status === 'ghost')) parts.push(<BagelWidget key="d" />);
   }
-  if (scene.id === 'epilogue') parts.push(<DonutWidget key="ds" shop />);
+  if (scene.id === 'epilogue') parts.push(<BagelWidget key="ds" shop />);
   if (!parts.length) return null;
   return <div class="widgets">{parts}</div>;
 }
@@ -497,6 +534,7 @@ export function SceneWidget({ scene }: { scene: Scene }) {
 export function SceneBody({ scene, prefix, compact }: { scene: Scene; prefix: string; compact?: boolean }) {
   const id = (k: string) => `${prefix}:${scene.id}:${k}`;
   const foes = sceneFoes(scene);
+  const talkers = talkersOf(scene);
   const stats = scene.rolls?.map((r) => r.stat).filter((s): s is Stat => s !== 'any');
   return (
     <div class="scenebody">
@@ -534,6 +572,18 @@ export function SceneBody({ scene, prefix, compact }: { scene: Scene; prefix: st
         {scene.cast?.length ? (
           <Expander id={id('cast')} title="Characters" icon="drama" count={scene.cast.length} defaultOpen={!compact}>
             <CastList scene={scene} />
+          </Expander>
+        ) : null}
+        {talkers.length ? (
+          <Expander
+            id={id('talk')}
+            title="Dialogue options"
+            icon="messages-square"
+            count={talkers.length}
+            defaultOpen={!compact && (scene.kind === 'social' || scene.kind === 'oracle')}
+            hint={talkers.length > 1 ? `${talkers.length} characters` : nameOf('npc', talkers[0].id)}
+          >
+            <TalkPanel npcs={talkers} />
           </Expander>
         ) : null}
         {scene.rolls?.length ? (

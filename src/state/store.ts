@@ -115,6 +115,8 @@ export interface UiState extends Prefs {
   webFocus: string | null;
   /** the profile page open in the Cast view ('npc:lou'), or null for the gallery */
   castFocus: string | null;
+  /** dialogue lines marked as said this session ('lou␟line text'); not saved */
+  said: Record<string, true>;
 }
 
 // ─── defaults ──────────────────────────────────────────────────────────────
@@ -163,6 +165,7 @@ let ui: UiState = {
   mapSelected: null,
   webFocus: null,
   castFocus: null,
+  said: {},
 };
 let dataVersion = 0;
 let uiVersion = 0;
@@ -365,8 +368,28 @@ export function replaceData(next: SaveData, opts: { keepUndo?: boolean; label?: 
   dataChanged();
 }
 
-export function normalize(input: Partial<SaveData>): SaveData {
+/** Entities renamed since earlier versions (old key → new key), so older saves keep their edits. */
+const RENAMED: [string, string][] = [
+  ['npc:narrator', 'npc:norton'],
+  ['item:donuts', 'item:bagels'],
+  ['rule:donut-rule', 'rule:bagel-rule'],
+];
+
+/** Rewrites renamed ids in saved edits and game state: patch keys, [[links]] and plain id values (holders, combatants). */
+function renameIds<T>(value: T): T {
+  if (value == null) return value;
+  let s = JSON.stringify(value);
+  for (const [from, to] of RENAMED) {
+    const oldId = from.slice(from.indexOf(':') + 1);
+    const newId = to.slice(to.indexOf(':') + 1);
+    s = s.split(`"${from}"`).join(`"${to}"`).split(`[[${from}`).join(`[[${to}`).split(`"${oldId}"`).join(`"${newId}"`);
+  }
+  return JSON.parse(s) as T;
+}
+
+export function normalize(raw: Partial<SaveData>): SaveData {
   const d = defaultData();
+  const input = renameIds(raw);
   return {
     v: 1,
     patches: input.patches && typeof input.patches === 'object' ? input.patches : d.patches,

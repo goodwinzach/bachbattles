@@ -1,3 +1,4 @@
+import { DIALOGUE } from './dialogue';
 import type { NPC, PC } from './types';
 
 type PcDef = Omit<PC, 'hp' | 'status' | 'effects' | 'mask' | 'dmNote'> & Partial<Pick<PC, 'mask'>>;
@@ -9,6 +10,7 @@ const npc = (d: NpcDef): NPC => ({
   hp: d.stat?.hp ?? null,
   phase: 0,
   dmNote: '',
+  dialogue: DIALOGUE[d.id],
   ...d,
 });
 
@@ -187,20 +189,20 @@ export const NPCS: NPC[] = [
     fight: 'No. He stalls until [[npc:michael-pearson]] arrives.',
   }),
   npc({
-    id: 'narrator',
-    name: 'The Narrator',
-    aka: "Doesn't remember his name",
+    id: 'norton',
+    name: 'Guy who looks like Edward Norton',
+    aka: "Doesn't know his own name",
     film: 'fight-club',
+    filmSecret: true,
     side: 'neutral',
     icon: 'user-x',
-    role: 'Confused man in the Green Dragon. Red herring, and setup for [[npc:tyler]].',
-    look: 'Edward Norton. Beat up, exhausted and vaguely ill.',
+    role: "A beat-up, exhausted man at the bar who looks exactly like Edward Norton and can't remember his own name. He knows nothing about the ring.",
+    look: 'Exactly like Edward Norton. Beat up, exhausted and vaguely ill.',
     personality: 'Sleep-deprived, uncertain and defensive. Gets more irritated with every question he cannot answer.',
     play: 'Has no recollection of who anyone is, and resents being asked.',
     knows: ['Very little that helps. He is not hiding the ring clue; he genuinely does not know.'],
     important: [
-      'Same body as [[npc:tyler]]. If Odysseus shoots Tyler on the docks, the Narrator comes back and helps disarm the bombs.',
-      'When Tyler shows up later, he should feel completely different, even with the same face.',
+      "Introduce him as a man who doesn't know his own name. Don't give him one, and don't mention where he's from: the players should only notice that he looks like Edward Norton.",
     ],
     lines: [
       "I don't know you. I barely know me right now.",
@@ -211,7 +213,7 @@ export const NPCS: NPC[] = [
     ],
     wants: 'To be left alone, and to remember his own name.',
     category: 'Side NPC',
-    location: 'The Green Dragon. Can resurface on the docks if Tyler is shot.',
+    location: 'The Green Dragon. Can resurface on the docks later.',
     traits: ['sleep-deprived', 'uncertain', 'defensive', 'frustrated'],
     portray: [
       'Slumped posture, rubbing his face.',
@@ -219,6 +221,10 @@ export const NPCS: NPC[] = [
       'Annoyance that builds with every question.',
     ],
     fight: 'No.',
+    secrets: [
+      'He is the Narrator from *Fight Club*, and the same body as [[npc:tyler]]. Tyler shows up at the airfield or the docks: same face, completely different energy. Let the players work it out then.',
+      'If [[npc:odysseus]] shoots Tyler on the docks, this guy comes back to himself, horrified and confused, and helps disarm the bombs.',
+    ],
   }),
   npc({
     id: 'antinous',
@@ -544,7 +550,7 @@ export const NPCS: NPC[] = [
     film: 'fight-club',
     side: 'boss',
     icon: 'bomb',
-    role: "Lou's blocker at the airfield or the docks. Same body as [[npc:narrator]], completely different energy.",
+    role: "Lou's blocker at the airfield or the docks. Same body as [[npc:norton]] from the bar, completely different energy.",
     personality: 'Cocky, amused, provocative. Enjoys making people prove themselves.',
     play: 'Upright, confident, smiling during danger. He wants Flynn to fight because the fight itself proves a point.',
     wants: 'To pay back a favor: he lost a fight to [[npc:lou]] and owes him one. The favor is stopping the party.',
@@ -575,7 +581,7 @@ export const NPCS: NPC[] = [
     unknowns: ["The details of Lou's Hollywood plan."],
     ifs: [
       '**Airport route:** the planes are rigged and the goons attack. Tyler challenges Flynn to a fist fight and blows up the planes whether Flynn wins or loses.',
-      '**Boat route:** the boats are rigged and he challenges Flynn on the docks. If Flynn is losing badly, [[npc:odysseus]] can shoot him, and [[npc:narrator]] can resurface to help with the bombs.',
+      '**Boat route:** the boats are rigged and he challenges Flynn on the docks. If Flynn is losing badly, [[npc:odysseus]] can shoot him, and the [[npc:norton|guy from the bar]] resurfaces to help with the bombs.',
     ],
     fight: 'Yes: a one-on-one fist fight with Flynn. Travel gets sabotaged either way.',
   }),
@@ -983,7 +989,7 @@ export const NPCS: NPC[] = [
     location: 'The Gluttony building, the room full of food',
     traits: ['cold', 'indulgent', 'grotesque', 'controlling', 'detached'],
     important: [
-      "**After the fight:** a full meal, major healing, relief from hunger and the hangover, five [[item:donuts]] and Goodwin's [[item:dr-pepper]]. The main recovery checkpoint after the island.",
+      "**After the fight:** a full meal, major healing, relief from hunger and the hangover, five [[item:bagels]] and Goodwin's [[item:dr-pepper]]. The main recovery checkpoint after the island.",
     ],
     fight: 'Yes, but he stays put. [[npc:feyd]] and [[npc:rabban]] do the moving and fighting.',
   }),
@@ -1350,7 +1356,7 @@ export const NPCS: NPC[] = [
 ];
 
 /** Story relationships between characters (drawn on the connections web and listed on each card). */
-export const RELATIONS: { a: string; b: string; label: string }[] = [
+export const RELATIONS: { a: string; b: string; label: string; secret?: boolean }[] = [
   { a: 'pc:flynn', b: 'npc:caley', label: 'is marrying' },
   { a: 'pc:flynn', b: 'npc:louise', label: 'got her number last night' },
   { a: 'npc:lou', b: 'pc:flynn', label: 'stole his ring and fourth mask' },
@@ -1359,7 +1365,7 @@ export const RELATIONS: { a: string; b: string; label: string }[] = [
   { a: 'npc:michael-pearson', b: 'pc:jamie', label: 'wants paying for the floor he broke' },
   { a: 'npc:antinous', b: 'pc:flynn', label: "bullies him for the redhead's number" },
   { a: 'npc:kingpin', b: 'item:spider-mask', label: 'hates it on sight' },
-  { a: 'npc:narrator', b: 'npc:tyler', label: 'the same body' },
+  { a: 'npc:norton', b: 'npc:tyler', label: 'the same body', secret: true },
   { a: 'npc:tyler', b: 'npc:lou', label: 'lost a fight to him; owes a favor' },
   { a: 'npc:louise', b: 'npc:costello', label: 'friends' },
   { a: 'npc:abbott', b: 'npc:costello', label: 'heptapod pair' },

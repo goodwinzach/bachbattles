@@ -1,6 +1,6 @@
 # One Ring to Rule Flynn: DM console
 
-A dungeon master's console for the bachelor-party one-shot *One Ring to Rule Flynn*. The whole campaign is in it (27 scenes, 5 players, 42 characters with portraits and full profiles, 32 items, 14 abilities, clues, conditions, rules and the film references), laid out seven ways, and editable from any of them.
+A dungeon master's console for the bachelor-party one-shot *One Ring to Rule Flynn*. The whole campaign is in it (27 scenes, 5 players, 42 characters with portraits, full profiles and dialogue options, 32 items, 14 abilities, clues, conditions, rules and the film references), laid out seven ways, and editable from any of them.
 
 ## Open it
 
@@ -26,11 +26,15 @@ Click any character's or player's name, anywhere (the script, the run screen, ch
 
 Portraits follow the game: ghosts fade, stone goes grey, defeated characters dim, and the mask a character is wearing shows as a badge (Flynn's current mask, the V mask on Lou while he is masked).
 
+**Dialogue options:** every character has the situations that come up at the table (walking in, being asked about the ring, being pushed too far, losing a fight), each with a few interchangeable lines. Tap a line once you have said it so you do not repeat yourself, or press **Pick one** and let the dice choose an unused line. Each scene also has a **Dialogue options** panel with everyone in it, open by default in conversation scenes.
+
+Some sources are spoilers. The guy who looks like Edward Norton is introduced as a man who does not know his own name; his real identity stays a DM secret, hidden by the spoiler shield, on gallery tiles and on the Table slides.
+
 ## Editing
 
 Press **Edit** in the top bar (or `E`). Every state badge becomes a picker: item states (held, equipped, lost, enemy has it…), who holds an item, ability states, character status, scene status, clues and conditions. Click any name to open its drawer, whose **Edit** tab changes the text itself: names, read-alouds, stat blocks, DCs, notes.
 
-Each character's editor also has a **Portrait** picker and a **From** field. Every change shows up everywhere at once. Lose the Spider-Man mask and Spider-Sense locks on the Run screen, in the Codex and in every mention in the script; rename a character and every reference updates. Edited fields show a dot and a one-click "original" reset.
+Each character's editor also has a **Portrait** picker, a **From** field and **Dialogue options** (add situations and lines). Every change shows up everywhere at once. Lose the Spider-Man mask and Spider-Sense locks on the Run screen, in the Codex and in every mention in the script; rename a character and every reference updates. Edited fields show a dot and a one-click "original" reset.
 
 - Undo and redo: `Ctrl/⌘ Z`, `Ctrl/⌘ Shift Z`, or the arrows in the top bar. **⋯ → History** lists every change.
 - **Mentioned in** (drawer tab) lists every place something is referenced.
@@ -64,7 +68,8 @@ The smoke test drives Chromium through every view at phone and desktop sizes in 
 
 ```
 src/data/     the campaign: scenes.ts (acts, scenes, pacing), cast.ts (players, characters, relations),
-              things.ts (items, abilities, conditions, clues), rules.ts (rules, films), portraits.ts, types.ts
+              dialogue.ts (dialogue options), things.ts (items, abilities, conditions, clues),
+              rules.ts (rules, films), portraits.ts, types.ts
 src/assets/   portraits (WebP), inlined by the build
 src/state/    store (base data + an edit layer, undo/redo), derive (effective stats, ability locks,
               backlinks), actions, dice, persist (localStorage, optional claude.ai sync)
@@ -77,4 +82,4 @@ Text in the data files can link to anything with `[[npc:lou]]` or `[[item:spider
 
 ## Sources
 
-The story spine follows the campaign outline and the Latest DM handoff. Character portraits come from the two character icon packs, and the profiles draw on the complete character reference (types, locations, knowledge, performance notes, dialogue prompts and contingencies). Stats, abilities, DCs, the ghost and donut rules, pacing and NPC performance notes come from the comprehensive DM build. Each scene keeps its original outline text under "Original outline".
+The story spine follows the campaign outline and the Latest DM handoff. Character portraits come from the two character icon packs, and the profiles draw on the complete character reference (types, locations, knowledge, performance notes, dialogue prompts and contingencies). Stats, abilities, DCs, the ghost and bagel rules, pacing and NPC performance notes come from the comprehensive DM build. Each scene keeps its original outline text under "Original outline".

@@ -1,7 +1,7 @@
 // Edit forms. Every field writes into the entity's patch, so the change appears in every view.
 
 import type { ComponentChildren } from 'preact';
-import type { AnyEntity, Attack, EntityType, Film, NPC, StatBlock } from '../data/types';
+import type { AnyEntity, Attack, DialogueCue, EntityType, Film, NPC, StatBlock } from '../data/types';
 import { DEFAULT_PORTRAIT, PORTRAITS } from '../data/portraits';
 import { STAT_ABBR, STATS } from '../data/types';
 import { TYPE_LABEL } from '../data/campaign';
@@ -22,7 +22,7 @@ import { holderOptions } from './controls';
 import { Icon } from './icons';
 import { CommitInput, Expander, NumberInput, Switch, cx } from './kit';
 
-type FieldKind = 'text' | 'area' | 'paras' | 'list' | 'number' | 'select' | 'toggle' | 'stats' | 'mods' | 'range2' | 'portrait';
+type FieldKind = 'text' | 'area' | 'paras' | 'list' | 'number' | 'select' | 'toggle' | 'stats' | 'mods' | 'range2' | 'portrait' | 'dialogue';
 
 interface FieldDef {
   key: string;
@@ -78,7 +78,13 @@ const SCHEMAS: Record<EntityType, FieldDef[]> = {
     { key: 'important', label: 'Important (one per line)', kind: 'list' },
     { key: 'ifs', label: 'Situations (one per line)', kind: 'list', hint: 'Start each with the trigger in bold, like **If attacked:** what happens.' },
     { key: 'fight', label: 'Meant to be fought?', kind: 'area', rows: 2 },
-    { key: 'lines', label: 'Lines (one per line)', kind: 'list', hint: 'Put a line in (parentheses) to make it a performance cue.' },
+    {
+      key: 'dialogue',
+      label: 'Dialogue options',
+      kind: 'dialogue',
+      hint: 'Each situation gets a few interchangeable lines, one per line. Put a line in (parentheses) to make it a performance cue.',
+    },
+    { key: 'lines', label: 'Signature lines (one per line)', kind: 'list', hint: 'The first one is used on slides and scene cards. Lines no situation uses show as "More lines".' },
     { key: 'secrets', label: 'DM secrets (one per line)', kind: 'list', hint: 'Hidden by the spoiler shield.' },
   ],
   item: [
@@ -293,6 +299,47 @@ export function EntityEditor({ type, id }: { type: EntityType; id: string }) {
                       <img src={p.src} alt={p.label} decoding="async" />
                     </button>
                   ))}
+                </div>
+              </FieldRow>
+            );
+          }
+          case 'dialogue': {
+            const cues = (v as DialogueCue[] | undefined) ?? [];
+            const write = (next: DialogueCue[]) => set(f.key, f.label, next);
+            return (
+              <FieldRow key={f.key} type={type} id={id} f={f}>
+                <div class="dlgedit">
+                  {cues.map((c, i) => (
+                    <div key={i} class="dlgedit__cue">
+                      <div class="dlgedit__top">
+                        <CommitInput
+                          value={c.cue}
+                          ariaLabel="Situation"
+                          placeholder="Asked about the ring"
+                          onCommit={(x) => write(cues.map((y, j) => (j === i ? { ...y, cue: x.trim() || y.cue } : y)))}
+                        />
+                        <button
+                          type="button"
+                          class="btn btn--xs btn--ghost btn--icon"
+                          title="Remove this situation"
+                          aria-label={`Remove ${c.cue}`}
+                          onClick={() => write(cues.filter((_, j) => j !== i))}
+                        >
+                          <Icon name="trash" />
+                        </button>
+                      </div>
+                      <CommitInput
+                        multiline
+                        rows={Math.min(8, Math.max(3, c.options.length + 1))}
+                        value={c.options.join('\n')}
+                        ariaLabel={`${c.cue}: lines, one per line`}
+                        onCommit={(x) => write(cues.map((y, j) => (j === i ? { ...y, options: x.split('\n').map((t) => t.trim()).filter(Boolean) } : y)))}
+                      />
+                    </div>
+                  ))}
+                  <button type="button" class="btn btn--sm" onClick={() => write([...cues, { cue: 'New situation', options: [] }])}>
+                    <Icon name="plus" /> Add a situation
+                  </button>
                 </div>
               </FieldRow>
             );

@@ -8,12 +8,15 @@ import { adjustHp, revive, toggleEffect } from '../state/actions';
 import {
   abilitiesOf,
   acCalc,
+  dialogueOf,
   FILM_KIND_LABEL,
   itemsHeldBy,
   npcMaxHp,
   npcStat,
   portraitOf,
   scenesFor,
+  secretFilmOf,
+  shielded,
   SIDE_LABEL,
   sourcesOf,
   wornMask,
@@ -23,6 +26,7 @@ import { signed } from '../state/dice';
 import { all, ent, openDrawer, openProfile } from '../state/store';
 import { NpcStatusControl, PcStatusControl } from './controls';
 import { AbilityCard, Connections, DmNote, ItemRow, MaskPicker, SceneChips, Secret, StatBlockView, StatGrid } from './detail';
+import { DialogueOptions } from './dialogue';
 import { Icon } from './icons';
 import { Avatar, Expander, HpBar, Label, Stepper, cx, hueVar } from './kit';
 import { iconOf, Ref, Rich, RichList } from './rich';
@@ -68,41 +72,48 @@ export function Face({ type, id, size = 34, title, ring }: { type: EntityType; i
 
 /** "From Nightcrawler", "Inspired by Forrest Gump", or "Original". Each source opens its entry. */
 export function Sources({ type, id }: { type: 'pc' | 'npc'; id: string }) {
-  const films = sourcesOf(type, id);
-  if (!films.length) {
+  const films = sourcesOf(type, id, false);
+  const secret = secretFilmOf(type, id);
+  const hidden = secret && shielded();
+  const shown = hidden ? films.filter((f) => f.id !== secret.id) : films;
+  if (!shown.length) {
     return (
       <div class="srcline">
-        <Icon name="sparkle" size={13} />
-        <span class="srcline__k">{type === 'pc' ? 'Original character' : 'Original to this campaign'}</span>
+        <Icon name={hidden ? 'circle-question-mark' : 'sparkle'} size={13} />
+        <span class="srcline__k">{hidden ? 'Origin unknown' : type === 'pc' ? 'Original character' : 'Original to this campaign'}</span>
       </div>
     );
   }
   return (
     <div class="srcline">
       <span class="srcline__k">{type === 'pc' ? 'Inspired by' : 'From'}</span>
-      {films.map((f) => (
-        <button
-          key={f.id}
-          type="button"
-          class="srcchip"
-          onClick={(ev) => {
-            ev.stopPropagation();
-            openDrawer('film', f.id);
-          }}
-          title={`${FILM_KIND_LABEL[f.kind ?? 'film']}: ${f.title}`}
-        >
-          <Icon name={f.kind === 'series' ? 'tv' : f.kind === 'myth' ? 'scroll' : 'film'} size={13} />
-          {f.title}
-        </button>
-      ))}
+      {shown.map((f) => {
+        const isSecret = f.id === secret?.id;
+        return (
+          <button
+            key={f.id}
+            type="button"
+            class={cx('srcchip', isSecret && 'srcchip--secret')}
+            onClick={(ev) => {
+              ev.stopPropagation();
+              openDrawer('film', f.id);
+            }}
+            title={isSecret ? `DM secret: ${f.title}. Hidden by the spoiler shield and on the Table slides.` : `${FILM_KIND_LABEL[f.kind ?? 'film']}: ${f.title}`}
+          >
+            <Icon name={isSecret ? 'lock' : f.kind === 'series' ? 'tv' : f.kind === 'myth' ? 'scroll' : 'film'} size={13} />
+            {f.title}
+            {isSecret && <span class="srcchip__tag">secret</span>}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-/** The first source's title, for compact places like gallery tiles. */
+/** The first source's title, for compact places like gallery tiles. A secret source never shows here. */
 export function sourceTitle(type: 'pc' | 'npc', id: string): string {
-  const f = sourcesOf(type, id)[0];
-  return f ? f.title : 'Original';
+  const f = sourcesOf(type, id, true)[0];
+  return f ? f.title : secretFilmOf(type, id) ? 'Origin unknown' : 'Original';
 }
 
 // ─── hero ─────────────────────────────────────────────────────────────────
@@ -213,24 +224,6 @@ export function ProfileHero({ type, id, mode }: { type: 'pc' | 'npc'; id: string
 
 // ─── pieces ───────────────────────────────────────────────────────────────
 
-/** Spoken lines in typewriter quotes; lines in parentheses are performance cues. */
-export function Quotes({ lines }: { lines: string[] }) {
-  return (
-    <ul class="quotes">
-      {lines.map((l, i) => {
-        const t = l.trim();
-        const cue = t.startsWith('(') && t.endsWith(')');
-        return (
-          <li key={i} class={cx('quote', cue && 'quote--cue')}>
-            <Icon name={cue ? 'drama' : 'quote'} size={15} class="quote__mark" />
-            <span class="quote__text">{cue ? t.slice(1, -1) : t}</span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
 function Sec({ icon, title, children, class: cls }: { icon: string; title: string; children: JSX.Element | JSX.Element[] | null | (JSX.Element | null | false)[]; class?: string }) {
   return (
     <section class={cx('prof__sec', cls)}>
@@ -278,9 +271,9 @@ export function NpcProfile({ npc, mode = 'drawer' }: { npc: NPC; mode?: 'drawer'
       <RichList items={npc.important} />
     </div>
   ) : null;
-  const lines = npc.lines?.length ? (
-    <Sec key="lines" icon="message-square-quote" title="Lines to use">
-      <Quotes lines={npc.lines} />
+  const talk = dialogueOf(npc).length ? (
+    <Sec key="talk" icon="messages-square" title="Dialogue options" class="prof__talk">
+      <DialogueOptions npc={npc} layout={mode === 'page' ? 'grid' : 'tabs'} />
     </Sec>
   ) : null;
   const play =
@@ -384,9 +377,9 @@ export function NpcProfile({ npc, mode = 'drawer' }: { npc: NPC; mode?: 'drawer'
   const note = <DmNote key="note" text={npc.dmNote} />;
   const hero = <ProfileHero type="npc" id={npc.id} mode={mode} />;
   return mode === 'page' ? (
-    <Layout mode={mode} hero={hero} main={[important, lines, play, situations, knows, stats, secrets]} side={[appears, conns, carrying, improvise, note]} />
+    <Layout mode={mode} hero={hero} main={[important, talk, play, situations, knows, stats, secrets]} side={[appears, conns, carrying, improvise, note]} />
   ) : (
-    <Layout mode={mode} hero={hero} main={[important, lines, play, situations, stats, knows, secrets]} side={[appears, conns, carrying, improvise, note]} />
+    <Layout mode={mode} hero={hero} main={[important, talk, play, situations, stats, knows, secrets]} side={[appears, conns, carrying, improvise, note]} />
   );
 }
 
@@ -398,7 +391,7 @@ export function PcProfile({ pc, mode = 'drawer' }: { pc: PC; mode?: 'drawer' | '
   const items = itemsHeldBy(pc.id);
   const pcConds = all<Condition>('condition').filter((c) => c.scope === 'pc');
   const partyConds = all<Condition>('condition').filter((c) => c.scope === 'party' && c.active);
-  const donuts = ent<Item>('item', 'donuts');
+  const bagels = ent<Item>('item', 'bagels');
   const vitals = (
     <div class="vitals" key="vitals">
       <div class="vitals__hp">
@@ -425,8 +418,8 @@ export function PcProfile({ pc, mode = 'drawer' }: { pc: PC; mode?: 'drawer' | '
         <div class="grow">
           <strong>{pc.name} is a ghost.</strong> Can talk, move, distract and roll CHA / PER / INT. Cannot be hurt or attack. <Ref type="rule" id="ghosts" label="Ghost rules" />
         </div>
-        <button type="button" class="btn btn--sm btn--good" onClick={() => revive(pc.id, true)} disabled={!donuts || (donuts.qty ?? 0) < 1 || (donuts.state !== 'held' && donuts.state !== 'equipped')}>
-          <Icon name="donut" /> Revive ({donuts?.state === 'held' ? donuts.qty ?? 0 : 0})
+        <button type="button" class="btn btn--sm btn--good" onClick={() => revive(pc.id, true)} disabled={!bagels || (bagels.qty ?? 0) < 1 || (bagels.state !== 'held' && bagels.state !== 'equipped')}>
+          <Icon name="bagel" /> Revive ({bagels?.state === 'held' ? bagels.qty ?? 0 : 0})
         </button>
       </div>
     ) : null;

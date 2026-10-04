@@ -16,6 +16,7 @@ import {
   scenesFor,
   shielded,
   SIDE_LABEL,
+  sourcesOf,
 } from '../../state/derive';
 import { signed } from '../../state/dice';
 import { all, ent, getDataVersion, getUi, openDrawer, setUi } from '../../state/store';
@@ -61,7 +62,7 @@ function matches(q: string, ...texts: string[]) {
 function PcCard({ pc }: { pc: PC }) {
   const abs = abilitiesOf(pc.id);
   const items = itemsHeldBy(pc.id);
-  const donuts = ent<Item>('item', 'donuts');
+  const bagels = ent<Item>('item', 'bagels');
   const conds = all<Condition>('condition').filter((c) => c.scope === 'pc');
   return (
     <article class={cx('card card--pc hue', `card--${pc.status}`)} style={{ '--c': `var(--c-${pc.hue})` } as never}>
@@ -92,9 +93,9 @@ function PcCard({ pc }: { pc: PC }) {
       </div>
       <StatGrid pc={pc} />
       {pc.id === 'flynn' && <MaskPicker pc={pc} />}
-      {pc.status === 'ghost' && donuts && (donuts.qty ?? 0) > 0 && donuts.state === 'held' && (
+      {pc.status === 'ghost' && bagels && (bagels.qty ?? 0) > 0 && bagels.state === 'held' && (
         <button type="button" class="btn btn--sm btn--good" onClick={() => revive(pc.id, true)}>
-          <Icon name="donut" /> Revive with a donut
+          <Icon name="bagel" /> Revive with a bagel
         </button>
       )}
       <Expander id={`codex:${pc.id}:abs`} title="Abilities" icon="sparkles" count={abs.length} variant="plain" defaultOpen>
@@ -136,7 +137,7 @@ function PcCard({ pc }: { pc: PC }) {
 function NpcCard({ npc, bestiary }: { npc: NPC; bestiary?: boolean }) {
   const stat = npcStat(npc);
   const scenes = scenesFor('npc', npc.id);
-  const film = npc.film ? ent<Film>('film', npc.film) : undefined;
+  const film = sourcesOf('npc', npc.id, true)[0];
   return (
     <article class={cx('card card--npc', `card--side-${npc.side}`, ['defeated', 'dead', 'fled'].includes(npc.status) && 'is-done')}>
       <header class="card__head">

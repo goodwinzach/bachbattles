@@ -7,6 +7,7 @@ import type {
   AnyEntity,
   Clue,
   Condition,
+  DialogueCue,
   EntityType,
   Film,
   Item,
@@ -43,7 +44,7 @@ export const itemStateInfo = (s: ItemState) => ITEM_STATES.find((x) => x.id === 
 
 export const PC_STATUSES: { id: PcStatus; label: string; tone: Tone; hint: string }[] = [
   { id: 'alive', label: 'Alive', tone: 'good', hint: 'In the fight' },
-  { id: 'ghost', label: 'Ghost', tone: 'ghost', hint: 'Dead, but still playing. Needs a donut and an improbable act.' },
+  { id: 'ghost', label: 'Ghost', tone: 'ghost', hint: 'Dead, but still playing. Needs a bagel and an improbable act.' },
   { id: 'stone', label: 'Stone', tone: 'stone', hint: 'Turned to stone by Medusa' },
   { id: 'down', label: 'Out cold', tone: 'warn', hint: 'Knocked out' },
 ];
@@ -337,6 +338,7 @@ const TEXT_FIELDS = new Set([
   'logline', 'readAloud', 'beats', 'objective', 'mustHappen', 'variantMust', 'rolls', 'failsafes', 'tips', 'notes', 'secrets',
   'bio', 'play', 'tagline', 'role', 'look', 'personality', 'wants', 'knows', 'important', 'stat', 'phases', 'effect',
   'summary', 'mechanics', 'limits', 'examples', 'table', 'body', 'list', 'text', 'starts', 'ends', 'note',
+  'dialogue', 'unknowns', 'portray', 'ifs', 'fight',
 ]);
 
 let refsFor = -1;
@@ -397,7 +399,9 @@ function buildRefs() {
 
 export function backlinks(type: EntityType, id: string): RefHit[] {
   buildRefs();
-  return (refIndex[`${type}:${id}`] ?? []).filter((h) => !(h.type === type && h.id === id));
+  return (refIndex[`${type}:${id}`] ?? []).filter(
+    (h) => !(h.type === type && h.id === id) && !(h.field === 'film' && h.type === 'npc' && shielded() && ent<NPC>('npc', h.id)?.filmSecret),
+  );
 }
 
 /** Scenes in which an NPC appears, in story order. */
@@ -426,12 +430,29 @@ export function portraitOf(type: EntityType, id: string): string | undefined {
 
 export const FILM_KIND_LABEL: Record<NonNullable<Film['kind']>, string> = { film: 'Film', series: 'Series', myth: 'Myth' };
 
-/** Where a character comes from: their film or show first, then other references. Empty = an original. */
-export function sourcesOf(type: EntityType, id: string): Film[] {
-  const e = ent(type, id) as { film?: string; films?: string[] } | undefined;
+/**
+ * Where a character comes from: their film or show first, then other references. Empty = an original.
+ * A secret film (`filmSecret`) is left out when `hideSecret` is set, which it is behind the spoiler shield.
+ */
+export function sourcesOf(type: EntityType, id: string, hideSecret = shielded()): Film[] {
+  const e = ent(type, id) as { film?: string; films?: string[]; filmSecret?: boolean } | undefined;
   if (!e) return [];
-  const ids = [...(e.film ? [e.film] : []), ...(e.films ?? [])];
+  const ids = [...(e.film && !(e.filmSecret && hideSecret) ? [e.film] : []), ...(e.films ?? [])];
   return [...new Set(ids)].map((f) => ent<Film>('film', f)).filter((f): f is Film => !!f);
+}
+
+/** The film that would give a character's twist away, if they have one. */
+export function secretFilmOf(type: EntityType, id: string): Film | undefined {
+  const e = ent(type, id) as { film?: string; filmSecret?: boolean } | undefined;
+  return e?.film && e.filmSecret ? ent<Film>('film', e.film) : undefined;
+}
+
+/** A character's dialogue options, plus any of their lines that no situation uses yet ("More lines"). */
+export function dialogueOf(npc: NPC): DialogueCue[] {
+  const cues = (npc.dialogue ?? []).filter((c) => c.options.length);
+  const used = new Set(cues.flatMap((c) => c.options.map((o) => o.trim())));
+  const rest = (npc.lines ?? []).filter((l) => l.trim() && !used.has(l.trim()));
+  return rest.length ? [...cues, { cue: cues.length ? 'More lines' : 'Lines', options: rest }] : cues;
 }
 
 /** The mask a character has on right now: Flynn's chosen mask, or Lou's V mask while he is in his masked phase. */
@@ -456,6 +477,8 @@ export interface Relation {
   label: string;
   /** 'out': this entity → other ("stole his ring"); 'in': other → this entity */
   dir: 'out' | 'in';
+  /** a spoiler: hidden behind the spoiler shield */
+  secret?: boolean;
 }
 
 /** Story relationships touching an entity, from the cast's relation list. */
@@ -464,10 +487,10 @@ export function relationsOf(type: EntityType, id: string): Relation[] {
   const out: Relation[] = [];
   for (const r of RELATIONS) {
     const other = r.a === key ? r.b : r.b === key ? r.a : null;
-    if (!other) continue;
+    if (!other || (r.secret && shielded())) continue;
     const [t, oid] = other.split(':') as [EntityType, string];
     if (!ent(t, oid)) continue;
-    out.push({ type: t, id: oid, label: r.label, dir: r.a === key ? 'out' : 'in' });
+    out.push({ type: t, id: oid, label: r.label, dir: r.a === key ? 'out' : 'in', secret: r.secret });
   }
   return out;
 }

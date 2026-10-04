@@ -1,3 +1,4 @@
+import type { JSX } from 'preact';
 import {
   Activity,
   AlarmClock,
@@ -48,7 +49,6 @@ import {
   Crown,
   CupSoda,
   Dices,
-  Donut,
   DoorOpen,
   Dot,
   Download,
@@ -95,6 +95,7 @@ import {
   Maximize2,
   Megaphone,
   MessageSquareQuote,
+  MessagesSquare,
   MicVocal,
   Milestone,
   Minimize,
@@ -186,9 +187,33 @@ import {
   Waypoints,
   ZoomOut,
 } from 'lucide-preact';
-import type { LucideIcon } from 'lucide-preact';
+import type { LucideIcon, LucideProps } from 'lucide-preact';
 
-type IconComp = LucideIcon;
+type IconComp = LucideIcon | ((props: LucideProps) => JSX.Element);
+
+/** Lucide has no bagel, so here is an everything bagel drawn to match: the ring, its side, the hole and seeds. */
+function Bagel({ size = 24, strokeWidth = 2, class: cls, ...rest }: LucideProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width={strokeWidth}
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={['lucide', 'lucide-bagel', cls].filter(Boolean).join(' ')}
+      {...(rest as Record<string, unknown>)}
+    >
+      <ellipse cx="12" cy="10.5" rx="10" ry="6" />
+      <path d="M2 10.5v2.5c0 3.3 4.5 6 10 6s10-2.7 10-6v-2.5" />
+      <ellipse cx="12" cy="10.5" rx="3" ry="1.5" />
+      <path d="M6.5 8.6h.01M17.5 8.6h.01M7.6 12.9h.01M16.4 12.9h.01M12 6.4h.01" />
+    </svg>
+  );
+}
 
 const ICONS: Record<string, IconComp> = {
   activity: Activity,
@@ -240,7 +265,7 @@ const ICONS: Record<string, IconComp> = {
   crown: Crown,
   'cup-soda': CupSoda,
   dices: Dices,
-  donut: Donut,
+  bagel: Bagel,
   'door-open': DoorOpen,
   dot: Dot,
   download: Download,
@@ -287,6 +312,7 @@ const ICONS: Record<string, IconComp> = {
   'maximize-2': Maximize2,
   megaphone: Megaphone,
   'message-square-quote': MessageSquareQuote,
+  'messages-square': MessagesSquare,
   'mic-vocal': MicVocal,
   milestone: Milestone,
   minimize: Minimize,

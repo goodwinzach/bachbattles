@@ -60,14 +60,14 @@ function HouseRules() {
       <div class="houserules">
         <div class="houserule">
           <div class="houserule__icon">
-            <Icon name="donut" size={20} />
+            <Icon name="bagel" size={20} />
           </div>
           <div>
             <h3>
-              <Ref type="rule" id="donut-rule" noDot />
+              <Ref type="rule" id="bagel-rule" noDot />
             </h3>
             <p>
-              When a player dies, they become a ghost. To bring them back physically, a living player has to find and eat a donut, and the donut alone
+              When a player dies, they become a ghost. To bring them back physically, a living player has to find and eat a bagel, and the bagel alone
               does nothing: first they must perform a statistically improbable action, in person.
             </p>
           </div>

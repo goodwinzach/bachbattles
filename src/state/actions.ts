@@ -80,7 +80,7 @@ export function adjustHp(pcId: string, delta: number) {
   );
   const after = ent<PC>('pc', pcId)!;
   if (after.status === 'ghost' && pc.status !== 'ghost') {
-    toast(`${label}. Ghost rules apply; a donut can bring them back.`, { tone: 'bad', undoId: latestUndoId(), big: true });
+    toast(`${label}. Ghost rules apply; a bagel can bring them back.`, { tone: 'bad', undoId: latestUndoId(), big: true });
   } else if (lethal && pc.id === 'flynn') {
     toast(label, { tone: 'gold', undoId: latestUndoId() });
   }
@@ -150,21 +150,21 @@ export function setMask(maskId: string) {
   }
 }
 
-export function revive(pcId: string, useDonut: boolean) {
+export function revive(pcId: string, useBagel: boolean) {
   const pc = ent<PC>('pc', pcId);
   if (!pc) return;
-  const donuts = ent<Item>('item', 'donuts');
-  if (useDonut && (!donuts || (donuts.qty ?? 0) <= 0 || (donuts.state !== 'held' && donuts.state !== 'equipped'))) {
-    toast('No donuts left. Find more (the donut shop in the epilogue has plenty).', { tone: 'bad' });
+  const bagels = ent<Item>('item', 'bagels');
+  if (useBagel && (!bagels || (bagels.qty ?? 0) <= 0 || (bagels.state !== 'held' && bagels.state !== 'equipped'))) {
+    toast('No bagels left. Find more (the bagel shop in the epilogue has plenty).', { tone: 'bad' });
     return;
   }
   mutate(
-    `${pc.name} is revived${useDonut ? ' with a donut' : ''}`,
+    `${pc.name} is revived${useBagel ? ' with a bagel' : ''}`,
     (d) => {
       flagPatch(d, 'pc', pcId, { status: 'alive', hp: pc.hpMax });
-      if (useDonut && donuts) {
-        const qty = Math.max(0, (donuts.qty ?? 0) - 1);
-        flagPatch(d, 'item', 'donuts', qty === 0 ? { qty, state: 'spent' } : { qty });
+      if (useBagel && bagels) {
+        const qty = Math.max(0, (bagels.qty ?? 0) - 1);
+        flagPatch(d, 'item', 'bagels', qty === 0 ? { qty, state: 'spent' } : { qty });
       }
     },
     { toast: 'good', log: true },

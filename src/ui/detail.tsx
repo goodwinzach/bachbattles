@@ -368,10 +368,15 @@ export function Connections({ type, id }: { type: 'pc' | 'npc' | 'item'; id: str
     >
       <ul class="rels">
         {rels.map((r, i) => (
-          <li key={i} class="rels__row">
+          <li key={i} class={cx('rels__row', r.secret && 'rels__row--secret')}>
             <Icon name={r.dir === 'out' ? 'arrow-right' : 'arrow-left'} size={14} class="rels__dir" />
             <Ref type={r.type} id={r.id} chip />
             <span class="rels__label">{r.label}</span>
+            {r.secret && (
+              <span class="rels__secret" title="DM secret: hidden by the spoiler shield">
+                <Icon name="lock" size={12} /> secret
+              </span>
+            )}
           </li>
         ))}
       </ul>

@@ -8,7 +8,7 @@ import { join } from 'node:path';
 const dir = await mkdtemp(join(tmpdir(), 'orf-'));
 const out = join(dir, 'campaign.mjs');
 await esbuild.build({ entryPoints: ['src/data/campaign.ts'], bundle: true, format: 'esm', outfile: out, logLevel: 'error' });
-const { CAMPAIGN, BASE_INDEX, TOKEN_TYPE, RELATIONS } = await import(out);
+const { CAMPAIGN, BASE_INDEX, TOKEN_TYPE, RELATIONS, DIALOGUE } = await import(out);
 
 const errors = [];
 const has = (type, id) => Boolean(BASE_INDEX[`${type}:${id}`]);
@@ -64,6 +64,16 @@ for (const n of CAMPAIGN.npcs) if (n.film && !filmIds.has(n.film)) errors.push(`
 for (const c of CAMPAIGN.clues) if (!sceneIds.has(c.source)) errors.push(`clue:${c.id}: source ${c.source}`);
 for (const coll of ['pcs', 'npcs', 'items', 'abilities', 'rules']) for (const e of CAMPAIGN[coll]) for (const f of e.films ?? []) if (!filmIds.has(f)) errors.push(`${coll}:${e.id}: film ${f}`);
 for (const r of RELATIONS) for (const k of [r.a, r.b]) if (!BASE_INDEX[k]) errors.push(`relation: missing ${k}`);
+// dialogue options: every key is a character, every situation has a name and at least two lines
+for (const [id, cues] of Object.entries(DIALOGUE)) {
+  if (!npcIds.has(id)) errors.push(`dialogue for missing npc:${id}`);
+  for (const c of cues) {
+    if (!c.cue?.trim()) errors.push(`dialogue npc:${id}: a situation without a name`);
+    if (c.options.length < 2) errors.push(`dialogue npc:${id}: "${c.cue}" needs at least two lines`);
+    if (c.options.some((o) => !o.trim())) errors.push(`dialogue npc:${id}: "${c.cue}" has an empty line`);
+    if (new Set(c.options).size !== c.options.length) errors.push(`dialogue npc:${id}: "${c.cue}" repeats a line`);
+  }
+}
 // portraits: every default points at a real entity and a real image (a missing file fails the build)
 const pout = join(dir, 'portraits.mjs');
 await esbuild.build({ entryPoints: ['src/data/portraits.ts'], bundle: true, format: 'esm', outfile: pout, logLevel: 'error', loader: { '.webp': 'empty' } });

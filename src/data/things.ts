@@ -336,13 +336,13 @@ export const ITEMS: Item[] = [
     effect: 'Every living player returns to full HP. [[cond:hangover]] and [[cond:hunger]] end.',
   }),
   item({
-    id: 'donuts',
-    name: 'Donuts',
+    id: 'bagels',
+    name: 'Everything Bagels',
     kind: 'consumable',
-    icon: 'donut',
+    icon: 'bagel',
     qty: 5,
     source: 'gluttony',
-    effect: 'Resurrection resource. A donut alone does nothing. See [[rule:donut-rule]].',
+    effect: 'Resurrection resource: everything bagels, naturally. A bagel alone does nothing. See [[rule:bagel-rule]].',
     films: ['eeaao'],
   }),
   item({

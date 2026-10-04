@@ -106,6 +106,21 @@
   border-color: var(--gold);
 }
 
+/* a source that gives a twist away: dashed like every other DM secret */
+.srcchip--secret {
+  border-style: dashed;
+  background: transparent;
+}
+
+.srcchip__tag {
+  margin-left: 2px;
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
 /* ─── profile hero ──────────────────────────────────────── */
 
 .phero {
@@ -379,36 +394,77 @@
 }
 
 /* lines to use */
-.quotes {
+/* ─── dialogue options ──────────────────────────────────── */
+
+.dlg {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+}
+
+.dlg__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dlg__tab {
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--fg-2);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  line-height: 1.2;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.dlg__tab:hover {
+  border-color: var(--line-2);
+  color: var(--fg);
+}
+
+.dlg__tab[aria-selected='true'] {
+  border-color: var(--gold);
+  background: var(--gold-wash);
+  color: var(--fg);
+}
+
+.dlg__tab.is-spent:not([aria-selected='true']) {
+  color: var(--faint);
+}
+
+.dlg__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.quote {
+.dlg__opt {
   display: flex;
   align-items: flex-start;
-  gap: 11px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 10px 12px;
   border-radius: var(--r);
   border-left: 3px solid var(--gold);
   background: var(--surface-2);
   color: var(--fg);
   font-family: var(--f-script);
   font-size: var(--fs-md);
-  line-height: 1.5;
+  line-height: 1.45;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.2s, box-shadow 0.2s;
 }
 
-.quote__mark {
-  flex: none;
-  margin-top: 3px;
-  color: var(--gold);
+.dlg__opt:hover {
+  background: var(--surface-3);
 }
 
-.quote--cue {
+.dlg__opt--cue {
   border: 1px dashed var(--line-2);
   border-left: 3px solid var(--line-2);
   background: transparent;
@@ -418,8 +474,205 @@
   font-style: italic;
 }
 
-.quote--cue .quote__mark {
+.dlg__n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: var(--surface);
   color: var(--muted);
+  font-family: var(--f-body);
+  font-size: var(--fs-2xs);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.dlg__text {
+  min-width: 0;
+}
+
+.dlg__opt.is-said {
+  opacity: 0.5;
+}
+
+.dlg__opt.is-said .dlg__n {
+  border-color: var(--good);
+  background: var(--good);
+  color: var(--surface);
+}
+
+.dlg__opt.is-picked {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--gold), 0 6px 20px -8px color-mix(in oklab, var(--gold) 70%, transparent);
+  animation: dlg-pick 0.45s var(--ease);
+}
+
+.dlg__opt.is-picked:not(.is-said) .dlg__n {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+@keyframes dlg-pick {
+  from {
+    transform: scale(0.98);
+  }
+  60% {
+    transform: scale(1.01);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dlg__opt.is-picked {
+    animation: none;
+  }
+}
+
+.dlg__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.dlg__hint {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+
+.dlg__cue {
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.dlg__cue--solo {
+  margin-bottom: 8px;
+}
+
+/* the profile page shows every situation at once */
+.dlg__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.dlg__card {
+  padding: 10px 12px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.dlg__cardhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+  margin-bottom: 8px;
+}
+
+.dlg--grid .dlg__opt {
+  padding: 8px 10px;
+  font-size: var(--fs-sm);
+}
+
+/* a scene's dialogue panel: pick who is talking */
+.talk {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.talk__who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.talk__pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 11px 3px 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--fg-2);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.talk__pick:hover {
+  border-color: var(--line-2);
+  color: var(--fg);
+}
+
+.talk__pick[aria-selected='true'] {
+  border-color: var(--gold);
+  background: var(--gold-wash);
+  color: var(--fg);
+}
+
+.talk__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.talk__headtext {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.talk__traits {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+}
+
+/* editor */
+.dlgedit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.dlgedit__cue {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r);
+}
+
+.dlgedit__top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dlgedit__top > :first-child {
+  flex: 1;
+}
+
+.dlgedit > .btn {
+  align-self: flex-start;
 }
 
 /* ─── cast gallery ──────────────────────────────────────── */
