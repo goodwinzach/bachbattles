@@ -170,14 +170,29 @@ export function ProfileHero({ type, id, mode }: { type: 'pc' | 'npc'; id: string
           ) : (
             <>
               {SIDE_LABEL[npc!.side]}
-              {npc!.minor ? ' · extra' : ''}
+              {npc!.category ? ` · ${npc!.category}` : npc!.minor ? ' · extra' : ''}
             </>
           )}
         </div>
         <h2 class="phero__name">{e.name}</h2>
         {(pc?.title || npc?.aka) && <div class="phero__aka">{pc ? pc.title : npc!.aka}</div>}
         <Sources type={type} id={id} />
+        {npc?.location && (
+          <div class="srcline phero__where">
+            <Icon name="map-pin" size={13} />
+            <Rich text={npc.location} />
+          </div>
+        )}
         <Rich text={pc ? pc.tagline : npc!.role} class="phero__lead" />
+        {e.traits?.length ? (
+          <ul class="traits" aria-label={pc ? 'Personality reference (the player decides)' : 'Personality'}>
+            {e.traits.map((t) => (
+              <li key={t} class="trait">
+                {t}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <div class="phero__facts">
           {pc ? <PcStatusControl pc={pc} /> : <NpcStatusControl npc={npc!} />}
           {npc && <NpcFacts npc={npc} />}
@@ -254,8 +269,8 @@ export function NpcProfile({ npc, mode = 'drawer' }: { npc: NPC; mode?: 'drawer'
   const facts: [string, string | undefined][] = [
     ['Look', npc.look],
     ['Personality', npc.personality],
-    ['Play it', npc.play],
     ['Wants', npc.wants],
+    ['Play it', npc.play],
   ];
   const important = npc.important?.length ? (
     <div class="callout callout--gold" key="important">
@@ -268,31 +283,88 @@ export function NpcProfile({ npc, mode = 'drawer' }: { npc: NPC; mode?: 'drawer'
       <Quotes lines={npc.lines} />
     </Sec>
   ) : null;
-  const play = facts.some(([, v]) => v) ? (
-    <Sec key="play" icon="drama" title="Personality and how to play them">
-      <dl class="facts">
-        {facts.map(([k, v]) =>
-          v ? (
-            <Fragment key={k}>
-              <dt>{k}</dt>
+  const play =
+    facts.some(([, v]) => v) || npc.portray?.length ? (
+      <Sec key="play" icon="drama" title="Personality and how to play them">
+        <dl class="facts">
+          {facts.map(([k, v]) =>
+            v ? (
+              <Fragment key={k}>
+                <dt>{k}</dt>
+                <dd>
+                  <Rich text={v} />
+                </dd>
+              </Fragment>
+            ) : null,
+          )}
+          {npc.portray?.length ? (
+            <>
+              <dt>Performance</dt>
               <dd>
-                <Rich text={v} />
+                <RichList items={npc.portray} />
               </dd>
-            </Fragment>
-          ) : null,
-        )}
-      </dl>
-    </Sec>
-  ) : null;
-  const knows = npc.knows?.length ? (
-    <Sec key="knows" icon="lightbulb" title="What they know">
-      <RichList items={npc.knows} />
+            </>
+          ) : null}
+        </dl>
+      </Sec>
+    ) : null;
+  const knows =
+    npc.knows?.length || npc.unknowns?.length ? (
+      <Sec key="knows" icon="lightbulb" title="What they know">
+        <div class="knowgrid">
+          {npc.knows?.length ? (
+            <div class="knowgrid__col">
+              {npc.unknowns?.length ? (
+                <div class="knowgrid__h">
+                  <Icon name="lightbulb" size={13} /> Knows
+                </div>
+              ) : null}
+              <RichList items={npc.knows} />
+            </div>
+          ) : null}
+          {npc.unknowns?.length ? (
+            <div class="knowgrid__col knowgrid__col--no">
+              <div class="knowgrid__h">
+                <Icon name="ban" size={13} /> Does not know
+              </div>
+              <RichList items={npc.unknowns} />
+            </div>
+          ) : null}
+        </div>
+      </Sec>
+    ) : null;
+  const situations = npc.ifs?.length ? (
+    <Sec key="ifs" icon="route" title="Situations">
+      <RichList items={npc.ifs} class="prof__ifs" />
     </Sec>
   ) : null;
   const stats = (
     <Sec key="stats" icon="swords" title="Stats">
-      {npc.stat ? <StatBlockView npc={npc} /> : <p class="muted prof__none">No combat stats. Not meant to be fought.</p>}
+      {npc.fight ? (
+        <div class="prof__fight">
+          <span class="prof__fightk">Meant to be fought?</span> <Rich text={npc.fight} />
+        </div>
+      ) : null}
+      {npc.stat ? <StatBlockView npc={npc} /> : <p class="muted prof__none">No combat stats{npc.fight ? '.' : '. Not meant to be fought.'}</p>}
     </Sec>
+  );
+  const secrets = npc.secrets?.length ? (
+    <Secret key="secrets">
+      <RichList items={npc.secrets} />
+    </Secret>
+  ) : null;
+  const improvise = (
+    <Expander key="improv" id={`npc:${npc.id}:improv`} title="Improvising them" icon="circle-question-mark" variant="box">
+      <ol class="rlist rlist--ol improv">
+        <li>What does {npc.name} want?</li>
+        <li>What do they realistically know?</li>
+        <li>Answer from that, and never invent major lore by accident.</li>
+        <li>If the answer would change the campaign, keep it vague, steer back to what is established, or say they do not know.</li>
+      </ol>
+      <div class="muted improv__more">
+        More: <Ref type="rule" id="npc-questions" /> · <Ref type="rule" id="npc-performance" />
+      </div>
+    </Expander>
   );
   const appears = (
     <Sec key="appears" icon="clapperboard" title="Appears in">
@@ -312,9 +384,9 @@ export function NpcProfile({ npc, mode = 'drawer' }: { npc: NPC; mode?: 'drawer'
   const note = <DmNote key="note" text={npc.dmNote} />;
   const hero = <ProfileHero type="npc" id={npc.id} mode={mode} />;
   return mode === 'page' ? (
-    <Layout mode={mode} hero={hero} main={[important, lines, play, knows, stats]} side={[appears, conns, carrying, note]} />
+    <Layout mode={mode} hero={hero} main={[important, lines, play, situations, knows, stats, secrets]} side={[appears, conns, carrying, improvise, note]} />
   ) : (
-    <Layout mode={mode} hero={hero} main={[important, lines, play, stats, knows]} side={[appears, conns, carrying, note]} />
+    <Layout mode={mode} hero={hero} main={[important, lines, play, situations, stats, knows, secrets]} side={[appears, conns, carrying, improvise, note]} />
   );
 }
 

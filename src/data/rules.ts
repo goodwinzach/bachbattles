@@ -313,6 +313,36 @@ export const RULES: Rule[] = [
     ],
   }),
   rule({
+    id: 'npc-performance',
+    group: 'craft',
+    title: 'Playing the NPCs',
+    summary: 'Recognizable energy, not impressions. Background characters get one attitude; major ones need to be known cold.',
+    body: [
+      'You are not expected to imitate actors. If you know calm or loud, warm or cold, awkward or confident, sincere or manipulative, violent or avoidant, that is enough.',
+      'Suggested lines are prompts. Rewrite them naturally, and never stop the game to look up an exact movie quote. The campaign version of a character beats strict movie canon.',
+    ],
+    table: {
+      head: ['Kind of character', 'What you need'],
+      rows: [
+        ['Background: the bartender, suitors, goons, camera crew, Odysseus\'s men', 'One clear attitude, one goal, one memorable detail. Short conversations, no subplots.'],
+        ['Major: Lou, Louise, Costello, Tyler, Odysseus, John Doe, Nathan Fielder', 'What they want, what they know, what they refuse to give, how they sound, and which story beat they must deliver.'],
+      ],
+    },
+  }),
+  rule({
+    id: 'npc-questions',
+    group: 'craft',
+    title: 'When a Player Asks an NPC Something Unexpected',
+    summary: 'What do they want? What do they realistically know? Answer from that, and never invent major lore by accident.',
+    list: [
+      'Ask yourself what the character wants.',
+      'Ask what the character realistically knows.',
+      'Answer from that.',
+      'Do not create major new lore by accident.',
+      'If the answer would change the campaign, keep it vague, steer back to established information, or say the character does not know.',
+    ],
+  }),
+  rule({
     id: 'skipping',
     group: 'craft',
     title: 'When Players Try to Skip a Required Route',

@@ -1,6 +1,6 @@
 # One Ring to Rule Flynn: DM console
 
-A dungeon master's console for the bachelor-party one-shot *One Ring to Rule Flynn*. The whole campaign is in it (27 scenes, 5 players, 41 characters with portraits, 32 items, 14 abilities, clues, conditions, rules and the film references), laid out seven ways, and editable from any of them.
+A dungeon master's console for the bachelor-party one-shot *One Ring to Rule Flynn*. The whole campaign is in it (27 scenes, 5 players, 42 characters with portraits and full profiles, 32 items, 14 abilities, clues, conditions, rules and the film references), laid out seven ways, and editable from any of them.
 
 ## Open it
 
@@ -22,7 +22,7 @@ Your progress saves automatically in that browser. Use **⋯ → Export save** b
 
 ## Character profiles
 
-Click any character's or player's name, anywhere (the script, the run screen, chips, cards, search results, the connections web), and their profile opens in a side panel: portrait, where they're from, what they want, how to play them, lines to use, stats and connections. **Full profile** opens it as a page in the Cast view, with its own link (for example `#cast/npc/lou`). Hovering a name shows a quick card with the portrait.
+Click any character's or player's name, anywhere (the script, the run screen, chips, cards, search results, the connections web), and their profile opens in a side panel: portrait, where they're from, what kind of character they are and where the party meets them, personality in a few words, what they want, what they know and do not know, how to play and perform them, lines to use, situations to be ready for, whether they are meant to be fought, stats and connections. Every character profile also has an "Improvising them" checklist for questions the script does not cover. **Full profile** opens it as a page in the Cast view, with its own link (for example `#cast/npc/lou`). Hovering a name shows a quick card with the portrait.
 
 Portraits follow the game: ghosts fade, stone goes grey, defeated characters dim, and the mask a character is wearing shows as a badge (Flynn's current mask, the V mask on Lou while he is masked).
 
@@ -77,4 +77,4 @@ Text in the data files can link to anything with `[[npc:lou]]` or `[[item:spider
 
 ## Sources
 
-The story spine follows the campaign outline and the Latest DM handoff. Character portraits come from the two character icon packs. Stats, abilities, DCs, the ghost and donut rules, pacing and NPC performance notes come from the comprehensive DM build. Each scene keeps its original outline text under "Original outline".
+The story spine follows the campaign outline and the Latest DM handoff. Character portraits come from the two character icon packs, and the profiles draw on the complete character reference (types, locations, knowledge, performance notes, dialogue prompts and contingencies). Stats, abilities, DCs, the ghost and donut rules, pacing and NPC performance notes come from the comprehensive DM build. Each scene keeps its original outline text under "Original outline".

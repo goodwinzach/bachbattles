@@ -1156,7 +1156,7 @@ export const SCENES: Scene[] = [
     ],
     objective: 'Wipe everyone except Flynn, playfully, in 2 to 4 rounds.',
     mustHappen: ['Every living non-Flynn player becomes a ghost.', 'The Cat cannot kill Flynn. A lethal hit leaves him at 1 HP.'],
-    cast: ['cat', 'lou'],
+    cast: ['cat', 'things', 'lou'],
     encounters: [{ label: 'The Cat in the Hat', foes: ['cat'] }],
     lines: [
       { by: 'cat', text: 'Well. This set is a mess.' },

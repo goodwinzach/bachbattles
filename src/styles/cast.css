@@ -766,3 +766,109 @@
 .bossorder__faces .avatar {
   box-shadow: 0 0 0 2px var(--surface-2);
 }
+
+/* ─── character bible fields ────────────────────────────── */
+
+.phero__where {
+  margin-top: 6px;
+}
+
+.traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trait {
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-2);
+  background: color-mix(in oklab, var(--surface) 72%, transparent);
+  color: var(--fg-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.phero.hue .trait {
+  border-color: var(--hue-line);
+}
+
+.phero--page .phero__where,
+.phero--page .traits {
+  justify-content: inherit;
+}
+
+@media (max-width: 760px) {
+  .phero--page .traits {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .phero--drawer .traits {
+    justify-content: center;
+  }
+}
+
+.knowgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .prof--page .knowgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.knowgrid__h {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--good);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.knowgrid__col--no .knowgrid__h {
+  color: var(--bad);
+}
+
+.prof__fight {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border-radius: var(--r);
+  background: var(--surface-2);
+  color: var(--fg-2);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.prof__fightk {
+  color: var(--fg);
+  font-weight: 800;
+}
+
+.prof__ifs strong {
+  color: var(--fg);
+}
+
+.improv {
+  margin: 0;
+}
+
+.improv__more {
+  margin-top: 8px;
+  font-size: var(--fs-xs);
+}

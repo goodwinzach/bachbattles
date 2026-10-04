@@ -28,6 +28,7 @@ export const ITEMS: Item[] = [
     notes: [
       'Flynn starts the game wearing it, stained with vomit. The enlightened spidey-senses plus the hangover make waking up excruciating.',
       '[[npc:kingpin]] only attacks if Flynn is wearing this mask.',
+      'DM shortcut: danger awareness, threat prediction, sensory warnings. It does not mean web-shooting, wall-crawling or super strength.',
     ],
     films: ['spider-verse'],
   }),
@@ -39,6 +40,10 @@ export const ITEMS: Item[] = [
     state: 'held',
     holder: 'flynn',
     effect: 'Grants [[ability:batman-vision]]: Flynn sees clearly in darkness and gets +2 on ranged attack rolls.',
+    notes: [
+      'DM shortcut: "I can see it and line up the shot." If Flynn deliberately studies a visual target, give him a useful physical detail.',
+      "No gadgets, money, vehicles or Batman's full skill set.",
+    ],
     films: ['batman'],
   }),
   item({
@@ -49,7 +54,7 @@ export const ITEMS: Item[] = [
     state: 'held',
     holder: 'flynn',
     effect: "Grants [[ability:inkblot-strength]]: Flynn's Strength becomes +4 instead of +1. Brute force, not invulnerability.",
-    notes: ['A Rorschach-style face cover.'],
+    notes: ['A Rorschach-style face cover.', "DM shortcut: he becomes the brute-force version of himself. Do not import Rorschach's personality or morality onto Flynn."],
     films: ['watchmen'],
   }),
   item({
@@ -62,7 +67,10 @@ export const ITEMS: Item[] = [
     state: 'missing',
     holder: 'lou',
     effect: "Flynn's missing fourth mask. [[npc:lou]] has it and wears it in [[scene:fourth-mask]].",
-    notes: ['Do not reveal what it is until Lou enters wearing it: "You\'ll never guess where I got this from."'],
+    notes: [
+      'Do not reveal what it is until Lou enters wearing it: "You\'ll never guess where I got this from."',
+      'It is a mystery object, proof Lou stole from Flynn, and the final visual reveal. It has no powers: do not invent any.',
+    ],
     films: ['v-for-vendetta'],
   }),
 
@@ -268,6 +276,7 @@ export const ITEMS: Item[] = [
     notes: [
       'Flynn is immune while wearing any mask.',
       'When John Doe is defeated and the head is covered, neutralized or destroyed, everyone turned to stone returns to normal.',
+      'If the players try to keep it, do not let it become a permanent superweapon: it crumbles after John dies, goes inert, must be left behind, or is too dangerous to carry.',
     ],
     films: ['greek-myth'],
   }),
@@ -390,6 +399,7 @@ export const ABILITIES: Ability[] = [
       '"Your neck prickles when the bartender reaches for the phone."',
       '"You feel danger above you, not in front of you."',
       '"The camera crew suddenly feels much more dangerous than Nathan Fielder."',
+      '"Something behind that door is waiting for you to look at it."',
     ],
     films: ['spider-verse'],
   }),
@@ -442,6 +452,7 @@ export const ABILITIES: Ability[] = [
       'Masks, coincidence, enemy arrogance or an environmental interruption can explain it.',
       'Never announce "plot armor."',
       'During the studio gauntlet everyone except Flynn is allowed to die.',
+      'The Cat can brutalize Flynn, but cannot kill him.',
     ],
   }),
 
@@ -471,7 +482,7 @@ export const ABILITIES: Ability[] = [
       'On success, explain the ridiculous coincidence that made it work.',
       'On failure, the coincidence still happens, but in an unhelpful or embarrassing way.',
     ],
-    limits: ['Cannot skip the boat route to Hollywood or defeat the Cat.'],
+    limits: ['Cannot skip the boat route to Hollywood, kill the Cat, or bypass the final Flynn and Lou confrontation.'],
     examples: [
       '"Maybe the guy drops exactly what we need when I bump into him."',
       '"I throw this for no logical reason and somehow it hits the switch."',
@@ -512,6 +523,7 @@ export const ABILITIES: Ability[] = [
       'Hit: {{1d8}} damage, and the target is moved one range step or knocked down if that makes sense.',
       'Miss: Alex still ends up somewhere useful or funny, but deals no damage.',
     ],
+    examples: ['Trips into someone.', 'Falls off furniture.', 'Shoulder-checks in the wrong direction.', 'Swings something badly.', 'Slips into an enemy.', 'Crashes through an object.'],
   }),
 
   // ── Haydn ───────────────────────────────────────────────
@@ -569,6 +581,8 @@ export const ABILITIES: Ability[] = [
           'A bar light flickers directly over the person with useful information.',
           'A wave pushes a dropped weapon back toward the boat.',
           'A camera glitches at the perfect moment.',
+          'A door opens just enough to reveal something.',
+          'A whisper points toward danger.',
         ],
       },
       {
@@ -581,6 +595,8 @@ export const ABILITIES: Ability[] = [
           'A shadow points the wrong way.',
           'A distant bell rings when someone lies.',
           'Condensation writes one word on glass.',
+          'An object floats for a moment.',
+          'A light flickers in a strange pattern.',
         ],
       },
       {
@@ -593,10 +609,11 @@ export const ABILITIES: Ability[] = [
           'An invisible hand slaps a weapon out of reach.',
           'A spirit laughs and points at the wrong door.',
           'A nearby object writes "IDIOT" in condensation or dust.',
+          "A shadow copies Jamie's movements, mockingly.",
         ],
       },
     ],
-    limits: ['Never skips Hollywood, auto-kills a boss, or solves the finale.'],
+    limits: ['Never skips Hollywood, auto-kills a boss, or solves the finale.', 'A taunt should never spin off a whole new subplot.'],
     films: ['spirited-away'],
   }),
   ability({
@@ -606,9 +623,10 @@ export const ABILITIES: Ability[] = [
     icon: 'anchor',
     recharge: 'scene',
     max: 1,
-    summary: 'Once per scene Jam Radish becomes impossibly heavy until the start of his next turn.',
+    summary: 'Jam Radish is unusually hard to push, throw or knock around. Once per scene he can become impossibly heavy until the start of his next turn.',
     mechanics: [
-      'He cannot be pushed, dragged, lifted or knocked down.',
+      'Always: advantage on rolls to resist being shoved, hold a door, brace against an impact, or physically protect another player. Not invulnerability.',
+      'Once per scene, impossibly heavy: he cannot be pushed, dragged, lifted or knocked down.',
       'He may block a doorway or pin a movable object in place.',
       'An enemy Close to him that tries to force past must beat {{str:16}}.',
       'Jamie cannot move until the effect ends.',

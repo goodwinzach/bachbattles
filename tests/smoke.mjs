@@ -168,10 +168,31 @@ try {
     }));
     check(lou.name === 'Lou Bloom' && /Nightcrawler/.test(lou.from ?? '') && lou.quotes >= 3, 'profile page: name, source and lines', JSON.stringify(lou));
     check(lou.mask === 'Wearing the V Mask' && lou.hash === '#cast/npc/lou', 'masked Lou wears the V mask; the page has its own link', JSON.stringify(lou));
+    const bible = await page.evaluate(() => ({
+      eyebrow: document.querySelector('.phero__eyebrow')?.textContent,
+      where: document.querySelector('.phero__where')?.textContent,
+      traits: document.querySelectorAll('.phero .trait').length,
+      situations: !!document.querySelector('.prof__ifs'),
+      fight: document.querySelector('.prof__fight')?.textContent,
+      improv: !!document.querySelector('[id], .xp') && [...document.querySelectorAll('.xp__title')].some((t) => t.textContent === 'Improvising them'),
+    }));
+    check(
+      /Main villain/.test(bible.eyebrow ?? '') && !!bible.where && bible.traits >= 3 && bible.situations && /social/.test(bible.fight ?? '') && bible.improv,
+      'profile carries the character reference: type, location, traits, situations, fight intent, improv help',
+      JSON.stringify(bible),
+    );
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(150);
     const nextName = await page.textContent('.phero__name');
     check(nextName && nextName !== 'Lou Bloom', 'arrow keys page through the cast', `next=${nextName}`);
+
+    await page.goto(`${URL_BASE}#cast/npc/bartender`);
+    await page.waitForSelector('.phero--page');
+    const unknown = await page.$$eval('.knowgrid__col--no li', (els) => els.map((e) => e.textContent));
+    check(unknown.some((t) => /ring/.test(t ?? '')), 'profiles list what a character does not know', unknown.join(' / '));
+    await page.goto(`${URL_BASE}#cast/npc/odysseus`);
+    await page.waitForSelector('.phero--page');
+    check(!!(await page.$('.statblock')), 'Odysseus now has a stat block');
 
     // a mention anywhere opens the same profile in the drawer, with a jump to the full page
     await page.evaluate(() => (location.hash = 'story'));

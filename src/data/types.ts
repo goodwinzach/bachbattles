@@ -175,6 +175,8 @@ export interface PC extends PcRuntime {
   films?: string[];
   /** portrait key (src/data/portraits.ts); 'none' shows the icon instead */
   portrait?: string;
+  /** personality reference words; the player still decides */
+  traits?: string[];
 }
 
 export type NpcStatus = 'unmet' | 'present' | 'friendly' | 'hostile' | 'defeated' | 'dead' | 'fled' | 'stone' | 'captured';
@@ -234,6 +236,23 @@ export interface NPC extends NpcRuntime {
   films?: string[];
   /** portrait key (src/data/portraits.ts); 'none' shows the icon instead */
   portrait?: string;
+  // ── DM reference (the character bible) ──
+  /** what kind of character this is at the table: "Major helper NPC", "Background NPC", "Studio boss" */
+  category?: string;
+  /** where the party meets them */
+  location?: string;
+  /** personality in a few words */
+  traits?: string[];
+  /** what they do not know, so the DM never hands it out by accident */
+  unknowns?: Rich[];
+  /** performance notes: posture, voice, rhythm */
+  portray?: Rich[];
+  /** are they meant to be fought? */
+  fight?: Rich;
+  /** "If the players…" contingencies */
+  ifs?: Rich[];
+  /** DM-only notes, hidden by the spoiler shield */
+  secrets?: Rich[];
 }
 
 export type ItemKind = 'mask' | 'key' | 'weapon' | 'gear' | 'consumable' | 'money' | 'prop' | 'hazard';
