@@ -565,8 +565,14 @@ try {
     const back = (await member('Dude Bro').locator('.member__hpnum').textContent())?.trim();
     check((await statusOf('Dude Bro')) === 'member--alive' && /^1\//.test(back ?? ''), 'he is back at 1 HP once the scene ends', `${await statusOf('Dude Bro')} ${back}`);
 
-    // Costello: each fact shows the question that pulls it and his answer; three questions and he is gone
+    // ...also when the DM jumps ahead with the scene picker
+    for (let i = 0; i < 10 && (await member('Dude Bro').locator('.member__hpnum').textContent())?.trim().split('/')[0] !== '0'; i++) {
+      await page.click('[aria-label="Dude Bro minus 5 HP"]');
+    }
     await jump('costello');
+    check((await statusOf('Dude Bro')) === 'member--alive', 'jumping to another scene also gets a knocked-out groomsman up', await statusOf('Dude Bro'));
+
+    // Costello: each fact shows the question that pulls it and his answer; three questions and he is gone
     const qa = await page.$$eval('.fact', (els) => els.map((e) => [e.querySelector('.fact__q')?.textContent, e.querySelector('.fact__a')?.textContent]));
     check(qa.length === 4 && qa.every(([q]) => q) && qa.filter(([, a]) => a).length === 3, 'each Costello fact shows its question and his answer (the riddle is its own answer)', JSON.stringify(qa[0]));
     for (const n of [0, 1, 2]) await page.click(`.qpip >> nth=${n}`);

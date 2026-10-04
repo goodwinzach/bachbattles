@@ -473,6 +473,7 @@ function Party() {
   const pcs = all<PC>('pc');
   const conds = all<Condition>('condition').filter((c) => c.scope === 'party');
   const ghosts = pcs.filter((p) => p.status === 'ghost').length;
+  const out = pcs.filter((p) => p.status === 'down').length;
   return (
     <section class="panel party" aria-label="Party">
       <div class="panel__head">
@@ -483,7 +484,16 @@ function Party() {
           {conds.map((c) => (
             <ConditionToggle key={c.id} cond={c} />
           ))}
-          {ghosts > 0 && <span class="badge t-ghost">{ghosts} ghost{ghosts > 1 ? 's' : ''}</span>}
+          {out > 0 && (
+            <button type="button" class="badge badge--btn t-warn" onClick={() => openDrawer('rule', 'out-cold')} title="Knocked out cold: how it works">
+              {out} out cold
+            </button>
+          )}
+          {ghosts > 0 && (
+            <button type="button" class="badge badge--btn t-ghost" onClick={() => openDrawer('rule', 'ghosts')} title="What ghosts can and cannot do">
+              {ghosts} ghost{ghosts > 1 ? 's' : ''}
+            </button>
+          )}
         </span>
       </div>
       <ul class="members">

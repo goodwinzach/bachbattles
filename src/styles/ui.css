@@ -35,6 +35,15 @@
   flex: none;
 }
 
+button.badge--btn {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button.badge--btn:hover {
+  background: color-mix(in oklab, var(--tone) 22%, transparent);
+}
+
 .badge--nodot::before {
   display: none;
 }

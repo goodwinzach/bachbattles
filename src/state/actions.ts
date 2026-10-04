@@ -420,11 +420,9 @@ export function goScene(id: string, opts: { complete?: boolean } = {}) {
     opts.complete && from ? `${from.title} done → ${target.title}` : `Now playing: ${target.title}`,
     (d) => {
       moveTimer(d, g.scene);
-      if (opts.complete && from) {
-        flagPatch(d, 'scene', from.id, { status: 'done' });
-        // knocked out before the island: back on their feet at 1 HP once the scene is over
-        for (const pc of all<PC>('pc')) if (pc.status === 'down' && pc.hp === 0) flagPatch(d, 'pc', pc.id, { status: 'alive', hp: 1 });
-      }
+      if (opts.complete && from) flagPatch(d, 'scene', from.id, { status: 'done' });
+      // knocked out before the island: back on their feet at 1 HP once the scene is over, however the DM leaves it
+      if (g.scene !== id) for (const pc of all<PC>('pc')) if (pc.status === 'down' && pc.hp === 0) flagPatch(d, 'pc', pc.id, { status: 'alive', hp: 1 });
       if (target.status === 'skipped' || target.status === 'done') flagPatch(d, 'scene', id, { status: 'upcoming' });
       // playing one route's scene settles the route, so "Done, next" never wanders onto the other one
       const route = target.branch && !d.game.route ? target.branch : d.game.route;
