@@ -179,7 +179,7 @@ function SceneSection({ scene, scriptOnly }: { scene: Scene; scriptOnly: boolean
           {out && (
             <div class="scenesec__out">
               <Icon name="circle-dashed" size={13} />
-              {scene.expandedOnly ? 'Only in the expanded build (the Cat in the Hat). Switch it on in Settings.' : 'Not on the route the party chose.'}
+              Not on the route the party chose.
             </div>
           )}
         </div>

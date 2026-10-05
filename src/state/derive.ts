@@ -281,7 +281,6 @@ export function usesLeft(ab: Ability): number | null {
 
 export function sceneInPlay(s: Scene): boolean {
   const g = game();
-  if (s.expandedOnly && !g.catVariant) return false;
   if (g.route === 'plane' && s.branch === 'boat') return false;
   if (g.route === 'boat' && s.branch === 'plane') return false;
   return true;
@@ -324,9 +323,7 @@ export function neighbors(id: string): { prev?: Scene; next?: Scene } {
 export const actOf = (s: Scene) => ent<import('../data/types').Act>('act', s.act);
 
 export function sceneMust(s: Scene): string[] {
-  const out = [...(s.mustHappen ?? [])];
-  if (s.variantMust) out.push(...(game().catVariant ? s.variantMust.expanded : s.variantMust.outline));
-  return out;
+  return [...(s.mustHappen ?? [])];
 }
 
 export function sceneFoes(s: Scene): string[] {
@@ -353,7 +350,7 @@ export interface RefHit {
 }
 
 const TEXT_FIELDS = new Set([
-  'logline', 'readAloud', 'beats', 'objective', 'mustHappen', 'variantMust', 'rolls', 'failsafes', 'tips', 'notes', 'secrets',
+  'logline', 'readAloud', 'beats', 'objective', 'mustHappen', 'rolls', 'failsafes', 'tips', 'notes', 'secrets',
   'bio', 'play', 'tagline', 'role', 'look', 'personality', 'wants', 'knows', 'important', 'stat', 'phases', 'effect',
   'summary', 'mechanics', 'limits', 'examples', 'table', 'body', 'list', 'text', 'starts', 'ends', 'note',
   'dialogue', 'unknowns', 'portray', 'ifs', 'fight', 'describe',

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Clue, Item, NPC, PC, Scene } from '../data/types';
-import { setCatVariant, setRoute, startCombat } from '../state/actions';
+import { setRoute, startCombat } from '../state/actions';
 import { pcStatusInfo, sceneFoes, sceneInPlay, strip } from '../state/derive';
 import { applyTheme, exportText, getSyncState, parseImport, saveFile } from '../state/persist';
 import { all, closeModal, ent, game, getUi, latestUndoId, replaceData, resetAll, setUi, toast, undo, undoInfo, type ModalSpec } from '../state/store';
@@ -173,29 +173,6 @@ function SettingsModal() {
   return (
     <Dialog title="Settings" onClose={closeModal} wide>
       <div class="settings">
-        <section class="settings__sec">
-          <h3 class="settings__h">Studio gauntlet</h3>
-          <p class="muted">
-            Your Latest outline has Oh Dae-su kill at least two players and Toothless take out everyone but Flynn. The expanded build softens both and adds
-            the Cat in the Hat as an invincible wipe that you play yourself. Pick one; the script, map, slides and run screen all follow.
-          </p>
-          <div class="choice">
-            <button type="button" class={cx('choice__opt', !g.catVariant && 'is-on')} aria-pressed={!g.catVariant} onClick={() => setCatVariant(false)}>
-              <Icon name="flame" size={18} />
-              <span>
-                <strong>Outline version</strong>
-                <span>Toothless wipes the party</span>
-              </span>
-            </button>
-            <button type="button" class={cx('choice__opt', g.catVariant && 'is-on')} aria-pressed={g.catVariant} onClick={() => setCatVariant(true)}>
-              <Icon name="cat" size={18} />
-              <span>
-                <strong>Expanded build</strong>
-                <span>The Cat in the Hat wipes the party</span>
-              </span>
-            </button>
-          </div>
-        </section>
         <section class="settings__sec">
           <h3 class="settings__h">Route to Hollywood</h3>
           <p class="muted">Set when the players decide. The other route's scenes are skipped everywhere.</p>

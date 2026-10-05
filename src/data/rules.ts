@@ -3,6 +3,32 @@ import type { Film, Rule } from './types';
 type RuleDef = Omit<Rule, 'dmNote'>;
 const rule = (d: RuleDef): Rule => ({ dmNote: '', ...d });
 
+/** Safe, silly real-life stunts for a bagel revival, when the table runs out of ideas. */
+export const STUNTS: string[] = [
+  'Put your shoes on the wrong feet and keep them that way until the next scene.',
+  'Tell the player on your left, completely sincerely, that you love them.',
+  'Ten jumping jacks while saying the alphabet backwards.',
+  'Talk like a pirate until your next turn.',
+  'Swap one piece of clothing with another player.',
+  'Balance a spoon on your nose for five seconds.',
+  'Drink a glass of water while standing on one leg.',
+  'Pitch the documentary as Lou Bloom for thirty seconds.',
+  'Eat a spoonful of mustard, or the worst condiment in the fridge.',
+  'Hum the Jaws theme while slowly circling the table.',
+  'A slow-motion action-movie dive onto the couch.',
+  'Name ten Pixar movies in thirty seconds.',
+  'Wear your shirt inside out for the rest of the game.',
+  'Give a thirty-second wedding toast to a household object.',
+  'Hop on one foot to the kitchen and back.',
+  'Let the table draw a mustache on you (washable marker only).',
+  'Call someone and sing them happy birthday, whatever the date.',
+  'Spin around ten times, then walk a straight line.',
+  'Try to lick your elbow for ten full seconds.',
+  'Speak only in rhymes until the next ghost comes back.',
+  'Act out a dramatic Shakespearean death, then come back to life.',
+  'Narrate everything you do in the third person until your next turn.',
+];
+
 export const RULE_GROUPS: { id: Rule['group']; title: string; blurb: string }[] = [
   { id: 'core', title: 'Core Rules', blurb: 'What gets rolled and how hard it is.' },
   { id: 'combat', title: 'Combat', blurb: 'Initiative, turns, range bands, weapons.' },
@@ -245,7 +271,7 @@ export const RULES: Rule[] = [
     ],
     body: [
       'The bagel alone does nothing. It is an everything bagel, as in *Everything Everywhere All at Once*: the improbable act is what makes it work, like a verse jump.',
-      'Bagels do not work inside the Volume: the studio is fake, and the improbable act needs the real world. Revivals wait for the bagel shop, where one stupid act from Flynn can bring everyone back.',
+      'Bagels do not work inside the Volume: the studio is fake, and the improbable act needs the real world. Revivals wait for the bagel shop, where Flynn brings his friends back one stupid act at a time.',
       'No dice roll is required for the real-world action. The point is committing to the bit.',
       'Examples should come from the room and the people playing, not a prewritten checklist.',
     ],
@@ -284,9 +310,8 @@ export const RULES: Rule[] = [
     title: 'The Wipe',
     summary: 'Everyone except Flynn must be dead before Lou enters.',
     body: [
-      'Outline version: Oh Dae-su kills at least two players and Toothless takes out everyone except Flynn.',
-      'Expanded build: Oh Dae-su and Toothless are attrition, and [[npc:cat]] is the wipe. He is not a fair boss; he is the wipe mechanism and the DM\'s big character moment.',
-      'Switch between the two with the studio gauntlet toggle in Settings.',
+      '[[npc:oh-dae-su]] takes one groomsman. [[npc:toothless]] takes a few more. [[npc:cat]] comes after Toothless and takes whoever is left.',
+      'The Cat is not a fair boss; he is the wipe mechanism and the DM\'s big character moment.',
     ],
   }),
 
@@ -386,7 +411,7 @@ export const RULES: Rule[] = [
       "Jamie's Spiritual Moment should respond to the current scene, not summon a random fantasy inventory.",
       'The island is where death becomes acceptable. Dead players stay engaged as visible ghosts.',
       'Gluttony is the major heal and bagel checkpoint.',
-      'Toothless and Oh Dae-su soften the party (expanded build); the Cat is the wipe.',
+      'Oh Dae-su takes one groomsman and Toothless a few more; the Cat is the wipe.',
       'Flynn must get the final victory over Lou.',
       "If players are confused in the Lou scene, use Louise's text. Do not immediately explain the answer.",
       'If a required clue is missed, move the clue. Never let the campaign die because somebody rolled badly.',

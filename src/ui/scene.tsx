@@ -1,7 +1,7 @@
 // The body of a scene, shared by the Run screen and the Script view, plus per-scene widgets.
 
 import { useState } from 'preact/hooks';
-import type { Act, Clue, Effect, Item, NPC, PC, Scene } from '../data/types';
+import type { Act, Clue, Item, NPC, PC, Scene } from '../data/types';
 import { STAT_ABBR, type Stat } from '../data/types';
 import {
   applyAllEffects,
@@ -9,14 +9,12 @@ import {
   effectKey,
   goScene,
   revive,
-  reviveEveryone,
   rollMedusa,
   setClue,
   setCostello,
   takeOut,
   setItemHolder,
   setItemState,
-  setCatVariant,
   setMask,
   setPcStatus,
   setRoute,
@@ -24,6 +22,7 @@ import {
 import { dialogueOf, isUnmasked, KIND_LABEL, nameOf, sceneFoes, sceneMust, shielded } from '../state/derive';
 import { all, ent, game, getUi, openDrawer, openModal, setUi } from '../state/store';
 import { SIN_ROOMS } from '../data/scenes';
+import { STUNTS } from '../data/rules';
 import { NpcStatusControl } from './controls';
 import { DmNote, ItemRow, Secret } from './detail';
 import { DialogueOptions } from './dialogue';
@@ -54,11 +53,6 @@ export function MustHappen({ scene }: { scene: Scene }) {
     <div class="must">
       <div class="must__label">
         <Icon name="flag-triangle-right" size={13} /> Must happen
-        {scene.variantMust && (
-          <button type="button" class="must__variant" onClick={() => openModal({ kind: 'settings' })} title="Change the studio gauntlet version">
-            {game().catVariant ? 'Expanded build' : 'Outline version'}
-          </button>
-        )}
       </div>
       <RichList items={items} />
     </div>
@@ -188,14 +182,9 @@ function Failsafes({ scene }: { scene: Scene }) {
   );
 }
 
-function effectOffered(ef: Effect): boolean {
-  if (!ef.only) return true;
-  return (ef.only === 'expanded') === game().catVariant;
-}
-
 function Effects({ scene }: { scene: Scene }) {
   const g = game();
-  const list = (scene.effects ?? []).map((ef, i) => ({ ef, i })).filter(({ ef }) => effectOffered(ef));
+  const list = (scene.effects ?? []).map((ef, i) => ({ ef, i }));
   if (!list.length) return null;
   const pending = list.filter(({ i }) => !g.applied[effectKey(scene.id, i)]).length;
   return (
@@ -223,6 +212,19 @@ function Effects({ scene }: { scene: Scene }) {
 
 // ─── scene widgets ────────────────────────────────────────────────────────
 
+/** The three facts that have to come out of Costello whatever Flynn asks. */
+const COSTELLO_MUST: Record<string, string> = {
+  'fact-thief': 'Lou has the ring',
+  'fact-hollywood': 'Lou and the ring are in Hollywood',
+  'fact-riddle': 'the riddle',
+};
+
+function costelloMissing() {
+  return Object.entries(COSTELLO_MUST)
+    .filter(([id]) => !ent<Clue>('clue', id)?.revealed)
+    .map(([id, label]) => ({ id, label }));
+}
+
 /** The question that usually pulls each fact out of Costello, and his answer to it. */
 const COSTELLO_ASKS: Record<string, string> = {
   'fact-thief': 'Who took the ring?',
@@ -240,8 +242,10 @@ function costelloAnswer(factId: string): string | undefined {
 function CostelloWidget() {
   const g = game();
   const facts = all<Clue>('clue').filter((c) => c.group === 'costello');
-  const riddle = facts.find((f) => f.id === 'fact-riddle');
-  const mustSay = g.costelloAsked >= 2 && riddle && !riddle.revealed;
+  const missing = costelloMissing();
+  const left = 3 - g.costelloAsked;
+  // more must-say facts than questions left: the next answer has to carry several
+  const crunch = g.costelloAsked > 0 && left > 0 && missing.length > 0 && missing.length >= left;
   return (
     <div class="widget">
       <div class="widget__head">
@@ -255,18 +259,32 @@ function CostelloWidget() {
           ))}
         </span>
       </div>
-      {mustSay && (
+      {crunch && (
         <div class="callout callout--gold">
           <Icon name="triangle-alert" size={16} />
           <span>
-            The third answer <strong>must</strong> end with: “Out of the closet without a face.”
+            {left === 1 ? 'The last answer' : 'The next answers'} <strong>must</strong>{' '}
+            {[
+              missing.some((m) => m.id !== 'fact-riddle') &&
+                `say ${missing
+                  .filter((m) => m.id !== 'fact-riddle')
+                  .map((m) => m.label)
+                  .join(' and ')}`,
+              missing.some((m) => m.id === 'fact-riddle') && 'end with “Out of the closet without a face”',
+            ]
+              .filter(Boolean)
+              .join(', and ')}
+            . See “Last question” under Talk.
           </span>
         </div>
       )}
       {g.costelloAsked >= 3 && (
         <div class="callout">
           <Icon name="flag" size={16} />
-          <span>That was three. Abbott and Costello are gone, and the party is standing in an empty field. Let them talk about plane or boat.</span>
+          <span>
+            That was three. Abbott and Costello are gone, and the party is standing in an empty field. Let them talk about plane or boat.
+            {missing.length > 0 && ` Still not out: ${missing.map((m) => m.label).join(', ')}. Have Louise say it on the walk back.`}
+          </span>
         </div>
       )}
       <div class="facts4">
@@ -278,6 +296,7 @@ function CostelloWidget() {
             <button key={f.id} type="button" class={cx('fact', f.revealed && 'is-on')} aria-pressed={f.revealed} onClick={() => setClue(f.id, !f.revealed)}>
               <span class="fact__n num">{i + 1}</span>
               <span class="fact__body">
+                {COSTELLO_MUST[f.id] && <span class="fact__must">Must come out</span>}
                 <Rich text={f.text} />
                 {COSTELLO_ASKS[f.id] && <span class="fact__q">Asked “{COSTELLO_ASKS[f.id]}”</span>}
                 {answer && <span class="fact__a">“{answer}”</span>}
@@ -365,7 +384,7 @@ function MedusaWidget() {
         <Icon name={unmasked ? 'triangle-alert' : 'venetian-mask'} size={16} />
         <span>{unmasked ? 'Flynn is NOT wearing a mask. He is not immune to the gaze right now.' : 'Flynn is masked and immune to the gaze.'}</span>
       </div>
-      <div class="eyebrow">Who opens the box? (turns to stone)</div>
+      <div class="eyebrow">Who opens the box? (turns to stone: not Flynn)</div>
       <div class="chips">
         {groomsmen.map((p) => (
           <button key={p.id} type="button" class={cx('toggle-chip', p.status === 'stone' && 'is-on')} aria-pressed={p.status === 'stone'} onClick={() => setPcStatus(p.id, p.status === 'stone' ? 'alive' : 'stone')}>
@@ -376,6 +395,7 @@ function MedusaWidget() {
       <button type="button" class="btn btn--primary" disabled={!exposed.length} onClick={() => rollMedusa(exposed.map((p) => p.id))}>
         <Icon name="dices" /> Roll the gaze for {exposed.length} groomsm{exposed.length === 1 ? 'an' : 'en'}
       </button>
+      <p class="widget__foot">Stone is death: the statues stay on the island and those players keep going as ghosts until Gluttony brings everyone back.</p>
     </div>
   );
 }
@@ -389,8 +409,9 @@ function SinsWidget({ scene }: { scene: Scene }) {
   const played = optional.length - unvisited.length - optional.filter((r) => r.status === 'skipped').length;
   const pickRandom = () => {
     if (!prideDone && g.scene !== 'pride') return goScene('pride');
-    // Pride, then one to three more rooms, then Gluttony: the more rooms played, the likelier Gluttony comes up
-    const gluttonyChance = played === 0 ? 0 : played === 1 ? 1 / 3 : played === 2 ? 2 / 3 : 1;
+    // Pride, then up to three more rooms, then Gluttony: a lucky roll can go straight from Pride to Gluttony,
+    // and the more rooms played, the likelier Gluttony comes up
+    const gluttonyChance = played === 0 ? 1 / 4 : played === 1 ? 1 / 3 : played === 2 ? 1 / 2 : 1;
     if (!unvisited.length || Math.random() < gluttonyChance) return goScene('gluttony');
     goScene(unvisited[Math.floor(Math.random() * unvisited.length)].id);
   };
@@ -399,7 +420,7 @@ function SinsWidget({ scene }: { scene: Scene }) {
       <div class="widget__head">
         <Icon name="door-open" size={16} />
         <span class="widget__title">The seven buildings</span>
-        <span class="muted">Pride first, then one to three more, then Gluttony.</span>
+        <span class="muted">Pride first, then up to three more, then Gluttony.</span>
       </div>
       <div class="sins" role="group" aria-label="Sin buildings">
         {rooms.map((r, i) => {
@@ -459,22 +480,6 @@ function KingpinWidget() {
           )}
         </span>
       </div>
-    </div>
-  );
-}
-
-function VariantWidget() {
-  const g = game();
-  return (
-    <div class="widget widget--slim">
-      <Icon name={g.catVariant ? 'cat' : 'flame'} size={16} />
-      <span class="grow">
-        Studio gauntlet: <strong>{g.catVariant ? 'expanded build' : 'outline version'}</strong>
-        {g.catVariant ? '. The Cat in the Hat does the wipe.' : '. Toothless does the wipe.'}
-      </span>
-      <button type="button" class="btn btn--xs" onClick={() => setCatVariant(!g.catVariant)}>
-        Switch
-      </button>
     </div>
   );
 }
@@ -573,24 +578,25 @@ function BagelWidget({ shop }: { shop?: boolean }) {
   const ghosts = all<PC>('pc').filter((p) => p.status === 'ghost');
   const bagels = ent<Item>('item', 'bagels');
   const have = bagels && (bagels.state === 'held' || bagels.state === 'equipped') ? bagels.qty ?? 0 : 0;
+  const [idea, setIdea] = useState<number | null>(null);
+  const nextIdea = () => {
+    let i = Math.floor(Math.random() * STUNTS.length);
+    if (i === idea) i = (i + 1) % STUNTS.length;
+    setIdea(i);
+  };
   return (
     <div class="widget">
       <div class="widget__head">
         <Icon name="bagel" size={16} />
         <span class="widget__title">{shop ? 'The bagel shop' : 'Bagels'}</span>
         <span class="muted">
-          {shop ? 'Free everything bagels. One random, stupid act from Flynn, in real life, brings everyone back.' : `${have} bagel${have === 1 ? '' : 's'} on hand`}
+          {shop ? 'Free everything bagels. For each friend, Flynn eats one and does something random and stupid, in real life.' : `${have} bagel${have === 1 ? '' : 's'} on hand`}
         </span>
       </div>
       {ghosts.length === 0 ? (
         <div class="muted">Nobody is a ghost right now.</div>
       ) : (
         <div class="stack" style={{ '--gap': '8px' } as never}>
-          {shop && ghosts.length > 1 && (
-            <button type="button" class="btn btn--good" onClick={reviveEveryone} title="After Flynn does something random and stupid in real life">
-              <Icon name="sparkles" /> Flynn did it: everyone is back
-            </button>
-          )}
           {ghosts.map((p) => (
             <div key={p.id} class="ghostrow">
               <Face type="pc" id={p.id} size={30} />
@@ -602,12 +608,20 @@ function BagelWidget({ shop }: { shop?: boolean }) {
                 class="btn btn--sm btn--good"
                 disabled={!shop && have < 1}
                 onClick={() => revive(p.id, !shop)}
-                title={shop ? 'After Flynn does something random and stupid in real life' : 'Only after a living player eats a bagel and does something statistically improbable in real life'}
+                title={shop ? 'After Flynn eats a bagel and does something random and stupid in real life' : 'Only after a living player eats a bagel and does something statistically improbable in real life'}
               >
-                <Icon name="sparkles" /> {!shop ? 'Improbable act done: revive' : ghosts.length > 1 ? 'Just this one' : 'Flynn did it: back to life'}
+                <Icon name="sparkles" /> {shop ? 'Stunt done: back to life' : 'Improbable act done: revive'}
               </button>
             </div>
           ))}
+        </div>
+      )}
+      {ghosts.length > 0 && (
+        <div class="stunt">
+          <button type="button" class="btn btn--sm" onClick={nextIdea} title="A safe, silly stunt for when the table runs out of ideas">
+            <Icon name="dices" /> {idea == null ? 'Need a stunt?' : 'Another'}
+          </button>
+          {idea != null && <span class="stunt__text">{STUNTS[idea]}</span>}
         </div>
       )}
     </div>
@@ -621,15 +635,15 @@ function WipeWidget({ scene }: { scene: Scene }) {
   const round = g.combat?.scene === scene.id ? g.combat.round : null;
   const guide =
     scene.id === 'oh-dae-su'
-      ? 'Outline version: whatever the dice say, he takes one groomsman out in round 1 and another in round 2. After that he can be stopped.'
+      ? 'Whatever the dice say, he takes one groomsman out in round 1 or 2. After that he can be stopped.'
       : scene.id === 'toothless'
-        ? 'Outline version: one groomsman falls each round until only Flynn is standing.'
+        ? 'He takes out a few (two is plenty), whatever the dice say. Whoever is still standing when he crashes is the Cat\'s.'
         : 'Round 1: show he cannot be hurt, and take one out. Round 2: one or two more. Round 3: the rest. Round 4 only for comedy.';
   return (
     <div class="widget">
       <div class="widget__head">
         <Icon name="skull" size={16} />
-        <span class="widget__title">{scene.id === 'oh-dae-su' ? 'Two have to fall' : 'The wipe'}</span>
+        <span class="widget__title">{scene.id === 'oh-dae-su' ? 'One has to fall' : scene.id === 'toothless' ? 'A few fall' : 'The wipe'}</span>
         <span class="muted">{round ? `Round ${round}` : 'Start the fight to count rounds'}</span>
       </div>
       <p class="wipe__guide">{guide}</p>
@@ -641,7 +655,7 @@ function WipeWidget({ scene }: { scene: Scene }) {
               <span class="grow">
                 <Ref type="pc" id={p.id} noDot /> <span class="muted">{p.status === 'down' ? 'knocked out' : `${p.hp}/${p.hpMax} HP`}</span>
               </span>
-              <button type="button" class="btn btn--sm btn--danger" onClick={() => takeOut(p.id)} title="They fall, whatever the dice said, and keep playing as a ghost">
+              <button type="button" class="btn btn--sm btn--danger" onClick={() => takeOut(p.id)} title="They fall whatever the dice said, and keep playing as a ghost">
                 <Icon name="skull" /> Takes them out
               </button>
             </div>
@@ -652,7 +666,11 @@ function WipeWidget({ scene }: { scene: Scene }) {
           <Icon name="flag" size={16} />
           <span>
             Only Flynn is standing.{' '}
-            {scene.id === 'toothless' ? 'He lands the last blow on the wounded dragon, or Lou yells "Cut!" and calls him off.' : scene.id === 'cat' ? 'The Cat bows, tidies his hat and leaves.' : ''}
+            {scene.id === 'toothless'
+              ? 'Lou yells "Cut!" and calls the dragon off. The Cat still makes his entrance next, for an audience of one.'
+              : scene.id === 'cat'
+                ? 'The Cat bows, tidies his hat and leaves.'
+                : ''}
           </span>
         </div>
       )}
@@ -681,11 +699,9 @@ export function SceneWidget({ scene }: { scene: Scene }) {
   if (scene.id === 'john-doe') parts.push(<MedusaWidget key="m" />);
   if (SIN_ROOMS.includes(scene.id)) parts.push(<SinsWidget key="s" scene={scene} />);
   if (scene.id === 'wrath') parts.push(<KingpinWidget key="k" />);
-  if (scene.variantMust || scene.id === 'cat') parts.push(<VariantWidget key="v" />);
   if (scene.id === 'fourth-mask') parts.push(<UnmaskWidget key="u" />);
   const ghosts = all<PC>('pc').some((p) => p.status === 'ghost');
-  if ((scene.id === 'oh-dae-su' || scene.id === 'toothless') && !game().catVariant) parts.push(<WipeWidget key="w" scene={scene} />);
-  if (scene.id === 'cat') parts.push(<WipeWidget key="w" scene={scene} />);
+  if (scene.id === 'oh-dae-su' || scene.id === 'toothless' || scene.id === 'cat') parts.push(<WipeWidget key="w" scene={scene} />);
   if (scene.id === 'gluttony' && ghosts) parts.push(<BagelWidget key="d" />);
   if (scene.location === 'volume' && ghosts) parts.push(<NoBagelsWidget key="nb" />);
   if (scene.id === 'epilogue') parts.push(<BagelWidget key="ds" shop />);
@@ -821,7 +837,7 @@ export function SceneBody({ scene, prefix, compact }: { scene: Scene; prefix: st
           </Expander>
         ) : null}
         {scene.effects?.length ? (
-          <Expander id={id('effects')} title="Apply to the game" icon="list-checks" count={scene.effects.filter(effectOffered).length} defaultOpen={!compact && getUi().view === 'run'}>
+          <Expander id={id('effects')} title="Apply to the game" icon="list-checks" count={scene.effects.length} defaultOpen={!compact && getUi().view === 'run'}>
             <Effects scene={scene} />
           </Expander>
         ) : null}
@@ -893,11 +909,6 @@ export function SceneMeta({ scene, act }: { scene: Scene; act?: Act }) {
       {scene.optional && (
         <Badge tone="muted" dot={false}>
           Optional
-        </Badge>
-      )}
-      {scene.expandedOnly && (
-        <Badge tone="gold" dot={false}>
-          Expanded build
         </Badge>
       )}
       {scene.branch && (

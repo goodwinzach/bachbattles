@@ -147,13 +147,19 @@ export const DIALOGUE: Record<string, DialogueCue[]> = {
   costello: [
     cue(
       'Who took the ring?',
-      'The man who records what should not be recorded already wears what was yours.',
       'Lou. The man who records has already taken it.',
+      'The man who records what should not be recorded already wears what was yours. His name is Lou.',
       'He films what others look away from. Lou. He has it. He had it before you lost it.',
     ),
     cue('Where is it?', 'You meet the ring again beneath false sunlight in Hollywood.', 'You arrive in the bright city after he has prepared for you.', 'West. Where the sun is made of lamps.'),
     cue('Are we safe?', 'You are dead there. Most of you are speaking anyway.', 'Some of you are already ghosts there. You are laughing about it.', 'Everyone falls in the bright city. Not everyone stays down.'),
     cue('How do we get it back?', 'Out of the closet without a face.', 'You ask this because you have not yet understood the mask.', '(Ink forms a face, then wipes itself blank.) Out of the closet without a face.'),
+    cue(
+      'Last question, and facts still missing',
+      'Lou has your ring. He waits for you in Hollywood. Out of the closet without a face.',
+      'The man who records took it west, to the city of false sunlight. Hollywood. Out of the closet without a face.',
+      '(Ink everywhere, all at once.) Lou. Hollywood. Out of the closet without a face.',
+    ),
     cue('Anything else', 'That question was already answered. You were not listening yet.', 'You already know. You learn it later.', 'You will ask that again in Hollywood. The answer does not change.'),
   ],
 
@@ -170,7 +176,12 @@ export const DIALOGUE: Record<string, DialogueCue[]> = {
       "You won the fight. You didn't win an airplane.",
       '(Grins through the blood.) That was beautiful. (Presses the detonator anyway.)',
     ),
-    cue('Flynn wins on the docks', 'You keep thinking winning means I have to keep my word.', '(Smiles, and his hand drifts toward his pocket. The detonator.)', 'Fine. Fine! Go see your movie.'),
+    cue(
+      'Flynn wins on the docks',
+      "Fine. A deal's a deal. (Pulls the charges off the boats one by one, sulking.)",
+      '(Wipes the blood off his lip and laughs.) You hit like you mean it. Go see your movie.',
+      'I keep my word. Lou would hate that, which is the best part.',
+    ),
   ],
   'goon-crowbar': goon(cue('Fighting', '(Taps the crowbar on a propeller. Clang.) Come on, then.', 'Open wide.', "Doors, crates, kneecaps. Crowbar's very versatile.")),
   'goon-sledgehammer': goon(cue('Fighting', '(Mostly grunts and short threats.)', '(Drags the sledgehammer along the tarmac. Sparks.)', 'Hold. Still.')),

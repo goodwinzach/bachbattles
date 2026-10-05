@@ -41,11 +41,11 @@ Ten places, each with its picture: the Green Dragon Inn, the field, Abbott and C
 The console keeps track of the house rules so the DM does not have to:
 
 - **Fights have a plan.** Every fight lists how many rounds it should take and what ends it (Michael calls it off as soon as one of the three drops; first to three clean hits against Tyler). The combat tracker shows "Round 2 of 2–4", keeps the end condition in view and says when a fight has run past its plan.
-- **Nobody dies before the island.** Until John Doe, 0 HP knocks a groomsman out cold; they are back at 1 HP when the scene ends. From the island on, 0 HP makes a ghost, and ghosts keep playing.
-- **Bagels.** At Gluttony a living player eats a bagel and does something improbable in real life to bring one ghost back. Inside the Volume nobody comes back. At the bagel shop the bagels are free, and one random, stupid act from Flynn, in real life, brings everyone back in one tap.
-- **The studio deaths.** Oh Dae-su, Toothless (outline version) and the Cat (expanded build) show who is still standing, a round-by-round guide, and a "Takes them out" button that turns a groomsman into a ghost whatever the dice said, with Undo.
-- **Costello.** Each fact shows the question that usually pulls it out and his answer. The widget warns when two questions are gone without the riddle, and says when the third one ends the visit. Only Flynn's questions count.
-- **The road.** "Done, next" at the crossroads waits for plane or boat. The sin rooms go Pride first, then one to three more at random, then Gluttony; finishing any sin room heads to Gluttony. On the voyage, a widget shares out the gear picked up so far.
+- **Nobody dies before the island.** Until John Doe, 0 HP knocks a groomsman out cold; they are back at 1 HP when the scene ends. From the island on, 0 HP makes a ghost, and ghosts keep playing. At the island one groomsman opens the box and is turned to stone: stone is death, and those players keep going as ghosts.
+- **Bagels.** At Gluttony a living player eats a bagel and does something statistically improbable in real life to bring one ghost back, and no matter what, everyone leaves Gluttony alive and at full health. Inside the Volume nobody comes back. At the bagel shop the bagels are free: Flynn brings each friend back with his own stupid stunt, and the widget suggests safe, silly stunts when the table runs dry.
+- **The studio deaths.** Oh Dae-su takes one groomsman, Toothless a few more, and the Cat in the Hat (always right after Toothless) takes whoever is left except Flynn. Each shows who is still standing, a round-by-round guide, and a "Takes them out" button that turns a groomsman into a ghost whatever the dice said, with Undo.
+- **Costello.** Three facts have to come out whatever Flynn asks: Lou has the ring, Lou and the ring are in Hollywood, and the riddle. Each fact shows the question that usually pulls it out and his answer, and when there are more facts left than questions, the widget says what the last answer has to carry (with ready-made lines under Talk). Only Flynn's questions count.
+- **The road.** "Done, next" at the crossroads waits for plane or boat. The sin rooms go Pride first, then up to three more at random (a lucky roll goes straight to Gluttony), then Gluttony; finishing any sin room heads to Gluttony. On the voyage, a widget shares out the gear picked up so far.
 - **A spoiler-safe deck.** Surprise entrances (Medusa), the riddle and the +100 Charisma reveal stay on the DM deck until they happen in play.
 
 ## Editing
@@ -60,7 +60,6 @@ Each character's editor also has a **Portrait** picker, a **From** field and **D
 
 ## Campaign options (⋯ → Settings)
 
-- **Studio gauntlet:** *Outline version* (default, from the Latest outline: Oh Dae-su kills at least two players and Toothless wipes everyone but Flynn) or *Expanded build* (softer, adds the Cat in the Hat as the wipe). The script, map, slides and run screen all follow the choice.
 - **Route to Hollywood:** plane or boat, once the players pick. The other route's scenes are skipped everywhere.
 - **Spoiler shield** (`H`): hides DM secrets before you share your screen.
 
@@ -83,7 +82,7 @@ node scripts/locations.mjs <folder>   # rebuild src/assets/locations from the or
 
 The portraits come from the two character icon packs (1000 px PNGs). `scripts/portraits.mjs` shrinks them to 400 px WebP files (about 18 KB each, under 600 KB for all 33) and maps each file to a player, character or mask; `src/data/portraits.ts` says who uses which by default. The location pictures come from the locations pack: `scripts/locations.mjs` crops away their transparent frame and converts them to WebP (about 500 KB for all ten); `src/data/location-pictures.ts` lists them.
 
-The smoke test drives Chromium through every view at phone and desktop sizes in both themes, then exercises editing, undo, reload persistence, search, dice and the gauntlet switch. It uses `playwright-core` without downloading a browser; point `CHROMIUM_PATH` at a Chromium binary if it is not at `/opt/pw-browsers/chromium`.
+The smoke test drives Chromium through every view at phone and desktop sizes in both themes, then exercises editing, undo, reload persistence, search, dice, the story map and the table rules (knocked out before the island, Costello, the route, fight plans, the sin rooms, the studio deaths and the bagel shop). It uses `playwright-core` without downloading a browser; point `CHROMIUM_PATH` at a Chromium binary if it is not at `/opt/pw-browsers/chromium`.
 
 ```
 src/data/     the campaign: scenes.ts (acts, scenes, pacing), cast.ts (players, characters, relations),

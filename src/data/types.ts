@@ -95,8 +95,6 @@ export interface Failsafe {
 
 interface EffectBase {
   label: string;
-  /** only offered in one version of the studio gauntlet */
-  only?: 'outline' | 'expanded';
 }
 
 export type Effect = EffectBase &
@@ -110,11 +108,6 @@ export type Effect = EffectBase &
     | { kind: 'abilities'; ids: string[]; patch: Partial<AbilityRuntime> }
   );
 
-export interface SceneVariantText {
-  outline: Rich[];
-  expanded: Rich[];
-}
-
 export interface Scene {
   id: string;
   act: string;
@@ -126,15 +119,12 @@ export interface Scene {
   kind: SceneKind;
   optional?: boolean;
   branch?: 'plane' | 'boat';
-  /** only part of the expanded build (The Cat in the Hat) */
-  expandedOnly?: boolean;
   minutes?: [number, number];
   logline: Rich;
   readAloud?: Rich[];
   beats?: Beat[];
   objective?: Rich;
   mustHappen?: Rich[];
-  variantMust?: SceneVariantText;
   cast?: string[];
   encounters?: Encounter[];
   rolls?: Roll[];

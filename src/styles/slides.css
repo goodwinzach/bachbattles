@@ -201,6 +201,8 @@
   .slides__notes {
     flex: 0 0 auto;
     max-height: 30%;
+    /* room to scroll the last lines clear of the dice button */
+    padding-bottom: 72px;
   }
 }
 
@@ -588,6 +590,13 @@
   font-size: 1.5cqw;
 }
 
+.sl__abilities--grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6cqh 2.4cqw;
+  font-size: 1.3cqw;
+}
+
 .sl__abilities strong {
   color: color-mix(in oklab, var(--c) 65%, #fff);
 }
@@ -702,6 +711,21 @@
   font-size: 1.5cqw;
 }
 
+.sl--scene .sl__read {
+  margin-bottom: 2.4cqh;
+}
+
+.sl--tight .sl__read {
+  margin-top: 2.4cqh;
+  gap: 1cqh;
+  font-size: 1.4cqw;
+}
+
+.sl--tight .sl__must {
+  padding: 1.2cqh 1.4cqw;
+  font-size: 1.15cqw;
+}
+
 .sl__read .ref,
 .sl .ref {
   color: inherit;
@@ -714,11 +738,9 @@
   background: none;
 }
 
+/* in the flow, pushed to the bottom: it can never sit on top of the read-aloud */
 .sl__must {
-  position: absolute;
-  left: 7cqw;
-  right: 7cqw;
-  bottom: 5cqh;
+  margin-top: auto;
   display: flex;
   gap: 1cqw;
   padding: 1.6cqh 1.6cqw;

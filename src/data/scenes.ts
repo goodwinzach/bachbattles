@@ -178,7 +178,7 @@ export const SCENES: Scene[] = [
     minutes: [35, 50],
     logline: 'Question the patrons. Nobody knows about the ring. The only clue is the redhead.',
     readAloud: [
-      'The Green Dragon looks worse in daylight. The moment the five of you walk in, the bartender recognizes you. He picks up the phone, turns his back, tells someone that the rambunctious group from last night is back, and hangs up.',
+      'The Green Dragon looks worse in daylight. The moment the five of you walk in, the bartender recognizes you. He picks up the phone, turns his back, and mutters: "Hey man. The troublemakers are back. I need you to get over here now." He hangs up.',
       'He looks at you for a long moment. "You shouldn\'t stay long."',
     ],
     beats: [
@@ -403,7 +403,8 @@ export const SCENES: Scene[] = [
     ],
     objective: 'Flynn asks three questions. The riddle has to come out.',
     mustHappen: [
-      'If the first two questions do not reveal the riddle, the third answer must end with **"Out of the closet without a face."**',
+      'Three things **have to** come out, whatever Flynn asks: [[clue:fact-thief|Lou has the ring]], [[clue:fact-hollywood|Lou and the ring are in Hollywood]], and the riddle. Fold them into his answers.',
+      'If the first two questions do not reveal the riddle, the third answer must end with **"Out of the closet without a face."** Do not explain it.',
       'After the third question, Abbott and Costello disappear.',
       'The party now knows enough to decide how to reach Hollywood. Let them discuss plane vs. boat.',
     ],
@@ -452,7 +453,10 @@ export const SCENES: Scene[] = [
       { when: 'Goodwin uses Gump Luck to find Hollywood directly', then: 'He accidentally finds a sign, map or person that points toward Odysseus instead.' },
       { when: 'They steal a random boat without Odysseus', then: 'They sail for hours and return to the same coastline, or realize they are completely lost. Odysseus is still the useful option.' },
     ],
-    notes: ['Protect the required story beat (reaching Hollywood by boat), not the exact route.'],
+    notes: [
+      'Plane or boat. No teleporting and no flying there by magic.',
+      'Protect the required story beat (reaching Hollywood by boat), not the exact route.',
+    ],
     next: ['airfield', 'docks'],
     layout: { col: 5, lane: 0 },
   }),
@@ -617,7 +621,7 @@ export const SCENES: Scene[] = [
       { by: 'odysseus', text: "I've been lost longer than you've been married, which apparently is not at all. Get on the boat." },
     ],
     failsafes: [
-      { when: 'Flynn wins', then: 'Tyler stalls, lies, or reaches for the detonator. Odysseus and his men pin him down, and the charges the others found come off with {{int:10}}.' },
+      { when: 'Flynn wins', then: 'Tyler owns up to the deal. He wipes his lip, laughs, and disarms the charges himself.' },
       {
         when: 'The other four are standing around during the duel',
         then: 'They search the other boats: {{per:12}} finds a charge, {{int:10}} disarms it. Every charge they clear is one less boat Tyler can blow.',
@@ -677,6 +681,7 @@ export const SCENES: Scene[] = [
     ],
     notes: [
       'They are now operating at −2 Charisma, −2 Perception and −2 Agility. This should feel awful.',
+      'Their health is slipping too. Describe it, or take {{1d4}} HP from everyone if you want them to feel it before the island.',
       'Boat oars and poles count as staffs for [[pc:haydn]].',
     ],
     cast: ['odysseus', 'odysseus-crew'],
@@ -721,8 +726,9 @@ export const SCENES: Scene[] = [
     ],
     objective: 'Defeat John Doe and neutralize Medusa. Then search the buildings for food.',
     mustHappen: [
-      'Only one groomsman may open the box. Whoever does is turned to stone for the rest of this encounter.',
-      'When John Doe is defeated and the head is covered, neutralized or destroyed, everyone turned to stone returns to normal.',
+      'Never let Flynn open the box: John Doe wants someone without a mask. One groomsman opens it and is turned to stone. **That is the death this scene promises.**',
+      'Anyone else who fails the gaze check is stone too. Kill off a couple if the story wants it: the statues stay on the island, the players keep playing as ghosts, and [[scene:gluttony]] brings everyone back.',
+      'Flynn is the only one who can fight John Doe once the head is out: the mask keeps him from turning to stone.',
     ],
     cast: ['john-doe', 'medusa', 'odysseus', 'odysseus-crew'],
     encounters: [
@@ -780,7 +786,7 @@ export const SCENES: Scene[] = [
       { kind: 'clues', ids: ['lou-island'], label: 'Revealed: Lou passed through the island' },
       { kind: 'npcs', ids: ['john-doe'], patch: { status: 'defeated' }, label: 'John Doe is defeated' },
       { kind: 'items', ids: ['medusa-head'], patch: { state: 'destroyed', holder: '' }, label: "Medusa's head is neutralized" },
-      { kind: 'pcs', filter: 'stone', patch: { status: 'alive' }, label: 'Everyone turned to stone returns to normal' },
+      { kind: 'pcs', filter: 'stone', patch: { status: 'ghost', hp: 0 }, label: 'The statues stay on the island: everyone turned to stone keeps playing as a ghost' },
     ],
     films: ['se7en', 'greek-myth'],
     source:
@@ -835,7 +841,7 @@ export const SCENES: Scene[] = [
     notes: [
       'Personal and creepy rather than epic.',
       'David focuses Flynn first but attacks anybody who interferes.',
-      'Pacing: Pride, then 1 to 3 more rooms, then Gluttony. Play more if the table is loving it.',
+      'Pacing: Pride, then up to three more rooms, then Gluttony. With luck they go straight from Pride to Gluttony. Play more if the table is loving it.',
       'Odysseus and his men wait outside, guarding the boat and the way back. They do not join the rooms, so the fights stay the players\' own.',
       'Once Gluttony is cleared, the remaining doors are sealed and the boat is leaving. No going back for the rooms they skipped.',
     ],
@@ -1059,7 +1065,10 @@ export const SCENES: Scene[] = [
       '[[npc:feyd]] and [[npc:rabban]] step out from either side of him, daggers drawn.',
     ],
     objective: 'Defeat the three Harkonnens, then eat.',
-    mustHappen: ['The island sequence ends when they clear Gluttony and get the food and **five bagels**.'],
+    mustHappen: [
+      'The island sequence ends when they clear Gluttony and get the food and **five bagels**.',
+      '**No matter what, everyone leaves Gluttony alive and at full health.** The dead come back with bagels (a living player eats one and does something statistically improbable in real life), then the feast heals everyone.',
+    ],
     cast: ['baron', 'feyd', 'rabban'],
     encounters: [
       {
@@ -1085,7 +1094,7 @@ export const SCENES: Scene[] = [
     loot: ['feast', 'bagels', 'dr-pepper'],
     effects: [
       { kind: 'npcs', ids: ['baron', 'feyd', 'rabban'], patch: { status: 'defeated' }, label: 'The Harkonnens are defeated' },
-      { kind: 'healAll', label: 'The feast: every living player returns to full HP' },
+      { kind: 'healAll', label: 'No matter what: everyone is revived and back to full HP (bagels for the dead, food for everyone)' },
       { kind: 'condition', id: 'hangover', active: false, label: 'Hangover ends' },
       { kind: 'condition', id: 'hunger', active: false, label: 'Hunger ends' },
       { kind: 'items', ids: ['feast'], patch: { state: 'spent' }, label: 'The feast is eaten' },
@@ -1114,8 +1123,8 @@ export const SCENES: Scene[] = [
     readAloud: [
       'The group and the last of Odysseus\'s men get back on the boats and set sail for Hollywood, California.',
       'When they arrive, [[npc:nathan-fielder]] and a camera crew are waiting. Nathan wears his laptop holder, but the screen faces away from him. He plays a video.',
-      "It's Lou. He reveals that they have been on camera the entire time; Nathan and his team have been secretly recording everything. Lou has partnered with Nathan to make the greatest and most tragic documentary about five friends who die heroically.",
-      'The video stops. Nathan explains that Lou tricked him, and that he is being held hostage. He is scared for his life.',
+      "It's Lou. He reveals that they have been on camera the entire time; Nathan and his team have been secretly recording everything. Lou has partnered with Nathan to make the greatest and most tragic documentary about five friends who die heroically, and he is going to sell it for millions.",
+      'The video stops. Nathan explains that Lou tricked him, and that he is being held hostage. He is scared for his life. "Please help me. Help me. Help me."',
       'Then the cameramen raise their camcorders. The lenses are pointed straight at you.',
     ],
     beats: [
@@ -1137,6 +1146,7 @@ export const SCENES: Scene[] = [
       { by: 'nathan-fielder', text: 'So there was a misunderstanding where I thought we were making a documentary and Lou thought we were making evidence.' },
       { by: 'nathan-fielder', text: 'I am technically also being held hostage, although I did sign a release.' },
       { by: 'nathan-fielder', text: 'I thought there would be more consent paperwork before the deaths.' },
+      { by: 'nathan-fielder', text: 'Please help me. Help me. Help me.', note: 'He cannot actually be helped. Nothing they do frees him.' },
     ],
     failsafes: [
       {
@@ -1217,28 +1227,21 @@ export const SCENES: Scene[] = [
     logline: "Lou's old boyfriend walks in with a hammer, smiling.",
     readAloud: ['[[npc:oh-dae-su]] walks into the ring of cameras, holding a hammer and smiling.'],
     objective: 'Survive Oh Dae-su.',
-    variantMust: {
-      outline: [
-        'Oh Dae-su should be strong enough to kill **at least 2 players**.',
-        '**How:** whatever the dice say, he takes one groomsman out in round 1 and another in round 2 (hammer, chokehold, the corridor fight). After that he can be killed or knocked out.',
-        'Flynn has plot armor. The other players do not.',
-      ],
-      expanded: [
-        'Attrition, not the wipe. He may kill somebody if the party enters hurt or rolls badly.',
-        'Do not force a death if the players dominate him. That is what [[npc:cat]] is for.',
-      ],
-    },
+    mustHappen: [
+      'He takes **one groomsman** out, whatever the dice say (hammer, chokehold, the corridor fight). Then the party can beat him.',
+      'Flynn has plot armor. The other players do not.',
+    ],
     cast: ['oh-dae-su', 'lou'],
     encounters: [
       {
         label: 'Oh Dae-su',
         foes: ['oh-dae-su'],
         rounds: [2, 4],
-        ends: 'Outline version: he takes one groomsman out in round 1 and another in round 2, whatever the dice say; after that he can be killed or knocked out. Expanded build: he keeps coming until he is physically stopped.',
+        ends: 'Once he has taken one groomsman out, he can be killed or knocked out. Until then he shrugs off anything that would stop him.',
       },
     ],
     notes: [
-      'He does not negotiate. He advances relentlessly toward whoever hurt him last.',
+      'Super fast, super strong, lots of health. He does not negotiate. He advances relentlessly toward whoever hurt him last.',
       'If somebody reaches 0 HP, they die and become a ghost ([[rule:ghosts]]).',
       'Bagels do not work inside the Volume: the studio is fake, and an improbable act needs the real world. Revivals wait for the bagel shop.',
     ],
@@ -1246,7 +1249,7 @@ export const SCENES: Scene[] = [
     effects: [{ kind: 'npcs', ids: ['oh-dae-su'], patch: { status: 'defeated' }, label: 'Oh Dae-su is down' }],
     films: ['oldboy'],
     source:
-      "Oh Dae-su from Old Boy walks into the ring of cameras, holding a hammer and smiling.\n\nFlynn has plot armor, the other players do not. No matter what, Flynn can't die, his masks basically prevent it. And it's important to the story.\n\nOh Dae-su should be strong enough to kill at least 2 players.",
+      "Oh Dae-su from Old Boy walks into the ring of cameras, holding a hammer and smiling.\n\nFlynn has plot armor, the other players do not. No matter what, Flynn can't die, his masks basically prevent it. And it's important to the story.\n\nOh Dae-su should be strong enough to kill at least 2 players.\n\nVoice notes: \"He's super fast, super strong, has lots of health. So he can kill off like one of us, and then we can defeat him.\"",
     next: ['toothless'],
     layout: { col: 15, lane: 0 },
   }),
@@ -1267,23 +1270,17 @@ export const SCENES: Scene[] = [
       '[[npc:toothless]] dives out of the dark.',
     ],
     objective: 'Survive Toothless.',
-    variantMust: {
-      outline: [
-        'Toothless needs to take out **every character except Flynn**.',
-        '**How:** one living groomsman falls each round, whatever the dice say (plasma blast, dive, tail). When only Flynn is standing, he lands the last blow on the wounded dragon, or Lou yells "Cut!" and calls Toothless off.',
-      ],
-      expanded: [
-        'Scarier than Oh Dae-su but still beatable: more damage and chaos, not the mandatory wipe.',
-        'At 0 HP he crashes and is incapacitated. Give the party half a breath, then introduce the Cat.',
-      ],
-    },
+    mustHappen: [
+      'He takes out **a few groomsmen** (two is plenty), whatever the dice say: plasma blast, dive, tail. Then he can be beaten.',
+      'Whoever is still standing when he crashes is [[npc:cat]]\'s problem: the Cat comes next and finishes the job.',
+    ],
     cast: ['toothless', 'lou'],
     encounters: [
       {
         label: 'Toothless',
         foes: ['toothless'],
         rounds: [3, 5],
-        ends: "Outline version: one groomsman falls each round, whatever the dice say. When only Flynn is standing, he lands the last blow on the wounded dragon, or Lou yells \"Cut!\" and calls him off. Expanded build: he crashes at 0 HP.",
+        ends: 'At 0 HP he crashes and is out. If he takes everyone but Flynn before that, Lou yells "Cut!" and calls him off.',
       },
     ],
     tips: ['Studio rigging, cables and lights.', 'Pistols and the bow.', "Oogwaydn's improvised camera or mic stand.", 'Ghosts as distractions.'],
@@ -1295,16 +1292,16 @@ export const SCENES: Scene[] = [
     ],
     notes: [
       'Tactics: stays Nearby or Far Away, plasma-blasts exposed targets, dives Close to bite, flies away after striking.',
+      'Scarier than Oh Dae-su, but beatable. When he crashes, give the party half a breath, then the red door opens ([[scene:cat]]).',
     ],
     effects: [
       { kind: 'items', ids: ['dae-su-hammer'], patch: { state: 'held', holder: 'party' }, label: "Take Oh Dae-su's hammer" },
       { kind: 'npcs', ids: ['toothless'], patch: { status: 'defeated' }, label: 'Toothless crashes' },
-      { kind: 'pcs', filter: 'notFlynn', patch: { status: 'ghost', hp: 0 }, label: 'Everyone except Flynn is taken out', only: 'outline' },
     ],
     films: ['httyd'],
     source:
-      "After Oh Dae-su they fight Toothless from How to Train Your Dragon.\n\nToothless needs to take out every character except Flynn.",
-    next: ['cat', 'fourth-mask'],
+      "After Oh Dae-su they fight Toothless from How to Train Your Dragon.\n\nToothless needs to take out every character except Flynn.\n\nVoice notes: \"Toothless can take out a few of us. Cat in the Hat will also be after Toothless. And if Toothless doesn't wipe everyone out, Cat in the Hat will kill everybody but Flynn.\"",
+    next: ['cat'],
     layout: { col: 16, lane: 0 },
   }),
 
@@ -1313,20 +1310,22 @@ export const SCENES: Scene[] = [
     act: 'studio',
     slate: '19',
     title: 'The Cat in the Hat',
-    ref: 'Expanded build',
-    expandedOnly: true,
-    optional: true,
+    ref: 'After Toothless',
     slug: 'INT. THE VOLUME — A RED DOOR APPEARS',
     location: 'volume',
     kind: 'boss',
     minutes: [10, 20],
-    logline: "The DM's big moment. Invincible. Wipes everyone except Flynn.",
+    logline: "The DM's big moment. Invincible. Takes out whoever Toothless left standing, except Flynn.",
     readAloud: [
       'A red door appears in the middle of the Volume wall, and opens. Out steps the Cat in the Hat, as if he belongs in a different genre entirely.',
       '"Well. This set is a mess."',
     ],
-    objective: 'Wipe everyone except Flynn, playfully, in 2 to 4 rounds.',
-    mustHappen: ['Every living non-Flynn player becomes a ghost.', 'The Cat cannot kill Flynn. A lethal hit leaves him at 1 HP.'],
+    objective: 'Wipe everyone left except Flynn, playfully, in 2 to 4 rounds.',
+    mustHappen: [
+      'Every groomsman still alive becomes a ghost. Only Flynn is left standing.',
+      'The Cat cannot kill Flynn. A lethal hit leaves him at 1 HP.',
+      'If Toothless already took everyone out, the Cat still makes his entrance: he tidies the set, looks Flynn over, and bows out.',
+    ],
     cast: ['cat', 'things', 'lou'],
     encounters: [{ label: 'The Cat in the Hat', foes: ['cat'], rounds: [2, 4], ends: 'He cannot be hurt. Follow the wipe pacing below; he bows out when only Flynn is left.' }],
     lines: [
@@ -1347,7 +1346,7 @@ export const SCENES: Scene[] = [
     ],
     films: ['cat-in-the-hat'],
     source:
-      'Not in the original outline. From the expanded build (suggestions): the Cat in the Hat is the invincible final wipe boss before Flynn faces Lou, played personally by the DM.',
+      "Not in the original outline. Voice notes: \"Cat in the Hat will also be after Toothless. And if Toothless doesn't wipe everyone out, Cat in the Hat will kill everybody but Flynn.\"",
     next: ['fourth-mask'],
     layout: { col: 17, lane: 0 },
   }),
@@ -1391,6 +1390,9 @@ export const SCENES: Scene[] = [
         rounds: [1, 2],
         ends: "This fight cannot be won with damage. After a round or two of struggling, send Louise's text and let Flynn try something else.",
       },
+    ],
+    rolls: [
+      { stat: 'cha', dc: 15, label: 'Unmasked Flynn seduces Lou: he slides the ring off and holds it out', note: 'With +100 it cannot fail. The roll is for the table; play what Flynn says. Then Flynn beats Lou himself.' },
     ],
     lines: [
       { by: 'lou', text: "You'll never guess where I got this from." },
@@ -1494,7 +1496,7 @@ export const SCENES: Scene[] = [
     logline: "Revive the ghosts, or don't. Sail home. Marry Caley.",
     readAloud: [
       "There's a shop outside the studio with a giant donut on the roof. Inside, they only sell bagels. Everything bagels. It's open, because Hollywood has no normal rules.",
-      'Flynn can revive everyone, if he does a random and stupid act. He does not have to.',
+      'Flynn can bring his friends back. For each one, he eats a bagel and does something random and stupid, in real life. He does not have to.',
       'Either way, friends or no friends, Flynn sails back to New Zealand and marries [[npc:caley]]. They live happily ever after.',
       'The groomsmen all died of alcohol poisoning the night of the wedding.',
     ],
@@ -1505,9 +1507,9 @@ export const SCENES: Scene[] = [
     objective: 'Let the table decide who comes back.',
     cast: ['caley'],
     notes: [
-      'One random, stupid act from Flynn, **in real life**, brings everyone back ([[rule:bagel-rule]] at its most generous). He can choose to bring back only some of them, or nobody.',
+      'One bagel and one random, stupid act from Flynn, **in real life**, per friend ([[rule:bagel-rule]]). The whole point is watching Flynn do a string of statistically improbable things. He can bring back only some of them, or nobody.',
       'The bagels are free: the shop is closing, and the guy behind the counter has seen weirder nights.',
-      'Use the stupidest things that happened during the session as inspiration. Do not prewrite the challenges; the table will create better material.',
+      'Use the stupidest things that happened during the session as inspiration, and let the table pitch ideas. The widget has a list of safe, silly stunts as a backup.',
       'If friends are revived, they return with him. If Flynn leaves them dead, their ghosts can still complain about it.',
       'Use or omit the final dark joke depending on the room\'s mood.',
     ],

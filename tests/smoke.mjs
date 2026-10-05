@@ -69,6 +69,8 @@ try {
     // the story flow opens scenes into branches, and branches into more branches
     await page.click('.map__bar [role=tab]:has-text("Story flow")');
     await page.waitForTimeout(300);
+    const dot = await page.$eval('.fnode .rec', (el) => getComputedStyle(el).position).catch(() => 'missing');
+    check(dot === 'static', 'the now-playing dot sits in the scene card, not on top of its number', dot);
     await page.click('.fnode:has-text("The Green Dragon") >> nth=0');
     await page.waitForSelector('.xroot');
     const branches = await page.$$eval('.xnode', (els) => els.map((e) => e.textContent ?? ''));
@@ -528,17 +530,13 @@ try {
     const card = await page.$eval('.mapcard__title', (el) => el.textContent).catch(() => null);
     check(card === 'Tyler Durden', '"On the web" opens the connections web with them selected', `card=${card}`);
 
-    // the studio gauntlet version switch re-routes the whole script
+    // the Cat in the Hat always follows Toothless
     await page.evaluate(() => (location.hash = 'story'));
     await page.waitForTimeout(300);
-    const catOut = () => page.$eval('.toc__scene:has-text("The Cat in the Hat")', (el) => el.classList.contains('is-out'));
-    check(await catOut(), 'outline version: the Cat in the Hat is off the route');
-    await page.click('.topbar button[aria-label*="ore"]');
-    await page.click('text=Settings & campaign options');
-    await page.click('button:has-text("Expanded build")');
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(200);
-    check(!(await catOut()), 'expanded build: the Cat in the Hat joins the route');
+    const catOut = await page.$eval('.toc__scene:has-text("The Cat in the Hat")', (el) => el.classList.contains('is-out'));
+    const order = await page.$$eval('.toc__scene', (els) => els.map((e) => e.textContent ?? ''));
+    const ti = order.findIndex((t) => /Toothless/.test(t));
+    check(!catOut && /Cat in the Hat/.test(order[ti + 1] ?? ''), 'the Cat in the Hat is on the route, right after Toothless', order[ti + 1]);
     check(errors.length === 0, 'no console errors using the tools', errors.join(' | '));
     await ctx.close();
   }
@@ -605,17 +603,31 @@ try {
 
     // the studio: the wipe tracker takes people out, and no bagels inside the Volume
     await jump('oh-dae-su');
-    check(/Two have to fall/.test((await page.textContent('.view')) ?? ''), 'Oh Dae-su shows the wipe tracker (outline version)');
-    await page.click('.widget:has-text("Two have to fall") button:has-text("Takes them out") >> nth=0');
-    await page.click('.widget:has-text("Two have to fall") button:has-text("Takes them out") >> nth=0');
+    check(/One has to fall/.test((await page.textContent('.view')) ?? ''), 'Oh Dae-su shows the wipe tracker');
+    await page.click('.widget:has-text("One has to fall") button:has-text("Takes them out") >> nth=0');
+    await page.click('.widget:has-text("One has to fall") button:has-text("Takes them out") >> nth=0');
     await page.waitForTimeout(200);
     const ghosts = await page.$$eval('.member--ghost', (els) => els.length);
     check(ghosts === 2, '"Takes them out" turns groomsmen into ghosts after the island', `ghosts=${ghosts}`);
     check(/No bagel revivals/.test((await page.textContent('.view')) ?? ''), 'inside the Volume the bagels stay in the bag');
     await jump('epilogue');
-    await page.click('button:has-text("Flynn did it")');
+    await page.click('.widget button:has-text("Need a stunt?")');
+    const stunt = await page.textContent('.stunt__text').catch(() => '');
+    check((stunt ?? '').length > 10, 'the bagel shop suggests a stunt when the table runs out of ideas', stunt);
+    for (let i = 0; i < 4 && (await page.$('button:has-text("Stunt done")')); i++) {
+      await page.click('button:has-text("Stunt done") >> nth=0');
+      await page.waitForTimeout(150);
+    }
+    check((await page.$$eval('.member--ghost', (els) => els.length)) === 0, 'at the bagel shop, Flynn brings each friend back with his own stunt');
+
+    // no matter what, everyone leaves Gluttony alive and at full health
+    await jump('toothless');
+    await page.click('.widget:has-text("A few fall") button:has-text("Takes them out") >> nth=0');
+    await jump('gluttony');
+    await page.click('.effect:has-text("No matter what") button');
     await page.waitForTimeout(200);
-    check((await page.$$eval('.member--ghost', (els) => els.length)) === 0, 'at the bagel shop, one stupid act from Flynn brings everyone back');
+    const after = await page.$$eval('.member', (els) => els.map((e) => [e.className, e.querySelector('.member__hpnum')?.textContent?.trim()]));
+    check(after.every(([c, hp]) => /member--alive/.test(c) && /^(\d+)\/\1$/.test(hp ?? '')), 'the Gluttony feast brings everyone back at full HP', JSON.stringify(after));
 
     // Medusa's entrance stays off the table deck until she is met
     await page.evaluate(() => (location.hash = 'slides'));
@@ -625,6 +637,29 @@ try {
     await page.waitForTimeout(200);
     const dmMedusa = await page.$$eval('.frame.is-secret[title="Medusa"]', (els) => els.length);
     check(tableMedusa === 0 && dmMedusa === 1, "Medusa's entrance slide is DM-only until she is met", `table=${tableMedusa} dm=${dmMedusa}`);
+
+    // every DM slide fits its frame, and the must-happen box never sits on the read-aloud
+    const frames = await page.$$eval('.frame', (els) => els.length);
+    const bad = [];
+    for (let i = 0; i < frames; i++) {
+      await page.evaluate((i) => document.querySelectorAll('.frame')[i].click(), i);
+      await page.waitForTimeout(80);
+      const issue = await page.evaluate(() => {
+        const stage = document.querySelector('.stage')?.getBoundingClientRect();
+        const sl = document.querySelector('.stage__slide .sl');
+        if (!stage || !sl || sl.matches('.sl--credits, .sl--place')) return null;
+        const read = sl.querySelector('.sl__read')?.getBoundingClientRect();
+        const must = sl.querySelector('.sl__must')?.getBoundingClientRect();
+        if (read && must && must.top < read.bottom - 1) return 'must box over the read-aloud';
+        const spill = [...sl.querySelectorAll('h2, p, li, blockquote, .sl__eyebrow')].find((el) => {
+          const r = el.getBoundingClientRect();
+          return r.height > 0 && (r.top < stage.top - 1 || r.bottom > stage.bottom + 1);
+        });
+        return spill ? `"${spill.textContent?.slice(0, 30)}" spills out of the frame` : null;
+      });
+      if (issue) bad.push(`#${i + 1} ${await page.textContent('.frame.is-on .frame__title')}: ${issue}`);
+    }
+    check(bad.length === 0, 'every DM slide fits its frame, must-happen boxes below the text', bad.slice(0, 4).join(' | '));
     check(errors.length === 0, 'no console errors running the table rules', errors.join(' | '));
     await ctx.close();
   }

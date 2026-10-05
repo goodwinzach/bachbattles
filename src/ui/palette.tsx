@@ -48,7 +48,7 @@ function actions(): Hit[] {
     { key: 'act:timer', icon: g.timer.running ? 'pause' : 'play', title: g.timer.running ? 'Pause the session timer' : 'Start the session timer', sub: 'Feeds the pacing chart', kind: 'Action', run: toggleTimer },
     { key: 'act:dice', icon: 'dices', title: 'Open the dice tray', sub: 'Checks, advantage, damage', kind: 'Action', run: () => openRoller({}) },
     { key: 'act:expand', icon: 'chevrons-up-down', title: 'Expand everything in the script', sub: 'Open every section', kind: 'Action', run: () => { setUi({ view: 'story' }); setTimeout(() => setBulk('story', true), 30); } },
-    { key: 'act:settings', icon: 'settings', title: 'Settings & campaign options', sub: 'Studio gauntlet version, route, theme', kind: 'Action', run: () => openModal({ kind: 'settings' }) },
+    { key: 'act:settings', icon: 'settings', title: 'Settings & campaign options', sub: 'Route, theme, saves', kind: 'Action', run: () => openModal({ kind: 'settings' }) },
     { key: 'act:export', icon: 'file-down', title: 'Export save', sub: 'Download or copy everything you changed', kind: 'Action', run: () => openModal({ kind: 'export' }) },
     { key: 'act:history', icon: 'list-restart', title: 'History', sub: 'Every change this session', kind: 'Action', run: () => openModal({ kind: 'history' }) },
     { key: 'act:recap', icon: 'rewind', title: 'Previously on… (recap)', sub: 'What has happened so far, for after a break', kind: 'Action', run: () => openModal({ kind: 'recap' }) },

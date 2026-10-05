@@ -2,7 +2,7 @@
 // on a TV for the players; "DM" shows secrets, stat blocks and speaker notes.
 
 import type { ComponentChildren } from 'preact';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { Ability, Act, Clue, Film, Location, NPC, PC, Scene } from '../../data/types';
 import { STAT_ABBR, STATS } from '../../data/types';
 import { goScene } from '../../state/actions';
@@ -137,7 +137,7 @@ function CastSlide({ pc, dm }: { pc: PC; dm: boolean }) {
             <span class="sl__statv">{pc.hpMax}</span>
           </div>
         </div>
-        <ul class="sl__abilities">
+        <ul class={cx('sl__abilities', abs.length > 3 && 'sl__abilities--grid')}>
           {abs.map((a) => (
             <li key={a.id}>
               <strong>{a.name}</strong>
@@ -198,11 +198,23 @@ function pages(paras: string[], budget = 640): string[][] {
   return out.length ? out : [[]];
 }
 
+/** A slide whose content would spill past the frame (a long page plus the DM's must-happen box) steps its text down. */
+function useTight() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [tight, setTight] = useState(false);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (el && !tight && el.scrollHeight > el.clientHeight + 1) setTight(true);
+  }, [tight]);
+  return [ref, tight] as const;
+}
+
 function SceneSlide({ scene, dm, text, page, of }: { scene: Scene; dm: boolean; text: string[]; page: number; of: number }) {
   const act = ent<Act>('act', scene.act);
   const long = text.map(strip).join(' ').length > 520;
+  const [ref, tight] = useTight();
   return (
-    <div class="sl sl--scene hue" style={{ '--c': hueVar(act?.hue) } as never}>
+    <div ref={ref} class={cx('sl sl--scene hue', tight && 'sl--tight')} style={{ '--c': hueVar(act?.hue) } as never}>
       {scene.location && portraitOf('location', scene.location) && (
         <div class="sl__backdrop" style={{ backgroundImage: `url("${portraitOf('location', scene.location)}")` }} aria-hidden="true" />
       )}

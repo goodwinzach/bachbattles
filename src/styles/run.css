@@ -385,6 +385,18 @@
   gap: 4px;
 }
 
+.fact__must {
+  align-self: flex-start;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: color-mix(in oklab, var(--gold) 18%, transparent);
+  color: color-mix(in oklab, var(--gold) 80%, var(--fg));
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .fact__q {
   font-size: var(--fs-xs);
   font-weight: 700;
@@ -1705,4 +1717,19 @@
   font-size: var(--fs-sm);
   line-height: 1.5;
   color: var(--fg-2);
+}
+
+.stunt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-top: 10px;
+}
+
+.stunt__text {
+  flex: 1 1 220px;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  color: var(--fg);
 }

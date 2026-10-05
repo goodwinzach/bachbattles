@@ -149,10 +149,13 @@ const NODE_H = 78;
 
 type Pt = { x: number; y: number };
 
+/** room above the first scene of an act for the act's name, in the vertical layout */
+const BAND_LABEL = 22;
+
 /** Where every scene sits: the story's own layout, unless the DM dragged it somewhere else. */
 function flowGeometry(vertical: boolean, moved: Record<string, Pt>) {
   const scenes = all<Scene>('scene');
-  const COL = vertical ? 118 : 212;
+  const COL = vertical ? 136 : 212;
   const LANE = vertical ? 204 : 98;
   const pos = new Map<string, Pt>();
   for (const s of scenes) {
@@ -323,6 +326,8 @@ function FlowMap() {
     if (!to || !sp) return;
     const id = addMapNote(to, at.x - sp.x, at.y - sp.y);
     setFocusNote(id);
+    // a note made from a card can land outside the view: bring it in so the DM sees what they type
+    panToShow([{ x: at.x, y: at.y, w: NOTE_W, h: 110 }]);
   };
   const noteAtCenter = () => {
     const vp = pz.ref.current;
@@ -347,8 +352,7 @@ function FlowMap() {
     for (const n of s.next) {
       const t = geo.scenes.find((x) => x.id === n);
       if (!t) continue;
-      // toothless → fourth-mask only when the Cat is out of the run; toothless → cat only when in
-      const out = !sceneInPlay(s) || !sceneInPlay(t) || (s.id === 'toothless' && t.id === 'fourth-mask' && g.catVariant);
+      const out = !sceneInPlay(s) || !sceneInPlay(t);
       const done = sceneStatus(s) === 'done' && (sceneStatus(t) === 'done' || sceneStatus(t) === 'active');
       edges.push({ from: s, to: t, d: edgePath(posOf(s.id)!, posOf(t.id)!, vertical), state: out ? 'out' : done ? 'done' : 'live' });
     }
@@ -374,11 +378,18 @@ function FlowMap() {
     let box = placed.filter((p) => p.key === key || p.parent === key);
     const vp = pz.ref.current;
     if (!box.length || !vp) return;
+    // when the node and its new children cannot both fit (phones), show the children
+    const span = (list: Placed[]) => (Math.max(...list.map((p) => p.x + p.w)) - Math.min(...list.map((p) => p.x))) * pz.view.k;
+    if (kids.length && span(box) > vp.clientWidth - 2 * 28 - 52) box = kids;
+    panToShow(box);
+  };
+
+  /** Pan the least it takes to bring these stage boxes into view, clear of the controls. */
+  const panToShow = (box: { x: number; y: number; w: number; h: number }[]) => {
+    const vp = pz.ref.current;
+    if (!box.length || !vp) return;
     const v = pz.view;
     const m = 28;
-    // when the node and its new children cannot both fit (phones), show the children
-    const span = (list: Placed[]) => (Math.max(...list.map((p) => p.x + p.w)) - Math.min(...list.map((p) => p.x))) * v.k;
-    if (kids.length && span(box) > vp.clientWidth - 2 * m - 52) box = kids;
     const minX = Math.min(...box.map((p) => p.x)) * v.k + v.x;
     const maxX = Math.max(...box.map((p) => p.x + p.w)) * v.k + v.x;
     const minY = Math.min(...box.map((p) => p.y)) * v.k + v.y;
@@ -459,10 +470,11 @@ function FlowMap() {
               class="flow__band hue"
               style={{
                 '--c': hueVar(a.hue),
+                // standing on end, each band gets a strip above its first scene for the act's name
                 left: `${vertical ? minX - 30 : minX}px`,
-                top: `${vertical ? minY : 6}px`,
+                top: `${vertical ? minY - BAND_LABEL : 6}px`,
                 width: `${vertical ? geo.width - minX + 30 - 10 : maxX - minX}px`,
-                height: `${vertical ? maxY - minY : geo.height - 12}px`,
+                height: `${vertical ? maxY - minY + BAND_LABEL : geo.height - 12}px`,
               } as never}
             >
               <span class="flow__bandlabel">
@@ -531,7 +543,7 @@ function FlowMap() {
                 </span>
                 <span class="fnode__title">{s.title}</span>
                 {(s.branch || s.optional) && (
-                  <span class="fnode__tag">{s.branch ? (s.branch === 'plane' ? 'Plane route' : 'Boat route') : s.expandedOnly ? 'Expanded build' : 'Optional room'}</span>
+                  <span class="fnode__tag">{s.branch ? (s.branch === 'plane' ? 'Plane route' : 'Boat route') : 'Optional room'}</span>
                 )}
               </button>
             );

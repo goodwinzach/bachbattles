@@ -275,7 +275,7 @@ export const ITEMS: Item[] = [
       'Gaze rule: anyone (except masked Flynn) with line of sight makes an **inverted** Perception check. 10 or lower: safe, they fail to notice her eyes. 11 or higher: turned to stone.',
     notes: [
       'Flynn is immune while wearing any mask.',
-      'When John Doe is defeated and the head is covered, neutralized or destroyed, everyone turned to stone returns to normal.',
+      'Stone is death: the statues stay on the island when the party leaves, and those players keep going as ghosts. The bagels in Gluttony bring them back.',
       'If the players try to keep it, do not let it become a permanent superweapon: it crumbles after John dies, goes inert, must be left behind, or is too dangerous to carry.',
     ],
     films: ['greek-myth'],

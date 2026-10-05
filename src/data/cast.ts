@@ -161,7 +161,7 @@ export const NPCS: NPC[] = [
     icon: 'beer',
     role: 'Runs the bar at the Green Dragon Inn. Calls his boss the moment the group walks in.',
     look: 'Can look like anything.',
-    play: 'Recognizes them instantly, phones his boss, hangs up, and says only that they should not stay long.',
+    play: 'Recognizes them instantly and phones his boss: "Hey man, the troublemakers are back. I need you to get over here now." Every question after that gets a rude, dismissive non-answer.',
     knows: [
       'They were here last night: loud, drunk and destructive.',
       '[[pc:flynn]] was talking to a redheaded woman.',
@@ -176,7 +176,7 @@ export const NPCS: NPC[] = [
       'You were not exactly subtle last night.',
       'Ask the woman you were hanging off. I was busy cleaning up after you.',
     ],
-    personality: 'Tired, irritated and cautious. Wants these people out of his bar, but is not brave enough to start a fight with five lunatics.',
+    personality: 'Rude, dismissive and tired. Wants these people out of his bar, but is not brave enough to start a fight with five lunatics.',
     wants: 'For the group to leave before [[npc:michael-pearson]] gets there.',
     category: 'Background NPC',
     location: 'The Green Dragon Inn',
@@ -740,7 +740,7 @@ export const NPCS: NPC[] = [
       'The quieter he is, the worse the scene feels.',
     ],
     important: [
-      '**Box rule:** Flynn cannot open it, and neither can Odysseus or his men. One of [[pc:goodwin]], [[pc:alex]], [[pc:haydn]] or [[pc:jamie]] must, and the opener turns to stone for the rest of the Medusa encounter.',
+      '**Box rule:** Flynn cannot open it, and neither can Odysseus or his men. One of [[pc:goodwin]], [[pc:alex]], [[pc:haydn]] or [[pc:jamie]] must, and the opener turns to stone. That is the death the island promises: the statue stays, and the player keeps going as a ghost until [[scene:gluttony]].',
     ],
     fight: 'Yes, but he is easy. [[npc:medusa]] is the real threat.',
   }),
@@ -1183,7 +1183,7 @@ export const NPCS: NPC[] = [
       '**Studio introduction:** his face appears huge on the Volume screen. He complains that they took too long to wake up, says he let them keep their gear for continuity, and introduces [[npc:oh-dae-su]] as an "old boyfriend."',
     ],
     secrets: [
-      'Final entrance: once everyone but Flynn is down (Toothless does it in the outline version, the Cat in the expanded build), Lou walks in wearing [[item:v-mask]], with the ring.',
+      'Final entrance: once everyone but Flynn is down (the Cat in the Hat finishes the job), Lou walks in wearing [[item:v-mask]], with the ring.',
       'Intended final beat: Flynn removes his own mask ([[ability:unmasked]]) and convinces or seduces Lou into taking off his mask and coming Close. Unmasked, Lou is physically vulnerable and Flynn wins.',
     ],
     fight: 'Masked, damage alone never resolves it: the real solution is social. Unmasked, he is physically vulnerable and Flynn wins.',
@@ -1219,8 +1219,8 @@ export const NPCS: NPC[] = [
     location: 'The Volume soundstage',
     traits: ['feral', 'relentless', 'traumatized', 'violent', 'quiet'],
     important: [
-      '**Outline version:** he kills at least two groomsmen. Take one out in round 1 and another in round 2, whatever the dice say; after that he can be killed or knocked out.',
-      '**Expanded build:** his job is to wear the party down. He may kill someone who is already hurt or rolls badly, but he has no required kill count.',
+      'He takes **one groomsman** out, whatever the dice say (round 1 or 2). After that he can be killed or knocked out.',
+      'Super fast, super strong, lots of health: he should feel unstoppable until he has his kill.',
     ],
     fight: "Yes. Lou's first studio combatant.",
   }),
@@ -1261,7 +1261,7 @@ export const NPCS: NPC[] = [
     ifs: [
       "**Things the players can use:** lights, cables, rigging, the bow, pistols, Oogwaydn's improvised staff, and ghosts as distractions.",
     ],
-    fight: 'Yes. In the outline version he takes out every groomsman but Flynn (one a round). In the expanded build he is beatable and the Cat does the wipe.',
+    fight: 'Yes. He takes out a few groomsmen (two is plenty), then crashes at 0 HP. The Cat in the Hat finishes the wipe.',
   }),
   npc({
     id: 'cat',
@@ -1269,7 +1269,7 @@ export const NPCS: NPC[] = [
     film: 'cat-in-the-hat',
     side: 'boss',
     icon: 'cat',
-    role: "Final wipe boss in the expanded build, played personally by the DM.",
+    role: 'Final wipe boss after Toothless, played personally by the DM.',
     personality: 'Cheerful, playful, theatrical and completely unconcerned by physics or violence. Never angry, never frightened, delighted by resistance.',
     play: 'Treat the slaughter like a children\'s game, not rage. Every attack against him gets a cartoon reaction, never damage.',
     important: [

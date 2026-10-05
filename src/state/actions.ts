@@ -193,19 +193,6 @@ export function revive(pcId: string, useBagel: boolean) {
   );
 }
 
-/** The bagel shop: one stupid act from Flynn brings every ghost back. */
-export function reviveEveryone() {
-  const ghosts = all<PC>('pc').filter((p) => p.status === 'ghost');
-  if (!ghosts.length) return;
-  mutate(
-    `Everyone is back: ${ghosts.map((p) => p.name).join(', ')}`,
-    (d) => {
-      for (const p of ghosts) flagPatch(d, 'pc', p.id, { status: 'alive', hp: p.hpMax });
-    },
-    { toast: 'good', log: true },
-  );
-}
-
 export function healAll() {
   mutate(
     'Everyone living is back to full HP',
@@ -472,21 +459,21 @@ export function setRoute(route: 'plane' | 'boat' | null) {
   });
 }
 
-export function setCatVariant(on: boolean) {
-  mutate(
-    on ? 'Studio gauntlet: expanded build (the Cat in the Hat wipes the party)' : 'Studio gauntlet: outline version (Toothless wipes the party)',
-    (d) => (d.game = { ...d.game, catVariant: on }),
-    { toast: true },
-  );
-}
-
 export function setCostello(asked: number) {
   const n = Math.max(0, Math.min(3, asked));
   mutate(`Costello: ${n} of 3 questions asked`, (d) => (d.game = { ...d.game, costelloAsked: n }), { coalesce: 'costello' });
-  const riddle = ent<Clue>('clue', 'fact-riddle');
-  if (n === 2 && riddle && !riddle.revealed) {
-    toast('Two questions down and no riddle yet: the third answer must end with "Out of the closet without a face."', { tone: 'gold', big: true });
-  }
+  if (n !== 2) return;
+  const missing = [
+    ['fact-thief', 'Lou has the ring'],
+    ['fact-hollywood', 'Lou and the ring are in Hollywood'],
+  ].filter(([id]) => !ent<Clue>('clue', id)?.revealed);
+  const riddle = !ent<Clue>('clue', 'fact-riddle')?.revealed;
+  if (!missing.length && !riddle) return;
+  const carry = missing.map(([, label]) => label).join(' and ');
+  toast(
+    `Two questions down. The last answer has to ${carry ? `say ${carry}` : ''}${carry && riddle ? ', and ' : ''}${riddle ? 'end with "Out of the closet without a face."' : '.'}`,
+    { tone: 'gold', big: true },
+  );
 }
 
 // ─── scene effects ────────────────────────────────────────────────────────
@@ -511,7 +498,8 @@ function applyOne(d: SaveData, ef: Effect) {
       for (const id of ef.ids) flagPatch(d, 'ability', id, ef.patch as Record<string, unknown>);
       break;
     case 'healAll':
-      for (const pc of all<PC>('pc')) if (pc.status !== 'ghost') flagPatch(d, 'pc', pc.id, { hp: pc.hpMax, status: 'alive' });
+      // the feast after Gluttony: everyone, dead or alive, is back at full HP
+      for (const pc of all<PC>('pc')) flagPatch(d, 'pc', pc.id, { hp: pc.hpMax, status: 'alive' });
       break;
     case 'pcs': {
       for (const pc of all<PC>('pc')) {
@@ -558,7 +546,7 @@ export function applyAllEffects(sceneId: string) {
   const g = game();
   const pending = s.effects
     .map((ef, i) => ({ ef, i }))
-    .filter(({ ef, i }) => !g.applied[effectKey(sceneId, i)] && (!ef.only || (ef.only === 'expanded') === g.catVariant));
+    .filter(({ i }) => !g.applied[effectKey(sceneId, i)]);
   if (!pending.length) return;
   mutate(
     `${s.title}: applied ${pending.length} effect${pending.length > 1 ? 's' : ''}`,
